@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Activity, Clock, Package, TrendingUp, Users, MapPin, CalendarDays, Layers, Zap, Signal } from "lucide-react";
+import { ArrowLeft, Activity, Clock, Package, TrendingUp, Users, MapPin, CalendarDays, Layers, Zap, Signal, Filter, X } from "lucide-react";
 import {
   ChartContainer,
   ChartTooltip,
@@ -107,7 +107,11 @@ export default function ProjectAnalytics() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedProject, setSelectedProject] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterProject, setFilterProject] = useState<string>("all");
+  const [filterState, setFilterState] = useState<string>("all");
+  const [filterCity, setFilterCity] = useState<string>("all");
+  const [filterSolution, setFilterSolution] = useState<string>("all");
 
   useEffect(() => {
     async function load() {
@@ -129,10 +133,41 @@ export default function ProjectAnalytics() {
     load();
   }, []);
 
+  const hasActiveFilters = filterStatus !== "all" || filterProject !== "all" || filterState !== "all" || filterCity !== "all" || filterSolution !== "all";
+
+  const clearFilters = () => {
+    setFilterStatus("all");
+    setFilterProject("all");
+    setFilterState("all");
+    setFilterCity("all");
+    setFilterSolution("all");
+  };
+
+  // Derived options for filters
+  const stateOptions = useMemo(() => [...new Set(projects.map(p => p.state))].sort(), [projects]);
+  const cityOptions = useMemo(() => {
+    const filtered = filterState !== "all" ? projects.filter(p => p.state === filterState) : projects;
+    return [...new Set(filtered.map(p => p.city))].sort();
+  }, [projects, filterState]);
+  const solutionOptions = useMemo(() => {
+    const names = new Set<string>();
+    projects.forEach(p => p.project_solutions?.forEach(ps => { if (ps.solution?.name) names.add(ps.solution.name); }));
+    return [...names].sort();
+  }, [projects]);
+
   const filteredProjects = useMemo(() => {
-    if (selectedProject === "all") return projects;
-    return projects.filter(p => p.id === selectedProject);
-  }, [projects, selectedProject]);
+    return projects.filter(p => {
+      if (filterStatus !== "all" && p.status !== filterStatus) return false;
+      if (filterProject !== "all" && p.id !== filterProject) return false;
+      if (filterState !== "all" && p.state !== filterState) return false;
+      if (filterCity !== "all" && p.city !== filterCity) return false;
+      if (filterSolution !== "all") {
+        const hasSolution = p.project_solutions?.some(ps => ps.solution?.name === filterSolution);
+        if (!hasSolution) return false;
+      }
+      return true;
+    });
+  }, [projects, filterStatus, filterProject, filterState, filterCity, filterSolution]);
 
   const statusData = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -249,31 +284,98 @@ export default function ProjectAnalytics() {
   return (
     <div className="space-y-6 pb-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-        <Button variant="ghost" onClick={() => navigate("/projetos")} className="w-fit">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
-        </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">Visão Analítica</h1>
-            <div className="flex items-center gap-1.5 text-[10px] text-primary uppercase tracking-widest font-medium">
-              <Signal className="h-3 w-3 animate-pulse" />
-              Live
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <Button variant="ghost" onClick={() => navigate("/projetos")} className="w-fit">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+          </Button>
+          <div className="flex-1">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold tracking-tight">Visão Analítica</h1>
+              <div className="flex items-center gap-1.5 text-[10px] text-primary uppercase tracking-widest font-medium">
+                <Signal className="h-3 w-3 animate-pulse" />
+                Live
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground mt-0.5">Painel de inteligência dos projetos</p>
+          </div>
+        </div>
+
+        {/* Filter Bar */}
+        <GlowCard>
+          <div className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Filtros</span>
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="ml-auto h-7 text-xs gap-1">
+                  <X className="h-3 w-3" /> Limpar
+                </Button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="bg-background border-border/50 h-9 text-xs">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover z-50">
+                  <SelectItem value="all">Todos os Status</SelectItem>
+                  {Constants.public.Enums.project_status.map(s => (
+                    <SelectItem key={s} value={s}>{statusLabels[s]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={filterProject} onValueChange={setFilterProject}>
+                <SelectTrigger className="bg-background border-border/50 h-9 text-xs">
+                  <SelectValue placeholder="Projeto" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover z-50">
+                  <SelectItem value="all">Todos os Projetos</SelectItem>
+                  {projects.map(p => (
+                    <SelectItem key={p.id} value={p.id}>{p.company_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={filterState} onValueChange={v => { setFilterState(v); setFilterCity("all"); }}>
+                <SelectTrigger className="bg-background border-border/50 h-9 text-xs">
+                  <SelectValue placeholder="Estado" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover z-50">
+                  <SelectItem value="all">Todos os Estados</SelectItem>
+                  {stateOptions.map(s => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={filterCity} onValueChange={setFilterCity}>
+                <SelectTrigger className="bg-background border-border/50 h-9 text-xs">
+                  <SelectValue placeholder="Cidade" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover z-50">
+                  <SelectItem value="all">Todas as Cidades</SelectItem>
+                  {cityOptions.map(c => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={filterSolution} onValueChange={setFilterSolution}>
+                <SelectTrigger className="bg-background border-border/50 h-9 text-xs">
+                  <SelectValue placeholder="Solução" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover z-50">
+                  <SelectItem value="all">Todas as Soluções</SelectItem>
+                  {solutionOptions.map(s => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground mt-0.5">Painel de inteligência dos projetos</p>
-        </div>
-        <Select value={selectedProject} onValueChange={setSelectedProject}>
-          <SelectTrigger className="w-[260px] bg-card/80 backdrop-blur-sm border-border/50">
-            <SelectValue placeholder="Filtrar projeto" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos os Projetos</SelectItem>
-            {projects.map(p => (
-              <SelectItem key={p.id} value={p.id}>{p.company_name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        </GlowCard>
       </div>
 
       {/* KPI Strip */}
@@ -482,7 +584,7 @@ export default function ProjectAnalytics() {
       </GlowCard>
 
       {/* Detail card for single project */}
-      {selectedProject !== "all" && filteredProjects.length === 1 && (() => {
+      {filterProject !== "all" && filteredProjects.length === 1 && (() => {
         const p = filteredProjects[0];
         const fmtDate = (d: string | null) => d ? format(parseISO(d), "dd/MM/yyyy") : "—";
         return (

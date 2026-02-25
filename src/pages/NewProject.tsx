@@ -284,26 +284,6 @@ export default function NewProject() {
                 </div>
               )}
             </div>
-            <div>
-              <Label className="mb-2 block">Produtos Contratados</Label>
-              {products.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhum produto cadastrado.</p>
-              ) : (
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {products.map(p => (
-                    <div key={p.id} className="flex items-center gap-2">
-                      <Checkbox
-                        checked={selectedProducts.includes(p.id)}
-                        onCheckedChange={checked => {
-                          setSelectedProducts(prev => checked ? [...prev, p.id] : prev.filter(x => x !== p.id));
-                        }}
-                      />
-                      <span className="text-sm">{p.name}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
           </CardContent>
         </Card>
 

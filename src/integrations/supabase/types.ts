@@ -177,18 +177,79 @@ export type Database = {
           },
         ]
       }
+      project_solutions: {
+        Row: {
+          id: string
+          project_id: string
+          solution_id: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          solution_id: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          solution_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_solutions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_solutions_solution_id_fkey"
+            columns: ["solution_id"]
+            isOneToOne: false
+            referencedRelation: "solutions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_types: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           city: string
           company_name: string
           contract_date: string
+          contractual_deadline_days: number | null
           created_at: string
           created_by: string | null
           d_zero_date: string | null
           executive_id: string | null
+          filled_by: string | null
+          fleet_size: number | null
           handover_date: string | null
           id: string
+          implementation_deadline_days: number | null
+          is_pilot: boolean
           manager_id: string | null
+          pilot_info: string | null
+          project_type_id: string | null
           state: Database["public"]["Enums"]["brazilian_state"]
           status: Database["public"]["Enums"]["project_status"]
           updated_at: string
@@ -197,13 +258,20 @@ export type Database = {
           city: string
           company_name: string
           contract_date: string
+          contractual_deadline_days?: number | null
           created_at?: string
           created_by?: string | null
           d_zero_date?: string | null
           executive_id?: string | null
+          filled_by?: string | null
+          fleet_size?: number | null
           handover_date?: string | null
           id?: string
+          implementation_deadline_days?: number | null
+          is_pilot?: boolean
           manager_id?: string | null
+          pilot_info?: string | null
+          project_type_id?: string | null
           state: Database["public"]["Enums"]["brazilian_state"]
           status?: Database["public"]["Enums"]["project_status"]
           updated_at?: string
@@ -212,13 +280,20 @@ export type Database = {
           city?: string
           company_name?: string
           contract_date?: string
+          contractual_deadline_days?: number | null
           created_at?: string
           created_by?: string | null
           d_zero_date?: string | null
           executive_id?: string | null
+          filled_by?: string | null
+          fleet_size?: number | null
           handover_date?: string | null
           id?: string
+          implementation_deadline_days?: number | null
+          is_pilot?: boolean
           manager_id?: string | null
+          pilot_info?: string | null
+          project_type_id?: string | null
           state?: Database["public"]["Enums"]["brazilian_state"]
           status?: Database["public"]["Enums"]["project_status"]
           updated_at?: string
@@ -238,7 +313,35 @@ export type Database = {
             referencedRelation: "team_members"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "projects_project_type_id_fkey"
+            columns: ["project_type_id"]
+            isOneToOne: false
+            referencedRelation: "project_types"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      solutions: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
       }
       team_members: {
         Row: {

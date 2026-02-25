@@ -1,21 +1,23 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { ArrowLeft, Edit2, Save, X, CalendarIcon, Upload, FileText, Trash2 } from "lucide-react";
+import { format, addDays } from "date-fns";
+import { ArrowLeft, Edit2, Save, X, CalendarIcon, Upload, FileText, Trash2, Info } from "lucide-react";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -38,7 +40,7 @@ export default function ProjectDetail() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Edit state
+  // Edit state - existing
   const [companyName, setCompanyName] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState<BrazilianState>("SP");
@@ -50,15 +52,37 @@ export default function ProjectDetail() {
   const [status, setStatus] = useState<ProjectStatus>("planejamento");
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
+  // Edit state - new fields
+  const [projectTypeId, setProjectTypeId] = useState("");
+  const [selectedSolutions, setSelectedSolutions] = useState<string[]>([]);
+  const [fleetSize, setFleetSize] = useState<string>("");
+  const [implDeadlineDays, setImplDeadlineDays] = useState<string>("");
+  const [contractualDeadlineDays, setContractualDeadlineDays] = useState<string>("");
+  const [isPilot, setIsPilot] = useState(false);
+  const [pilotInfo, setPilotInfo] = useState("");
+
+  // Lookups
   const [executives, setExecutives] = useState<{ id: string; full_name: string }[]>([]);
   const [managers, setManagers] = useState<{ id: string; full_name: string }[]>([]);
   const [allProducts, setAllProducts] = useState<{ id: string; name: string }[]>([]);
+  const [projectTypes, setProjectTypes] = useState<{ id: string; name: string }[]>([]);
+  const [allSolutions, setAllSolutions] = useState<{ id: string; name: string }[]>([]);
+
+  const implEndDate = useMemo(() => {
+    if (contractDate && implDeadlineDays && parseInt(implDeadlineDays) > 0) return addDays(contractDate, parseInt(implDeadlineDays));
+    return null;
+  }, [contractDate, implDeadlineDays]);
+
+  const contractEndDate = useMemo(() => {
+    if (contractDate && contractualDeadlineDays && parseInt(contractualDeadlineDays) > 0) return addDays(contractDate, parseInt(contractualDeadlineDays));
+    return null;
+  }, [contractDate, contractualDeadlineDays]);
 
   const loadProject = async () => {
     if (!id) return;
     const { data } = await supabase
       .from("projects")
-      .select("*, executive:team_members!projects_executive_id_fkey(id,full_name), manager:team_members!projects_manager_id_fkey(id,full_name), project_products(product_id, product:products(id,name))")
+      .select("*, executive:team_members!projects_executive_id_fkey(id,full_name), manager:team_members!projects_manager_id_fkey(id,full_name), project_products(product_id, product:products(id,name)), project_type:project_types(id,name), project_solutions(solution_id, solution:solutions(id,name))")
       .eq("id", id).single();
     if (data) {
       setProject(data);
@@ -72,6 +96,13 @@ export default function ProjectDetail() {
       setManagerId(data.manager?.id || "");
       setStatus(data.status);
       setSelectedProducts(data.project_products?.map((pp: any) => pp.product_id) || []);
+      setProjectTypeId(data.project_type_id || "");
+      setSelectedSolutions(data.project_solutions?.map((ps: any) => ps.solution_id) || []);
+      setFleetSize(data.fleet_size?.toString() || "");
+      setImplDeadlineDays(data.implementation_deadline_days?.toString() || "");
+      setContractualDeadlineDays(data.contractual_deadline_days?.toString() || "");
+      setIsPilot(data.is_pilot || false);
+      setPilotInfo(data.pilot_info || "");
     }
     setLoading(false);
   };
@@ -85,14 +116,26 @@ export default function ProjectDetail() {
     supabase.from("team_members").select("id, full_name").eq("role", "executivo_vendas").eq("active", true).then(({ data }) => setExecutives(data || []));
     supabase.from("team_members").select("id, full_name").eq("role", "gerente_projetos").eq("active", true).then(({ data }) => setManagers(data || []));
     supabase.from("products").select("id, name").eq("active", true).then(({ data }) => setAllProducts(data || []));
+    supabase.from("project_types").select("id, name").eq("active", true).then(({ data }) => setProjectTypes(data || []));
+    supabase.from("solutions").select("id, name").eq("active", true).then(({ data }) => setAllSolutions(data || []));
   }, [id]);
 
   const handleSave = async () => {
     if (!id) return;
+    if (!projectTypeId) { toast({ title: "Selecione o Tipo do Projeto", variant: "destructive" }); return; }
+    if (selectedSolutions.length === 0) { toast({ title: "Selecione pelo menos uma Solução", variant: "destructive" }); return; }
+    const fleet = parseInt(fleetSize);
+    if (!fleetSize || isNaN(fleet) || fleet < 1) { toast({ title: "Informe a Frota Contratada", variant: "destructive" }); return; }
+    const implDays = parseInt(implDeadlineDays);
+    if (!implDeadlineDays || isNaN(implDays) || implDays < 1) { toast({ title: "Informe o Prazo de Implantação", variant: "destructive" }); return; }
+    const contrDays = parseInt(contractualDeadlineDays);
+    if (!contractualDeadlineDays || isNaN(contrDays) || contrDays < 1) { toast({ title: "Informe o Prazo Contratual", variant: "destructive" }); return; }
+    if (isPilot && !pilotInfo.trim()) { toast({ title: "Informe as informações do Piloto", variant: "destructive" }); return; }
+
     setSaving(true);
     try {
       const oldValues = { company_name: project.company_name, city: project.city, state: project.state, status: project.status };
-      const newValues = { company_name: companyName, city, state, status };
+      const newValues = { company_name: companyName, city, state, status, fleet_size: fleet, is_pilot: isPilot };
 
       const { error } = await supabase.from("projects").update({
         company_name: companyName, city, state,
@@ -100,6 +143,12 @@ export default function ProjectDetail() {
         d_zero_date: dZeroDate ? format(dZeroDate, "yyyy-MM-dd") : null,
         handover_date: handoverDate ? format(handoverDate, "yyyy-MM-dd") : null,
         executive_id: executiveId || null, manager_id: managerId || null, status,
+        project_type_id: projectTypeId || null,
+        fleet_size: fleet,
+        implementation_deadline_days: implDays,
+        contractual_deadline_days: contrDays,
+        is_pilot: isPilot,
+        pilot_info: isPilot ? pilotInfo : null,
       }).eq("id", id);
       if (error) throw error;
 
@@ -107,6 +156,12 @@ export default function ProjectDetail() {
       await supabase.from("project_products").delete().eq("project_id", id);
       if (selectedProducts.length > 0) {
         await supabase.from("project_products").insert(selectedProducts.map(pid => ({ project_id: id, product_id: pid })));
+      }
+
+      // Update solutions
+      await supabase.from("project_solutions").delete().eq("project_id", id);
+      if (selectedSolutions.length > 0) {
+        await supabase.from("project_solutions").insert(selectedSolutions.map(sid => ({ project_id: id, solution_id: sid })));
       }
 
       await supabase.from("project_history").insert({ project_id: id, change_type: "updated", changed_by: user?.id || null, old_values: oldValues, new_values: newValues });
@@ -160,12 +215,20 @@ export default function ProjectDetail() {
     </div>
   );
 
-  // Timeline data
+  const HelperText = ({ children }: { children: React.ReactNode }) => (
+    <p className="text-xs text-muted-foreground flex items-center gap-1">
+      <Info className="h-3 w-3" /> {children}
+    </p>
+  );
+
   const timeline = [
     { label: "Contratação", date: project.contract_date, done: true },
     { label: "D-zero", date: project.d_zero_date, done: !!project.d_zero_date },
     { label: "Handover", date: project.handover_date, done: !!project.handover_date },
   ];
+
+  const projectTypeName = project.project_type?.name || "—";
+  const solutionNames = project.project_solutions?.map((ps: any) => ps.solution?.name).filter(Boolean) || [];
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -204,8 +267,9 @@ export default function ProjectDetail() {
         </CardContent>
       </Card>
 
-      {/* Details */}
+      {/* Details Grid */}
       <div className="grid gap-6 md:grid-cols-2 mb-6">
+        {/* Dados Gerais */}
         <Card>
           <CardHeader><CardTitle className="text-lg">Dados Gerais</CardTitle></CardHeader>
           <CardContent className="space-y-3">
@@ -222,6 +286,17 @@ export default function ProjectDetail() {
                     </Select>
                   </div>
                 </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Tipo do Projeto</Label>
+                  <Select value={projectTypeId} onValueChange={setProjectTypeId}>
+                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                    <SelectContent>{projectTypes.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Frota Contratada</Label>
+                  <Input type="number" min={1} step={1} value={fleetSize} onChange={e => setFleetSize(e.target.value)} />
+                </div>
                 <DateField label="Contratação" date={contractDate} onSelect={d => d && setContractDate(d)} />
                 <DateField label="D-zero" date={dZeroDate} onSelect={setDZeroDate} />
                 <DateField label="Handover" date={handoverDate} onSelect={setHandoverDate} />
@@ -237,6 +312,8 @@ export default function ProjectDetail() {
               <>
                 <div><span className="text-xs text-muted-foreground">Empresa</span><p className="font-medium">{project.company_name}</p></div>
                 <div><span className="text-xs text-muted-foreground">Localização</span><p>{project.city} / {project.state}</p></div>
+                <div><span className="text-xs text-muted-foreground">Tipo do Projeto</span><p>{projectTypeName}</p></div>
+                <div><span className="text-xs text-muted-foreground">Frota Contratada</span><p>{project.fleet_size ?? "—"} veículos</p></div>
                 <div><span className="text-xs text-muted-foreground">Contratação</span><p>{fmtDate(project.contract_date)}</p></div>
                 <div className="grid grid-cols-2 gap-3">
                   <div><span className="text-xs text-muted-foreground">D-zero</span><p>{fmtDate(project.d_zero_date)}</p></div>
@@ -248,8 +325,9 @@ export default function ProjectDetail() {
           </CardContent>
         </Card>
 
+        {/* Equipe, Soluções & Produtos */}
         <Card>
-          <CardHeader><CardTitle className="text-lg">Equipe & Produtos</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-lg">Equipe, Soluções & Produtos</CardTitle></CardHeader>
           <CardContent className="space-y-3">
             {editing ? (
               <>
@@ -268,6 +346,16 @@ export default function ProjectDetail() {
                   </Select>
                 </div>
                 <Separator />
+                <Label className="text-xs text-muted-foreground">Soluções</Label>
+                <div className="grid gap-1">
+                  {allSolutions.map(s => (
+                    <div key={s.id} className="flex items-center gap-2">
+                      <Checkbox checked={selectedSolutions.includes(s.id)} onCheckedChange={c => setSelectedSolutions(prev => c ? [...prev, s.id] : prev.filter(x => x !== s.id))} />
+                      <span className="text-sm">{s.name}</span>
+                    </div>
+                  ))}
+                </div>
+                <Separator />
                 <Label className="text-xs text-muted-foreground">Produtos</Label>
                 <div className="grid gap-1">
                   {allProducts.map(p => (
@@ -284,6 +372,15 @@ export default function ProjectDetail() {
                 <div><span className="text-xs text-muted-foreground">Gerente de Projetos</span><p>{project.manager?.full_name || "—"}</p></div>
                 <Separator />
                 <div>
+                  <span className="text-xs text-muted-foreground">Soluções</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {solutionNames.length > 0
+                      ? solutionNames.map((name: string, i: number) => <Badge key={i} variant="default">{name}</Badge>)
+                      : <span className="text-sm text-muted-foreground">Nenhuma</span>}
+                  </div>
+                </div>
+                <Separator />
+                <div>
                   <span className="text-xs text-muted-foreground">Produtos Contratados</span>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {project.project_products?.length > 0
@@ -291,6 +388,73 @@ export default function ProjectDetail() {
                       : <span className="text-sm text-muted-foreground">Nenhum</span>}
                   </div>
                 </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Prazos & Piloto */}
+      <div className="grid gap-6 md:grid-cols-2 mb-6">
+        <Card>
+          <CardHeader><CardTitle className="text-lg">Prazos</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {editing ? (
+              <>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Prazo de Implantação (dias)</Label>
+                  <Input type="number" min={1} step={1} value={implDeadlineDays} onChange={e => setImplDeadlineDays(e.target.value)} />
+                  {implEndDate && <HelperText>Finalização prevista: {format(implEndDate, "dd/MM/yyyy")}</HelperText>}
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Prazo Contratual (dias)</Label>
+                  <Input type="number" min={1} step={1} value={contractualDeadlineDays} onChange={e => setContractualDeadlineDays(e.target.value)} />
+                  {contractEndDate && <HelperText>Fim do contrato: {format(contractEndDate, "dd/MM/yyyy")}</HelperText>}
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <span className="text-xs text-muted-foreground">Prazo de Implantação</span>
+                  <p>{project.implementation_deadline_days ? `${project.implementation_deadline_days} dias` : "—"}</p>
+                  {project.implementation_deadline_days && project.contract_date && (
+                    <HelperText>Finalização prevista: {format(addDays(new Date(project.contract_date + "T00:00:00"), project.implementation_deadline_days), "dd/MM/yyyy")}</HelperText>
+                  )}
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground">Prazo Contratual</span>
+                  <p>{project.contractual_deadline_days ? `${project.contractual_deadline_days} dias` : "—"}</p>
+                  {project.contractual_deadline_days && project.contract_date && (
+                    <HelperText>Fim do contrato: {format(addDays(new Date(project.contract_date + "T00:00:00"), project.contractual_deadline_days), "dd/MM/yyyy")}</HelperText>
+                  )}
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle className="text-lg">Piloto</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {editing ? (
+              <>
+                <div className="flex items-center gap-3">
+                  <Switch checked={isPilot} onCheckedChange={setIsPilot} />
+                  <Label>Projeto é piloto?</Label>
+                </div>
+                {isPilot && (
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Informação Adicional</Label>
+                    <Textarea value={pilotInfo} onChange={e => setPilotInfo(e.target.value)} rows={3} maxLength={2000} />
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div><span className="text-xs text-muted-foreground">Projeto Piloto</span><p>{project.is_pilot ? "Sim" : "Não"}</p></div>
+                {project.is_pilot && project.pilot_info && (
+                  <div><span className="text-xs text-muted-foreground">Informação Adicional</span><p className="text-sm">{project.pilot_info}</p></div>
+                )}
               </>
             )}
           </CardContent>

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FolderKanban, HardHat, BookOpen, Activity, Wifi, Signal, ArrowRight } from "lucide-react";
+import { FolderKanban, HardHat, BookOpen, Wifi, Signal, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Dashboard() {
@@ -71,26 +71,6 @@ export default function Dashboard() {
         <div className="absolute top-0 left-1/2 w-32 h-32 bg-primary/5 rounded-full blur-2xl" />
       </div>
 
-      {/* Stats bar */}
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: "Projetos Ativos", value: projectCount, icon: Activity },
-          { label: "Sinal do Sistema", value: "Online", icon: Wifi },
-          { label: "Módulos", value: "3", icon: Signal },
-        ].map(stat => (
-          <Card key={stat.label} className="border-border/50">
-            <CardContent className="flex items-center gap-3 p-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                <stat.icon className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold leading-none">{stat.value}</p>
-                <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
 
       {/* Module cards */}
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

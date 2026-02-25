@@ -150,3 +150,24 @@
   0% { transform: translateY(-100%); }
   100% { transform: translateY(100%); }
 }
+
+/* Bus animations */
+@keyframes bus-move-right {
+  0% { transform: translateX(-150px); opacity: 0; }
+  5% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(calc(100vw + 150px)); opacity: 0; }
+}
+
+@keyframes bus-move-left {
+  0% { transform: translateX(calc(100vw + 150px)); opacity: 0; }
+  5% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(-150px); opacity: 0; }
+}
+
+@keyframes road-line {
+  0% { opacity: 0; transform: scaleX(0); }
+  50% { opacity: 1; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(0); }
+}

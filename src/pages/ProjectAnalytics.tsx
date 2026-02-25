@@ -264,15 +264,21 @@ export default function ProjectAnalytics() {
     return filteredProjects
       .filter(p => p.d_zero_date)
       .map(p => {
-        const start = parseISO(p.contract_date);
+        const contract = parseISO(p.contract_date);
         const dzero = parseISO(p.d_zero_date!);
-        const end = p.handover_date ? parseISO(p.handover_date) : new Date();
+        const handover = p.handover_date ? parseISO(p.handover_date) : null;
+        const contratoDzero = differenceInDays(dzero, contract);
+        const dzeroHandover = handover ? differenceInDays(handover, dzero) : 0;
+        const total = contratoDzero + dzeroHandover;
         return {
-          name: p.company_name.length > 18 ? p.company_name.substring(0, 18) + "…" : p.company_name,
-          contratoDzero: differenceInDays(dzero, start),
-          dzeroHandover: differenceInDays(end, dzero),
+          name: p.company_name.length > 20 ? p.company_name.substring(0, 20) + "…" : p.company_name,
+          contratoDzero,
+          dzeroHandover,
+          total,
+          hasHandover: !!handover,
         };
       })
+      .sort((a, b) => b.total - a.total)
       .slice(0, 10);
   }, [filteredProjects]);
 
@@ -298,6 +304,33 @@ export default function ProjectAnalytics() {
   const durationConfig: ChartConfig = {
     contratoDzero: { label: "Contrato → D-Zero", color: "hsl(28 90% 52%)" },
     dzeroHandover: { label: "D-Zero → Handover", color: "hsl(190 80% 50%)" },
+  };
+
+  const timelineCustomTooltip = ({ active, payload }: any) => {
+    if (!active || !payload?.length) return null;
+    const data = payload[0]?.payload;
+    if (!data) return null;
+    return (
+      <div className="rounded-lg border border-border/50 bg-background px-3 py-2 text-xs shadow-xl space-y-1.5">
+        <p className="font-semibold text-sm">{data.name}</p>
+        <div className="flex items-center gap-2">
+          <div className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: "hsl(28 90% 52%)" }} />
+          <span className="text-muted-foreground">Contrato → D-Zero:</span>
+          <span className="font-bold">{data.contratoDzero} dias</span>
+        </div>
+        {data.hasHandover && (
+          <div className="flex items-center gap-2">
+            <div className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: "hsl(190 80% 50%)" }} />
+            <span className="text-muted-foreground">D-Zero → Handover:</span>
+            <span className="font-bold">{data.dzeroHandover} dias</span>
+          </div>
+        )}
+        <div className="border-t border-border/50 pt-1 flex items-center gap-2">
+          <span className="text-muted-foreground">Total:</span>
+          <span className="font-bold">{data.total} dias</span>
+        </div>
+      </div>
+    );
   };
   const genericConfig: ChartConfig = { value: { label: "Projetos" }, count: { label: "Projetos" } };
 
@@ -572,18 +605,28 @@ export default function ProjectAnalytics() {
       <div className="grid lg:grid-cols-2 gap-6">
         <GlowCard>
           <div className="p-5">
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-2">
               <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Duração (dias)</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Linha do Tempo (dias)</h3>
             </div>
-            <ChartContainer config={durationConfig} className="h-[280px]">
-              <BarChart data={durationData} layout="vertical" barGap={0} barCategoryGap="20%">
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="contratoDzero" stackId="a" fill="hsl(28 90% 52%)" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="dzeroHandover" stackId="a" fill="hsl(190 80% 50%)" radius={[0, 6, 6, 0]} />
+            <div className="flex items-center gap-4 mb-4">
+              <div className="flex items-center gap-1.5">
+                <div className="h-2.5 w-6 rounded-sm" style={{ backgroundColor: "hsl(28 90% 52%)" }} />
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Contrato → D-Zero</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="h-2.5 w-6 rounded-sm" style={{ backgroundColor: "hsl(190 80% 50%)" }} />
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">D-Zero → Handover</span>
+              </div>
+            </div>
+            <ChartContainer config={durationConfig} className="h-[320px]">
+              <BarChart data={durationData} layout="vertical" barGap={0} barCategoryGap="30%" margin={{ left: 10, right: 40 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} label={{ value: "dias", position: "insideBottomRight", offset: -5, style: { fontSize: 10, fill: "hsl(var(--muted-foreground))" } }} />
+                <YAxis type="category" dataKey="name" width={140} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <ChartTooltip content={timelineCustomTooltip} />
+                <Bar dataKey="contratoDzero" stackId="timeline" fill="hsl(28 90% 52%)" radius={[0, 0, 0, 0]} />
+                <Bar dataKey="dzeroHandover" stackId="timeline" fill="hsl(190 80% 50%)" radius={[0, 6, 6, 0]} label={{ position: "right", fontSize: 10, fill: "hsl(var(--muted-foreground))", formatter: (_: any, __: any, index: number) => `${durationData[index]?.total}d` }} />
               </BarChart>
             </ChartContainer>
           </div>

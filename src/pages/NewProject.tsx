@@ -340,7 +340,7 @@ export default function NewProject() {
           <CardHeader><CardTitle className="text-lg">Equipe</CardTitle></CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Executivo de Vendas</Label>
+              <Label>Gerente Comercial</Label>
               <Select value={executiveId} onValueChange={setExecutiveId}>
                 <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                 <SelectContent>

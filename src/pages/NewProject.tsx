@@ -16,7 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon, ArrowLeft, Save, Info } from "lucide-react";
+import { CalendarIcon, ArrowLeft, Save, Info, Upload, FileText, X } from "lucide-react";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -56,6 +56,21 @@ export default function NewProject() {
   const [contractualDeadlineDays, setContractualDeadlineDays] = useState<string>("");
   const [isPilot, setIsPilot] = useState(false);
   const [pilotInfo, setPilotInfo] = useState("");
+
+  // Anexos por categoria
+  const ATTACHMENT_CATEGORIES = [
+    { key: "contrato", label: "Contrato" },
+    { key: "proposta", label: "Proposta Comercial" },
+    { key: "ata", label: "Ata de Reunião" },
+    { key: "outros", label: "Demais Documentos" },
+  ] as const;
+
+  const [attachmentFiles, setAttachmentFiles] = useState<Record<string, File[]>>({
+    contrato: [],
+    proposta: [],
+    ata: [],
+    outros: [],
+  });
 
   // Lookups (hardcoded)
   const [executives, setExecutives] = useState<{ id: string; full_name: string }[]>([]);
@@ -163,6 +178,24 @@ export default function NewProject() {
         changed_by: user?.id || null,
         new_values: { company_name: companyName, city, state, status, fleet_size: fleet, is_pilot: isPilot },
       });
+
+      // Upload de anexos
+      for (const cat of ATTACHMENT_CATEGORIES) {
+        const files = attachmentFiles[cat.key];
+        for (const file of files) {
+          const path = `${project.id}/${Date.now()}_${file.name}`;
+          const { error: upErr } = await supabase.storage.from("project-attachments").upload(path, file);
+          if (upErr) continue;
+          await supabase.from("project_attachments").insert({
+            project_id: project.id,
+            file_name: `[${cat.label}] ${file.name}`,
+            file_path: path,
+            file_size: file.size,
+            content_type: file.type,
+            uploaded_by: user?.id || null,
+          });
+        }
+      }
 
       toast({ title: "Projeto criado com sucesso!" });
       navigate("/projetos/lista");
@@ -398,6 +431,70 @@ export default function NewProject() {
                 ))}
               </SelectContent>
             </Select>
+          </CardContent>
+        </Card>
+
+        {/* === SEÇÃO: ANEXOS === */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Anexos</CardTitle>
+            <CardDescription>Anexe documentos relacionados ao projeto (máx. 20MB cada)</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            {ATTACHMENT_CATEGORIES.map(cat => {
+              const files = attachmentFiles[cat.key];
+              const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                const newFiles = e.target.files;
+                if (!newFiles) return;
+                const validFiles = Array.from(newFiles).filter(f => f.size <= 20 * 1024 * 1024);
+                if (validFiles.length < (newFiles?.length || 0)) {
+                  toast({ title: "Arquivos acima de 20MB foram ignorados", variant: "destructive" });
+                }
+                setAttachmentFiles(prev => ({
+                  ...prev,
+                  [cat.key]: [...prev[cat.key], ...validFiles],
+                }));
+                e.target.value = "";
+              };
+              const removeFile = (idx: number) => {
+                setAttachmentFiles(prev => ({
+                  ...prev,
+                  [cat.key]: prev[cat.key].filter((_, i) => i !== idx),
+                }));
+              };
+              return (
+                <div key={cat.key} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">{cat.label}</Label>
+                    <label>
+                      <input type="file" className="hidden" onChange={handleFileChange} multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt,.csv" />
+                      <Button type="button" size="sm" variant="outline" asChild>
+                        <span><Upload className="mr-1 h-3.5 w-3.5" /> Anexar</span>
+                      </Button>
+                    </label>
+                  </div>
+                  {files.length > 0 && (
+                    <div className="space-y-1.5">
+                      {files.map((file, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-2 rounded border bg-muted/30">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <span className="text-sm truncate">{file.name}</span>
+                            <span className="text-xs text-muted-foreground shrink-0">{(file.size / 1024).toFixed(0)} KB</span>
+                          </div>
+                          <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeFile(idx)}>
+                            <X className="h-3.5 w-3.5 text-destructive" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {files.length === 0 && (
+                    <p className="text-xs text-muted-foreground italic">Nenhum arquivo anexado</p>
+                  )}
+                </div>
+              );
+            })}
           </CardContent>
         </Card>
 

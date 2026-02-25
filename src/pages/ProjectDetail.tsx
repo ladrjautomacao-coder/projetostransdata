@@ -175,17 +175,25 @@ export default function ProjectDetail() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewName, setPreviewName] = useState("");
 
-  const MAX_ATTACHMENTS = 10;
+  const ATTACHMENT_CATEGORIES = [
+    { key: "contrato", label: "Contrato", prefix: "[Contrato]" },
+    { key: "proposta", label: "Proposta Comercial", prefix: "[Proposta Comercial]" },
+    { key: "ata", label: "Ata de Reunião", prefix: "[Ata de Reunião]" },
+    { key: "outros", label: "Demais Documentos", prefix: "[Demais Documentos]" },
+  ];
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const getAttachmentsForCategory = (prefix: string) => {
+    return attachments.filter(a => a.file_name?.startsWith(prefix));
+  };
+
+  const getUncategorizedAttachments = () => {
+    const prefixes = ATTACHMENT_CATEGORIES.map(c => c.prefix);
+    return attachments.filter(a => !prefixes.some(p => a.file_name?.startsWith(p)));
+  };
+
+  const handleCategoryUpload = async (category: typeof ATTACHMENT_CATEGORIES[0], e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || !id) return;
-
-    if (attachments.length + files.length > MAX_ATTACHMENTS) {
-      toast({ title: `Máximo de ${MAX_ATTACHMENTS} anexos permitidos`, variant: "destructive" });
-      e.target.value = "";
-      return;
-    }
 
     setUploading(true);
     try {
@@ -197,7 +205,14 @@ export default function ProjectDetail() {
         const path = `${id}/${Date.now()}_${file.name}`;
         const { error: upErr } = await supabase.storage.from("project-attachments").upload(path, file);
         if (upErr) { toast({ title: "Erro no upload", description: upErr.message, variant: "destructive" }); continue; }
-        await supabase.from("project_attachments").insert({ project_id: id, file_name: file.name, file_path: path, file_size: file.size, content_type: file.type, uploaded_by: user?.id || null });
+        await supabase.from("project_attachments").insert({
+          project_id: id,
+          file_name: `${category.prefix} ${file.name}`,
+          file_path: path,
+          file_size: file.size,
+          content_type: file.type,
+          uploaded_by: user?.id || null,
+        });
       }
       toast({ title: "Arquivo(s) anexado(s)!" });
       supabase.from("project_attachments").select("*").eq("project_id", id).order("created_at", { ascending: false }).then(({ data }) => setAttachments(data || []));
@@ -482,54 +497,97 @@ export default function ProjectDetail() {
         </Card>
       </div>
 
-      {/* Attachments */}
+      {/* Attachments - Categorized */}
       <Card className="mb-6">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-lg">Anexos</CardTitle>
-            <CardDescription className="text-xs">{attachments.length}/{MAX_ATTACHMENTS} arquivos</CardDescription>
-          </div>
-          {attachments.length < MAX_ATTACHMENTS && (
-            <label>
-              <input type="file" className="hidden" onChange={handleUpload} multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt,.csv" />
-              <Button size="sm" variant="outline" asChild disabled={uploading}>
-                <span><Upload className="mr-1 h-4 w-4" /> {uploading ? "Enviando..." : "Upload"}</span>
-              </Button>
-            </label>
-          )}
+        <CardHeader>
+          <CardTitle className="text-lg">Anexos</CardTitle>
+          <CardDescription className="text-xs">Anexe documentos relacionados ao projeto (máx. 20MB cada)</CardDescription>
         </CardHeader>
-        <CardContent>
-          {attachments.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum anexo.</p>
-          ) : (
-            <div className="space-y-2">
-              {attachments.map(att => {
-                const isPdf = att.content_type === "application/pdf" || att.file_name?.toLowerCase().endsWith(".pdf");
-                const isImage = att.content_type?.startsWith("image/");
-                const canPreview = isPdf || isImage;
-                return (
-                  <div key={att.id} className="flex items-center justify-between p-2 rounded border">
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <span className="text-sm truncate">{att.file_name}</span>
-                      <span className="text-xs text-muted-foreground shrink-0">{att.file_size ? `${(att.file_size / 1024).toFixed(0)} KB` : ""}</span>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      {canPreview && (
-                        <Button variant="ghost" size="icon" onClick={() => handlePreview(att)} title="Visualizar">
-                          <Eye className="h-4 w-4 text-primary" />
-                        </Button>
-                      )}
-                      <Button variant="ghost" size="icon" onClick={() => handleDownload(att)} title="Baixar">
-                        <Download className="h-4 w-4 text-muted-foreground" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDeleteAttachment(att)} title="Excluir">
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
+        <CardContent className="space-y-5">
+          {ATTACHMENT_CATEGORIES.map(cat => {
+            const catFiles = getAttachmentsForCategory(cat.prefix);
+            return (
+              <div key={cat.key} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">{cat.label}</Label>
+                  <label>
+                    <input type="file" className="hidden" onChange={e => handleCategoryUpload(cat, e)} multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt,.csv" />
+                    <Button size="sm" variant="outline" asChild disabled={uploading}>
+                      <span><Upload className="mr-1 h-3.5 w-3.5" /> Anexar</span>
+                    </Button>
+                  </label>
+                </div>
+                {catFiles.length > 0 ? (
+                  <div className="space-y-1.5">
+                    {catFiles.map(att => {
+                      const isPdf = att.content_type === "application/pdf" || att.file_name?.toLowerCase().endsWith(".pdf");
+                      const isImage = att.content_type?.startsWith("image/");
+                      const canPreview = isPdf || isImage;
+                      const displayName = att.file_name?.replace(cat.prefix + " ", "") || att.file_name;
+                      return (
+                        <div key={att.id} className="flex items-center justify-between p-2 rounded border bg-muted/30">
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <span className="text-sm truncate">{displayName}</span>
+                            <span className="text-xs text-muted-foreground shrink-0">{att.file_size ? `${(att.file_size / 1024).toFixed(0)} KB` : ""}</span>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {canPreview && (
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePreview(att)} title="Visualizar">
+                                <Eye className="h-4 w-4 text-primary" />
+                              </Button>
+                            )}
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDownload(att)} title="Baixar">
+                              <Download className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDeleteAttachment(att)} title="Excluir">
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">Nenhum arquivo anexado</p>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Uncategorized attachments (legacy) */}
+          {getUncategorizedAttachments().length > 0 && (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Outros (anteriores)</Label>
+              <div className="space-y-1.5">
+                {getUncategorizedAttachments().map(att => {
+                  const isPdf = att.content_type === "application/pdf" || att.file_name?.toLowerCase().endsWith(".pdf");
+                  const isImage = att.content_type?.startsWith("image/");
+                  const canPreview = isPdf || isImage;
+                  return (
+                    <div key={att.id} className="flex items-center justify-between p-2 rounded border bg-muted/30">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-sm truncate">{att.file_name}</span>
+                        <span className="text-xs text-muted-foreground shrink-0">{att.file_size ? `${(att.file_size / 1024).toFixed(0)} KB` : ""}</span>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {canPreview && (
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePreview(att)} title="Visualizar">
+                            <Eye className="h-4 w-4 text-primary" />
+                          </Button>
+                        )}
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDownload(att)} title="Baixar">
+                          <Download className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDeleteAttachment(att)} title="Excluir">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </CardContent>

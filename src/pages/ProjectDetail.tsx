@@ -152,12 +152,6 @@ export default function ProjectDetail() {
       }).eq("id", id);
       if (error) throw error;
 
-      // Update products
-      await supabase.from("project_products").delete().eq("project_id", id);
-      if (selectedProducts.length > 0) {
-        await supabase.from("project_products").insert(selectedProducts.map(pid => ({ project_id: id, product_id: pid })));
-      }
-
       // Update solutions
       await supabase.from("project_solutions").delete().eq("project_id", id);
       if (selectedSolutions.length > 0) {
@@ -325,9 +319,9 @@ export default function ProjectDetail() {
           </CardContent>
         </Card>
 
-        {/* Equipe, Soluções & Produtos */}
+        {/* Equipe & Soluções */}
         <Card>
-          <CardHeader><CardTitle className="text-lg">Equipe, Soluções & Produtos</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-lg">Equipe & Soluções</CardTitle></CardHeader>
           <CardContent className="space-y-3">
             {editing ? (
               <>
@@ -355,16 +349,6 @@ export default function ProjectDetail() {
                     </div>
                   ))}
                 </div>
-                <Separator />
-                <Label className="text-xs text-muted-foreground">Produtos</Label>
-                <div className="grid gap-1">
-                  {allProducts.map(p => (
-                    <div key={p.id} className="flex items-center gap-2">
-                      <Checkbox checked={selectedProducts.includes(p.id)} onCheckedChange={c => setSelectedProducts(prev => c ? [...prev, p.id] : prev.filter(x => x !== p.id))} />
-                      <span className="text-sm">{p.name}</span>
-                    </div>
-                  ))}
-                </div>
               </>
             ) : (
               <>
@@ -379,15 +363,7 @@ export default function ProjectDetail() {
                       : <span className="text-sm text-muted-foreground">Nenhuma</span>}
                   </div>
                 </div>
-                <Separator />
-                <div>
-                  <span className="text-xs text-muted-foreground">Produtos Contratados</span>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {project.project_products?.length > 0
-                      ? project.project_products.map((pp: any, i: number) => <Badge key={i} variant="secondary">{pp.product?.name}</Badge>)
-                      : <span className="text-sm text-muted-foreground">Nenhum</span>}
-                  </div>
-                </div>
+              
               </>
             )}
           </CardContent>

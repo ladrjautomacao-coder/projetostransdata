@@ -18,6 +18,7 @@ import TeamMembers from "./pages/TeamMembers";
 import Products from "./pages/Products";
 import Implantacao from "./pages/Implantacao";
 import AcervoTecnico from "./pages/AcervoTecnico";
+import ProjectAnalytics from "./pages/ProjectAnalytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
               <Route path="/projetos" element={<Projects />} />
               <Route path="/projetos/novo" element={<NewProject />} />
               <Route path="/projetos/lista" element={<ProjectList />} />
+              <Route path="/projetos/analitico" element={<ProjectAnalytics />} />
               <Route path="/projetos/:id" element={<ProjectDetail />} />
               <Route path="/implantacao" element={<Implantacao />} />
               <Route path="/acervo" element={<AcervoTecnico />} />

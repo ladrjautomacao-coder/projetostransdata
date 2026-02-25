@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, List } from "lucide-react";
+import { Plus, List, BarChart3 } from "lucide-react";
 
 export default function Projects() {
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ export default function Projects() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Projetos</h1>
-      <div className="grid gap-6 sm:grid-cols-2 max-w-2xl">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-4xl">
         <Card className="cursor-pointer hover:shadow-md hover:border-primary/30 transition-all" onClick={() => navigate("/projetos/novo")}>
           <CardContent className="flex flex-col items-center text-center p-8 gap-3">
             <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -26,6 +26,15 @@ export default function Projects() {
             </div>
             <h2 className="text-lg font-semibold">Visualizar Projetos</h2>
             <p className="text-sm text-muted-foreground">Veja e gerencie os projetos existentes</p>
+          </CardContent>
+        </Card>
+        <Card className="cursor-pointer hover:shadow-md hover:border-primary/30 transition-all glow-orange" onClick={() => navigate("/projetos/analitico")}>
+          <CardContent className="flex flex-col items-center text-center p-8 gap-3">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 text-primary pulse-glow">
+              <BarChart3 className="h-7 w-7" />
+            </div>
+            <h2 className="text-lg font-semibold">Visão Analítica</h2>
+            <p className="text-sm text-muted-foreground">Dashboard com gráficos e métricas dos projetos</p>
           </CardContent>
         </Card>
       </div>

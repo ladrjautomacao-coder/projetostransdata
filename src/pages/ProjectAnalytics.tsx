@@ -150,11 +150,11 @@ export default function ProjectAnalytics() {
     return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([state, count]) => ({ state, count }));
   }, [filteredProjects]);
 
-  const productData = useMemo(() => {
+  const solutionData = useMemo(() => {
     const counts: Record<string, number> = {};
     filteredProjects.forEach(p => {
-      p.project_products?.forEach(pp => {
-        const name = pp.product?.name || "Sem produto";
+      p.project_solutions?.forEach(ps => {
+        const name = ps.solution?.name || "Sem solução";
         counts[name] = (counts[name] || 0) + 1;
       });
     });
@@ -332,13 +332,13 @@ export default function ProjectAnalytics() {
           <div className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Produtos</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Soluções</h3>
             </div>
             <div className="flex items-center gap-6">
               <ChartContainer config={genericConfig} className="h-[220px] flex-1">
                 <PieChart>
                   <Pie
-                    data={productData}
+                    data={solutionData}
                     cx="50%"
                     cy="50%"
                     innerRadius={45}
@@ -348,7 +348,7 @@ export default function ProjectAnalytics() {
                     nameKey="name"
                     strokeWidth={0}
                   >
-                    {productData.map((entry, i) => (
+                    {solutionData.map((entry, i) => (
                       <Cell key={i} fill={entry.fill} />
                     ))}
                   </Pie>
@@ -356,7 +356,7 @@ export default function ProjectAnalytics() {
                 </PieChart>
               </ChartContainer>
               <div className="flex flex-col gap-2 min-w-[120px] max-h-[220px] overflow-auto">
-                {productData.map((d, i) => (
+                {solutionData.map((d, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: d.fill }} />
                     <span className="text-xs text-muted-foreground truncate">{d.name}</span>
@@ -511,12 +511,12 @@ export default function ProjectAnalytics() {
                   </div>
                 ))}
                 <div className="sm:col-span-2">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] mb-1">Produtos</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] mb-1">Soluções</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {p.project_products?.map((pp, i) => (
-                      <Badge key={i} variant="secondary" className="text-xs">{pp.product?.name}</Badge>
+                    {p.project_solutions?.map((ps, i) => (
+                      <Badge key={i} variant="secondary" className="text-xs">{ps.solution?.name}</Badge>
                     ))}
-                    {(!p.project_products || p.project_products.length === 0) && <span className="text-xs text-muted-foreground">Nenhum</span>}
+                    {(!p.project_solutions || p.project_solutions.length === 0) && <span className="text-xs text-muted-foreground">Nenhuma</span>}
                   </div>
                 </div>
               </div>

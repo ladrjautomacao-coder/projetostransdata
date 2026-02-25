@@ -59,9 +59,10 @@ export default function Login() {
             <h2 className="text-3xl font-bold text-background mb-3">Sistema de Gestão</h2>
             <p className="text-background/50 text-lg">Plataforma de gerenciamento de projetos de telemetria</p>
           </div>
-          <p className="text-primary text-sm font-medium tracking-wide max-w-xs mx-auto">
-            Conectado à performance que impulsiona o sucesso e acelera o crescimento
-          </p>
+          <div className="flex items-center justify-center gap-2 text-primary max-w-xs mx-auto">
+            <Signal className="h-4 w-4 animate-pulse shrink-0" />
+            <span className="text-sm font-medium tracking-wide">Conectado à performance que impulsiona o sucesso e acelera o crescimento</span>
+          </div>
         </div>
       </div>
 

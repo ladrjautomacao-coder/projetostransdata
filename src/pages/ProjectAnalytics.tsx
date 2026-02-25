@@ -603,32 +603,84 @@ export default function ProjectAnalytics() {
 
       {/* Row 3: Duration + State */}
       <div className="grid lg:grid-cols-2 gap-6">
-        <GlowCard>
+        <GlowCard glow>
           <div className="p-5">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-5">
               <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Linha do Tempo (dias)</h3>
             </div>
-            <div className="flex items-center gap-4 mb-4">
-              <div className="flex items-center gap-1.5">
-                <div className="h-2.5 w-6 rounded-sm" style={{ backgroundColor: "hsl(28 90% 52%)" }} />
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Contrato → D-Zero</span>
+            {/* Legend */}
+            <div className="flex items-center gap-5 mb-6">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-8 rounded-full bg-gradient-to-r from-primary/80 to-primary" />
+                <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">Contrato → D-Zero</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <div className="h-2.5 w-6 rounded-sm" style={{ backgroundColor: "hsl(190 80% 50%)" }} />
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">D-Zero → Handover</span>
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-8 rounded-full bg-gradient-to-r from-cyan-500/80 to-cyan-400" />
+                <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">D-Zero → Handover</span>
               </div>
             </div>
-            <ChartContainer config={durationConfig} className="h-[320px]">
-              <BarChart data={durationData} layout="vertical" barGap={0} barCategoryGap="30%" margin={{ left: 10, right: 40 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} label={{ value: "dias", position: "insideBottomRight", offset: -5, style: { fontSize: 10, fill: "hsl(var(--muted-foreground))" } }} />
-                <YAxis type="category" dataKey="name" width={140} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                <ChartTooltip content={timelineCustomTooltip} />
-                <Bar dataKey="contratoDzero" stackId="timeline" fill="hsl(28 90% 52%)" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="dzeroHandover" stackId="timeline" fill="hsl(190 80% 50%)" radius={[0, 6, 6, 0]} label={{ position: "right", fontSize: 10, fill: "hsl(var(--muted-foreground))", formatter: (_: any, __: any, index: number) => `${durationData[index]?.total}d` }} />
-              </BarChart>
-            </ChartContainer>
+            {/* Timeline rows */}
+            <div className="space-y-3 max-h-[360px] overflow-auto pr-1">
+              {durationData.length === 0 && <p className="text-center text-muted-foreground text-xs py-8">Sem dados para exibir</p>}
+              {durationData.map((d, i) => {
+                const maxTotal = Math.max(...durationData.map(x => x.total), 1);
+                const seg1Pct = (d.contratoDzero / maxTotal) * 100;
+                const seg2Pct = (d.dzeroHandover / maxTotal) * 100;
+                return (
+                  <div key={i} className="group">
+                    <div className="flex items-center gap-3">
+                      {/* Project name */}
+                      <div className="w-[140px] shrink-0 text-right">
+                        <span className="text-[11px] font-semibold text-foreground/80 group-hover:text-foreground transition-colors truncate block">{d.name}</span>
+                      </div>
+                      {/* Bar track */}
+                      <div className="flex-1 relative">
+                        <div className="h-7 rounded-md bg-muted/40 border border-border/30 overflow-hidden relative group-hover:border-primary/30 transition-colors">
+                          {/* Segment 1: Contrato → D-Zero */}
+                          <div
+                            className="absolute inset-y-0 left-0 rounded-l-md flex items-center justify-center transition-all duration-500"
+                            style={{
+                              width: `${seg1Pct}%`,
+                              background: "linear-gradient(90deg, hsl(28 90% 52% / 0.6), hsl(28 90% 52% / 0.9))",
+                              boxShadow: "inset 0 1px 0 hsl(28 90% 70% / 0.3), 0 0 12px hsl(28 90% 52% / 0.15)",
+                            }}
+                          >
+                            {seg1Pct > 12 && <span className="text-[9px] font-bold text-primary-foreground/90 drop-shadow-sm">{d.contratoDzero}d</span>}
+                          </div>
+                          {/* Segment 2: D-Zero → Handover */}
+                          {d.hasHandover && d.dzeroHandover > 0 && (
+                            <div
+                              className="absolute inset-y-0 flex items-center justify-center transition-all duration-500"
+                              style={{
+                                left: `${seg1Pct}%`,
+                                width: `${seg2Pct}%`,
+                                background: "linear-gradient(90deg, hsl(190 80% 50% / 0.6), hsl(190 80% 50% / 0.9))",
+                                boxShadow: "inset 0 1px 0 hsl(190 80% 70% / 0.3), 0 0 12px hsl(190 80% 50% / 0.15)",
+                                borderRadius: seg2Pct > 0 ? "0 6px 6px 0" : "0",
+                              }}
+                            >
+                              {seg2Pct > 12 && <span className="text-[9px] font-bold text-white/90 drop-shadow-sm">{d.dzeroHandover}d</span>}
+                            </div>
+                          )}
+                          {/* Milestone dots */}
+                          <div className="absolute top-1/2 -translate-y-1/2 left-0 h-3 w-3 rounded-full border-2 border-primary bg-background shadow-sm shadow-primary/30 -translate-x-1/2 z-10" />
+                          {d.hasHandover && seg1Pct > 0 && (
+                            <div className="absolute top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full border-2 border-cyan-500 bg-background shadow-sm shadow-cyan-500/30 z-10" style={{ left: `${seg1Pct}%`, transform: "translate(-50%, -50%)" }} />
+                          )}
+                        </div>
+                      </div>
+                      {/* Total badge */}
+                      <div className="shrink-0 w-[52px] text-right">
+                        <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-foreground/70 bg-muted/60 px-2 py-0.5 rounded-md border border-border/40 tabular-nums" style={{ fontFamily: "'Rajdhani', sans-serif" }}>
+                          {d.total}<span className="text-[9px] text-muted-foreground font-normal ml-0.5">d</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </GlowCard>
 

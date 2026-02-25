@@ -3,10 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Mail, Lock, User, Signal } from "lucide-react";
+import { Mail, Lock, User, Signal, Briefcase } from "lucide-react";
 import logoTransmobile from "@/assets/logo-transmobile.png";
 
 export default function Login() {
@@ -16,7 +17,19 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [cargo, setCargo] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const cargoOptions = [
+    "Analista de projetos",
+    "Gerente de relacionamento",
+    "Head de relacionamento com o cliente",
+    "Gerente comercial",
+    "Coordenador de CS",
+    "Gerente de projetos",
+    "Diretor",
+    "CEO",
+  ];
 
   if (loading) return null;
   if (session) return <Navigate to="/" replace />;
@@ -28,7 +41,7 @@ export default function Login() {
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({
           email, password,
-          options: { data: { full_name: fullName }, emailRedirectTo: window.location.origin }
+          options: { data: { full_name: fullName, cargo }, emailRedirectTo: window.location.origin }
         });
         if (error) throw error;
         toast({ title: "Conta criada!", description: "Verifique seu email para confirmar o cadastro." });
@@ -86,6 +99,21 @@ export default function Login() {
                 <div className="relative">
                   <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input placeholder="Nome completo" value={fullName} onChange={e => setFullName(e.target.value)} className="pl-10" required />
+                </div>
+              )}
+              {isSignUp && (
+                <div className="relative">
+                  <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                  <Select value={cargo} onValueChange={setCargo} required>
+                    <SelectTrigger className="pl-10">
+                      <SelectValue placeholder="Selecione o cargo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cargoOptions.map(option => (
+                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
               <div className="relative">

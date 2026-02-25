@@ -1,79 +1,83 @@
 
 
-## Sistema de Gestão de Projetos Empresariais
+# Plano: Melhorar o Histórico de Alterações do Projeto
 
-### Visão Geral
-Portal interno com visual verde/teal moderno, autenticação completa, e três módulos principais: Projetos, Implantação e Acervo Técnico.
+## Problema Atual
+O histórico exibe dados brutos em JSON (ex: `{"city":"Campinas","state":"SP",...}`), sem identificar quem fez a alteração e sem detalhar o que mudou de forma legível.
 
----
+## Solução Proposta
 
-### 1. Autenticação e Controle de Acesso
-- Tela de login com email/senha via Supabase Auth
-- Perfis de usuário com nome e avatar
-- Tabela de roles (admin, user) para controle de permissões
-- Redirecionamento automático para login quando não autenticado
-- Tela de reset de senha
+### 1. Melhorar os dados salvos no histórico (handleSave)
+Atualmente o `old_values` e `new_values` salvam apenas alguns campos. Vamos:
+- Comparar **todos os campos editáveis** (empresa, cidade, estado, status, tipo de projeto, frota, prazos, piloto, soluções, datas, equipe)
+- Salvar apenas os campos que **realmente mudaram**, com valor anterior e novo
+- Incluir **nomes legíveis** (ex: nome do gerente, nome do tipo de projeto) em vez de UUIDs
 
-### 2. Tema Visual — Verde/Teal Moderno
-- Paleta de cores verde/teal com tons de cinza para fundo
-- Cards com sombras sutis e bordas arredondadas
-- Tipografia limpa e profissional
-- Ícones modernos (Lucide)
+### 2. Buscar o nome de quem alterou
+Na query do histórico, fazer join com a tabela `profiles` usando o campo `changed_by` para exibir o nome do usuário que fez a alteração.
 
-### 3. Layout Principal
-- **Sidebar fixa** à esquerda com navegação entre módulos
-- **Header** com nome do usuário logado e botão de logout
-- **Tela inicial (Dashboard)** com 3 cards grandes e clicáveis:
-  - 🗂️ **Projetos** — "Gerencie os projetos da empresa" + contador de projetos
-  - 🚧 **Implantação** — "Acompanhe a implantação dos projetos" + badge "Em breve"
-  - 📚 **Acervo Técnico** — "Base de conhecimento e documentos" + badge "Em breve"
+### 3. Renderização humanizada do log
+Criar um componente de renderização que:
+- Exibe o **nome do usuário** que alterou
+- Mostra cada campo alterado em formato: `Campo: valor anterior → novo valor`
+- Traduz nomes de campos para português (ex: `company_name` → "Empresa")
+- Usa ícones visuais diferenciados para "Criado" vs "Atualizado"
+- Formata datas em PT-BR
 
-### 4. Módulo Projetos
+### Detalhes Técnicos
 
-#### 4a. Cadastro de Equipe e Produtos (áreas administrativas)
-- Tela para cadastrar **Executivos de Vendas** (nome, email)
-- Tela para cadastrar **Gerentes de Projetos** (nome, email)
-- Tela para cadastrar **Produtos** (nome, descrição)
-- Essas entidades alimentam os dropdowns no formulário de projetos
+**Mapeamento de labels dos campos:**
+```text
+company_name    → Empresa
+city            → Cidade
+state           → Estado
+status          → Status
+project_type    → Tipo de Projeto
+fleet_size      → Frota Contratada
+impl_deadline   → Prazo Implantação
+contract_deadline → Prazo Contratual
+is_pilot        → Piloto
+executive       → Gerente Comercial
+manager         → Gestor de Projetos
+solutions       → Soluções
+contract_date   → Data do Contrato
+d_zero_date     → Data D-Zero
+handover_date   → Data de Entrega
+```
 
-#### 4b. Cadastrar Novo Projeto
-- Formulário dividido em seções:
-  - **Dados Gerais**: Nome da Empresa, Cidade, Estado (dropdown com UFs), Data de Contratação, Data D-zero, Data Handover
-  - **Equipe**: Executivo de Vendas (dropdown), Gerente de Projetos (dropdown)
-  - **Comercial**: Produtos contratados (multi-seleção)
-  - **Status**: Planejamento, Implantação, Encerrado, Suspenso
-- Botões Salvar e Cancelar
-- Validação de campos obrigatórios
+**Arquivos modificados:**
+- `src/pages/ProjectDetail.tsx`:
+  - Query do histórico com join em `profiles` para buscar `changed_by` → nome
+  - Lógica do `handleSave` para comparar campo a campo e salvar diff granular
+  - Nova renderização do histórico com cards legíveis mostrando: usuário, data, e lista de mudanças campo a campo
 
-#### 4c. Visualizar Projetos Existentes
-- Tabela com todas as colunas solicitadas
-- Filtros: Gerente, Executivo, Estado, Status, Período de contratação
-- Pesquisa por texto livre
-- Ordenação por coluna
-- Clique na linha para abrir detalhes
+**Formato do log salvo (new_values/old_values):**
+```json
+{
+  "changes": [
+    { "field": "Empresa", "from": "Empresa A", "to": "Empresa B" },
+    { "field": "Status", "from": "Planejamento", "to": "Implantação" },
+    { "field": "Frota Contratada", "from": "50", "to": "80" }
+  ]
+}
+```
 
-#### 4d. Detalhamento do Projeto
-- Exibição de todos os dados cadastrados em layout organizado
-- Linha do tempo visual do projeto (contratação → D-zero → Handover)
-- Histórico de alterações (registrado automaticamente)
-- Botão Editar para modificar dados
-- Área para anexos de arquivos (usando Supabase Storage)
+**Visualização final:**
+```text
+┌─────────────────────────────────────────────────┐
+│ 🟢 Atualizado · 25/02/2026 16:47               │
+│ Por: João Silva                                 │
+│                                                 │
+│  Empresa: Empresa Antiga → Empresa Nova         │
+│  Status: Planejamento → Implantação             │
+│  Frota Contratada: 50 → 80                      │
+├─────────────────────────────────────────────────┤
+│ 🔵 Criado · 25/02/2026 14:48                   │
+│ Por: Maria Souza                                │
+│                                                 │
+│  Projeto cadastrado com os dados iniciais       │
+└─────────────────────────────────────────────────┘
+```
 
-### 5. Módulo Implantação
-- Página com mensagem "Módulo em construção. Em breve disponível."
-- Layout preparado para futuro Kanban e indicadores
-
-### 6. Módulo Acervo Técnico
-- Página com mensagem "Módulo em construção. Em breve disponível."
-- Layout preparado para futuro upload de documentos
-
-### 7. Banco de Dados (Supabase)
-- Tabelas: profiles, user_roles, projects, team_members, products, project_products, project_history, project_attachments
-- RLS em todas as tabelas
-- Triggers para histórico automático de alterações
-
-### 8. Responsividade
-- Layout adaptável para desktop, tablet e mobile
-- Sidebar colapsável em telas menores
-- Tabela com scroll horizontal no mobile
+Nenhuma alteração de banco de dados é necessária — a estrutura da tabela `project_history` já suporta `old_values` e `new_values` como JSONB.
 

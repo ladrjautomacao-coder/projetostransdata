@@ -198,24 +198,57 @@ export default function ProjectAnalytics() {
     }));
   }, [filteredProjects]);
 
-  const timelineData = useMemo(() => {
-    const months: Record<string, { month: string; contratos: number; dzero: number; handover: number }> = {};
-    filteredProjects.forEach(p => {
-      const cm = format(parseISO(p.contract_date), "yyyy-MM");
-      if (!months[cm]) months[cm] = { month: cm, contratos: 0, dzero: 0, handover: 0 };
-      months[cm].contratos++;
-      if (p.d_zero_date) {
-        const dm = format(parseISO(p.d_zero_date), "yyyy-MM");
-        if (!months[dm]) months[dm] = { month: dm, contratos: 0, dzero: 0, handover: 0 };
-        months[dm].dzero++;
-      }
-      if (p.handover_date) {
-        const hm = format(parseISO(p.handover_date), "yyyy-MM");
-        if (!months[hm]) months[hm] = { month: hm, contratos: 0, dzero: 0, handover: 0 };
-        months[hm].handover++;
-      }
+  // Cumulative fleet evolution by contract_date
+  const fleetTimelineData = useMemo(() => {
+    const sorted = [...filteredProjects]
+      .filter(p => p.fleet_size && p.fleet_size > 0)
+      .sort((a, b) => a.contract_date.localeCompare(b.contract_date));
+    const months: Record<string, number> = {};
+    sorted.forEach(p => {
+      const m = format(parseISO(p.contract_date), "MMM/yy");
+      months[m] = (months[m] || 0) + (p.fleet_size || 0);
     });
-    return Object.values(months).sort((a, b) => a.month.localeCompare(b.month));
+    let cumulative = 0;
+    return Object.entries(months).map(([month, fleet]) => {
+      cumulative += fleet;
+      return { month, frota: cumulative };
+    });
+  }, [filteredProjects]);
+
+  // Cumulative fleet evolution by solution
+  const solutionTimelineData = useMemo(() => {
+    const solutionNames = new Set<string>();
+    filteredProjects.forEach(p => p.project_solutions?.forEach(ps => {
+      if (ps.solution?.name) solutionNames.add(ps.solution.name);
+    }));
+    const names = [...solutionNames].sort();
+    const sorted = [...filteredProjects]
+      .filter(p => p.fleet_size && p.fleet_size > 0)
+      .sort((a, b) => a.contract_date.localeCompare(b.contract_date));
+    const months: Record<string, Record<string, number>> = {};
+    sorted.forEach(p => {
+      const m = format(parseISO(p.contract_date), "MMM/yy");
+      if (!months[m]) months[m] = {};
+      p.project_solutions?.forEach(ps => {
+        if (ps.solution?.name) {
+          months[m][ps.solution.name] = (months[m][ps.solution.name] || 0) + (p.fleet_size || 0);
+        }
+      });
+    });
+    const cumulative: Record<string, number> = {};
+    names.forEach(n => cumulative[n] = 0);
+    return Object.entries(months).map(([month, sols]) => {
+      names.forEach(n => { cumulative[n] += (sols[n] || 0); });
+      return { month, ...Object.fromEntries(names.map(n => [n, cumulative[n]])) };
+    });
+  }, [filteredProjects]);
+
+  const solutionNamesForChart = useMemo(() => {
+    const names = new Set<string>();
+    filteredProjects.forEach(p => p.project_solutions?.forEach(ps => {
+      if (ps.solution?.name) names.add(ps.solution.name);
+    }));
+    return [...names].sort();
   }, [filteredProjects]);
 
   const managerData = useMemo(() => {
@@ -256,11 +289,12 @@ export default function ProjectAnalytics() {
   const activeProjects = filteredProjects.filter(p => p.status === "implantacao").length;
   const totalStates = new Set(filteredProjects.map(p => p.state)).size;
 
-  const timelineConfig: ChartConfig = {
-    contratos: { label: "Contratos", color: "hsl(28 90% 52%)" },
-    dzero: { label: "D-Zero", color: "hsl(190 80% 50%)" },
-    handover: { label: "Handover", color: "hsl(142 72% 42%)" },
+  const fleetConfig: ChartConfig = {
+    frota: { label: "Frota Acumulada", color: "hsl(28 90% 52%)" },
   };
+  const solutionTimelineConfig: ChartConfig = Object.fromEntries(
+    solutionNamesForChart.map((name, i) => [name, { label: name, color: PRODUCT_COLORS[i % PRODUCT_COLORS.length] }])
+  );
   const durationConfig: ChartConfig = {
     contratoDzero: { label: "Contrato → D-Zero", color: "hsl(28 90% 52%)" },
     dzeroHandover: { label: "D-Zero → Handover", color: "hsl(190 80% 50%)" },
@@ -471,48 +505,68 @@ export default function ProjectAnalytics() {
         </GlowCard>
       </div>
 
-      {/* Row 2: Timeline */}
-      <GlowCard glow>
-        <div className="p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Evolução Temporal</h3>
-            <div className="flex gap-4 ml-auto">
-              {Object.entries(timelineConfig).map(([key, cfg]) => (
-                <div key={key} className="flex items-center gap-1.5">
-                  <div className="h-2 w-2 rounded-full" style={{ backgroundColor: cfg.color }} />
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{cfg.label}</span>
-                </div>
-              ))}
+      {/* Row 2: Fleet Timeline + Solution Timeline */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        <GlowCard glow>
+          <div className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Evolução da Frota</h3>
             </div>
+            <ChartContainer config={fleetConfig} className="h-[280px]">
+              <AreaChart data={fleetTimelineData}>
+                <defs>
+                  <linearGradient id="gFleet" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(28 90% 52%)" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="hsl(28 90% 52%)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} vertical={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Area type="monotone" dataKey="frota" stroke="hsl(28 90% 52%)" fill="url(#gFleet)" strokeWidth={2.5} dot={{ r: 4, fill: "hsl(28 90% 52%)", strokeWidth: 0 }} />
+              </AreaChart>
+            </ChartContainer>
           </div>
-          <ChartContainer config={timelineConfig} className="h-[280px]">
-            <AreaChart data={timelineData}>
-              <defs>
-                <linearGradient id="gContratos" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(28 90% 52%)" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="hsl(28 90% 52%)" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="gDzero" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(190 80% 50%)" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="hsl(190 80% 50%)" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="gHandover" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(142 72% 42%)" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="hsl(142 72% 42%)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} />
-              <XAxis dataKey="month" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Area type="monotone" dataKey="contratos" stroke="hsl(28 90% 52%)" fill="url(#gContratos)" strokeWidth={2.5} dot={{ r: 3, fill: "hsl(28 90% 52%)", strokeWidth: 0 }} />
-              <Area type="monotone" dataKey="dzero" stroke="hsl(190 80% 50%)" fill="url(#gDzero)" strokeWidth={2.5} dot={{ r: 3, fill: "hsl(190 80% 50%)", strokeWidth: 0 }} />
-              <Area type="monotone" dataKey="handover" stroke="hsl(142 72% 42%)" fill="url(#gHandover)" strokeWidth={2.5} dot={{ r: 3, fill: "hsl(142 72% 42%)", strokeWidth: 0 }} />
-            </AreaChart>
-          </ChartContainer>
-        </div>
-      </GlowCard>
+        </GlowCard>
+
+        <GlowCard glow>
+          <div className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Evolução por Solução</h3>
+              <div className="flex gap-3 ml-auto flex-wrap justify-end">
+                {solutionNamesForChart.map((name, i) => (
+                  <div key={name} className="flex items-center gap-1.5">
+                    <div className="h-2 w-2 rounded-full" style={{ backgroundColor: PRODUCT_COLORS[i % PRODUCT_COLORS.length] }} />
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <ChartContainer config={solutionTimelineConfig} className="h-[280px]">
+              <AreaChart data={solutionTimelineData}>
+                <defs>
+                  {solutionNamesForChart.map((name, i) => (
+                    <linearGradient key={name} id={`gSol${i}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={PRODUCT_COLORS[i % PRODUCT_COLORS.length]} stopOpacity={0.25} />
+                      <stop offset="100%" stopColor={PRODUCT_COLORS[i % PRODUCT_COLORS.length]} stopOpacity={0} />
+                    </linearGradient>
+                  ))}
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} vertical={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                {solutionNamesForChart.map((name, i) => (
+                  <Area key={name} type="monotone" dataKey={name} stroke={PRODUCT_COLORS[i % PRODUCT_COLORS.length]} fill={`url(#gSol${i})`} strokeWidth={2} dot={{ r: 3, fill: PRODUCT_COLORS[i % PRODUCT_COLORS.length], strokeWidth: 0 }} />
+                ))}
+              </AreaChart>
+            </ChartContainer>
+          </div>
+        </GlowCard>
+      </div>
 
       {/* Row 3: Duration + State */}
       <div className="grid lg:grid-cols-2 gap-6">

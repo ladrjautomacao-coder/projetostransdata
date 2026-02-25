@@ -58,25 +58,15 @@ export default function NewProject() {
   const [pilotInfo, setPilotInfo] = useState("");
 
   // Lookups (hardcoded)
-  const executives = [
-    { id: "anderson-silva", full_name: "Anderson Silva" },
-    { id: "aline-riffel", full_name: "Aline Riffel" },
-    { id: "solange-bedran", full_name: "Solange Bedran" },
-    { id: "romano-garcia", full_name: "Romano Garcia" },
-  ];
-  const managers = [
-    { id: "adan-ferreira", full_name: "Adan Ferreira" },
-    { id: "janaina-barbosa", full_name: "Janaina Barbosa" },
-    { id: "marcio-novaes", full_name: "Marcio Novaes" },
-    { id: "ana-clara", full_name: "Ana Clara" },
-    { id: "graciele-borim", full_name: "Graciele Borim" },
-  ];
+  const [executives, setExecutives] = useState<{ id: string; full_name: string }[]>([]);
+  const [managers, setManagers] = useState<{ id: string; full_name: string }[]>([]);
   const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
   const [projectTypes, setProjectTypes] = useState<{ id: string; name: string }[]>([]);
   const [solutions, setSolutions] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
-    // executives and managers are now hardcoded
+    supabase.from("team_members").select("id, full_name").eq("role", "executivo_vendas").eq("active", true).then(({ data }) => setExecutives(data || []));
+    supabase.from("team_members").select("id, full_name").eq("role", "gerente_projetos").eq("active", true).then(({ data }) => setManagers(data || []));
     supabase.from("products").select("id, name").eq("active", true).then(({ data }) => setProducts(data || []));
     supabase.from("project_types").select("id, name").eq("active", true).then(({ data }) => setProjectTypes(data || []));
     supabase.from("solutions").select("id, name").eq("active", true).then(({ data }) => setSolutions(data || []));

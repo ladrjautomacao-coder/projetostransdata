@@ -54,15 +54,14 @@ export default function Login() {
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute top-20 left-10 w-48 h-48 bg-primary/5 rounded-full blur-2xl" />
         <div className="relative z-10 text-center space-y-8 px-12">
-          <img src={logoTransmobile} alt="TransMobile" className="h-16 mx-auto" />
+          <img src={logoTransmobile} alt="TransMobile" className="h-16 mx-auto rounded-xl" />
           <div>
             <h2 className="text-3xl font-bold text-background mb-3">Sistema de Gestão</h2>
             <p className="text-background/50 text-lg">Plataforma de gerenciamento de projetos de telemetria</p>
           </div>
-          <div className="flex items-center justify-center gap-2 text-primary">
-            <Signal className="h-4 w-4 animate-pulse" />
-            <span className="text-sm uppercase tracking-[0.15em] font-semibold">Conectado</span>
-          </div>
+          <p className="text-primary text-sm font-medium tracking-wide max-w-xs mx-auto">
+            Conectado à performance que impulsiona o sucesso e acelera o crescimento
+          </p>
         </div>
       </div>
 

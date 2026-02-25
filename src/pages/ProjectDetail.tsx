@@ -18,7 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { format, addDays } from "date-fns";
-import { ArrowLeft, Edit2, Save, X, CalendarIcon, Upload, FileText, Trash2, Info, Download, Eye } from "lucide-react";
+import { ArrowLeft, Edit2, Save, X, CalendarIcon, Upload, FileText, Trash2, Info, Download, Eye, PlusCircle, RefreshCw, User } from "lucide-react";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -108,10 +108,24 @@ export default function ProjectDetail() {
     setLoading(false);
   };
 
+  const loadHistory = async () => {
+    if (!id) return;
+    const { data } = await supabase.from("project_history").select("*").eq("project_id", id).order("created_at", { ascending: false });
+    if (!data) { setHistory([]); return; }
+    // Fetch profile names for changed_by
+    const userIds = [...new Set(data.map(h => h.changed_by).filter(Boolean))] as string[];
+    let profileMap: Record<string, string> = {};
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", userIds);
+      if (profiles) profiles.forEach(p => { profileMap[p.user_id] = p.full_name || "Usuário"; });
+    }
+    setHistory(data.map(h => ({ ...h, _user_name: h.changed_by ? (profileMap[h.changed_by] || "Usuário") : "Sistema" })));
+  };
+
   useEffect(() => {
     loadProject();
     if (id) {
-      supabase.from("project_history").select("*").eq("project_id", id).order("created_at", { ascending: false }).then(({ data }) => setHistory(data || []));
+      loadHistory();
       supabase.from("project_attachments").select("*").eq("project_id", id).order("created_at", { ascending: false }).then(({ data }) => setAttachments(data || []));
     }
     supabase.from("team_members").select("id, full_name").eq("role", "executivo_vendas").eq("active", true).then(({ data }) => setExecutives(data || []));
@@ -120,6 +134,48 @@ export default function ProjectDetail() {
     supabase.from("project_types").select("id, name").eq("active", true).then(({ data }) => setProjectTypes(data || []));
     supabase.from("solutions").select("id, name").eq("active", true).then(({ data }) => setAllSolutions(data || []));
   }, [id]);
+
+  const buildChanges = () => {
+    const changes: { field: string; from: string; to: string }[] = [];
+    const str = (v: any) => v == null ? "" : String(v);
+    const add = (label: string, oldVal: any, newVal: any) => {
+      if (str(oldVal) !== str(newVal)) changes.push({ field: label, from: str(oldVal) || "—", to: str(newVal) || "—" });
+    };
+
+    add("Empresa", project.company_name, companyName);
+    add("Cidade", project.city, city);
+    add("Estado", project.state, state);
+    add("Status", statusLabels[project.status as ProjectStatus], statusLabels[status]);
+    
+    const oldTypeName = project.project_type?.name || "—";
+    const newTypeName = projectTypes.find(t => t.id === projectTypeId)?.name || "—";
+    add("Tipo de Projeto", oldTypeName, newTypeName);
+    
+    add("Frota Contratada", project.fleet_size, fleetSize);
+    add("Prazo Implantação (dias)", project.implementation_deadline_days, implDeadlineDays);
+    add("Prazo Contratual (dias)", project.contractual_deadline_days, contractualDeadlineDays);
+    add("Piloto", project.is_pilot ? "Sim" : "Não", isPilot ? "Sim" : "Não");
+
+    const oldExec = project.executive?.full_name || "—";
+    const newExec = executives.find(e => e.id === executiveId)?.full_name || "—";
+    add("Executivo de Vendas", oldExec, newExec);
+
+    const oldMgr = project.manager?.full_name || "—";
+    const newMgr = managers.find(m => m.id === managerId)?.full_name || "—";
+    add("Gestor de Projetos", oldMgr, newMgr);
+
+    add("Data do Contrato", fmtDate(project.contract_date), contractDate ? format(contractDate, "dd/MM/yyyy") : "—");
+    add("Data D-Zero", fmtDate(project.d_zero_date), dZeroDate ? format(dZeroDate, "dd/MM/yyyy") : "—");
+    add("Data de Entrega", fmtDate(project.handover_date), handoverDate ? format(handoverDate, "dd/MM/yyyy") : "—");
+
+    const oldSols = (project.project_solutions?.map((ps: any) => ps.solution?.name).filter(Boolean) || []).sort().join(", ") || "—";
+    const newSols = selectedSolutions.map(sid => allSolutions.find(s => s.id === sid)?.name).filter(Boolean).sort().join(", ") || "—";
+    add("Soluções", oldSols, newSols);
+
+    if (isPilot) add("Info Piloto", project.pilot_info || "—", pilotInfo || "—");
+
+    return changes;
+  };
 
   const handleSave = async () => {
     if (!id) return;
@@ -135,8 +191,7 @@ export default function ProjectDetail() {
 
     setSaving(true);
     try {
-      const oldValues = { company_name: project.company_name, city: project.city, state: project.state, status: project.status };
-      const newValues = { company_name: companyName, city, state, status, fleet_size: fleet, is_pilot: isPilot };
+      const changes = buildChanges();
 
       const { error } = await supabase.from("projects").update({
         company_name: companyName, city, state,
@@ -159,11 +214,20 @@ export default function ProjectDetail() {
         await supabase.from("project_solutions").insert(selectedSolutions.map(sid => ({ project_id: id, solution_id: sid })));
       }
 
-      await supabase.from("project_history").insert({ project_id: id, change_type: "updated", changed_by: user?.id || null, old_values: oldValues, new_values: newValues });
+      if (changes.length > 0) {
+        await supabase.from("project_history").insert({
+          project_id: id,
+          change_type: "updated",
+          changed_by: user?.id || null,
+          old_values: { changes: changes.map(c => ({ field: c.field, value: c.from })) },
+          new_values: { changes },
+        });
+      }
+
       toast({ title: "Projeto atualizado!" });
       setEditing(false);
       loadProject();
-      supabase.from("project_history").select("*").eq("project_id", id).order("created_at", { ascending: false }).then(({ data }) => setHistory(data || []));
+      loadHistory();
     } catch (err: any) {
       toast({ title: "Erro", description: err.message, variant: "destructive" });
     } finally {
@@ -612,17 +676,43 @@ export default function ProjectDetail() {
           {history.length === 0 ? (
             <p className="text-sm text-muted-foreground">Sem histórico.</p>
           ) : (
-            <div className="space-y-3">
-              {history.map(h => (
-                <div key={h.id} className="flex gap-3 text-sm">
-                  <div className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />
-                  <div>
-                    <span className="font-medium capitalize">{h.change_type}</span>
-                    <span className="text-muted-foreground ml-2">{format(new Date(h.created_at), "dd/MM/yyyy HH:mm")}</span>
-                    {h.new_values && <p className="text-xs text-muted-foreground mt-0.5">{JSON.stringify(h.new_values)}</p>}
+            <div className="space-y-4">
+              {history.map(h => {
+                const isCreated = h.change_type === "created";
+                const changes = h.new_values?.changes as { field: string; from?: string; to?: string }[] | undefined;
+                return (
+                  <div key={h.id} className="rounded-lg border bg-card p-4 space-y-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={cn("inline-flex items-center gap-1 text-sm font-semibold", isCreated ? "text-blue-600" : "text-green-600")}>
+                        {isCreated ? <PlusCircle className="h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
+                        {isCreated ? "Criado" : "Atualizado"}
+                      </span>
+                      <span className="text-xs text-muted-foreground">·</span>
+                      <span className="text-xs text-muted-foreground">{format(new Date(h.created_at), "dd/MM/yyyy HH:mm")}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <User className="h-3.5 w-3.5" />
+                      <span>Por: <span className="font-medium text-foreground">{h._user_name || "Sistema"}</span></span>
+                    </div>
+                    {isCreated ? (
+                      <p className="text-sm text-muted-foreground">Projeto cadastrado com os dados iniciais</p>
+                    ) : changes && changes.length > 0 ? (
+                      <div className="space-y-1 pt-1">
+                        {changes.map((c, i) => (
+                          <div key={i} className="text-sm flex items-start gap-1">
+                            <span className="font-medium text-muted-foreground min-w-[140px]">{c.field}:</span>
+                            <span className="text-destructive/70 line-through">{c.from || "—"}</span>
+                            <span className="text-muted-foreground mx-1">→</span>
+                            <span className="text-foreground font-medium">{c.to || "—"}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">{h.new_values ? JSON.stringify(h.new_values) : "Sem detalhes"}</p>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>

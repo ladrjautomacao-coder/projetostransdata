@@ -1,4 +1,4 @@
-import { FolderKanban, LayoutDashboard, HardHat, BookOpen, Users, Package, LogOut } from "lucide-react";
+import { FolderKanban, LayoutDashboard, HardHat, BookOpen, Users, Package, LogOut, Signal } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -6,6 +6,7 @@ import {
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import logoTransmobile from "@/assets/logo-transmobile.png";
 
 const mainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -24,25 +25,34 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r-0">
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-sidebar-border">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-          <FolderKanban className="h-5 w-5" />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-sm font-semibold text-sidebar-foreground">Gestão de Projetos</span>
-          <span className="text-xs text-sidebar-foreground/60">{profile?.full_name || "Usuário"}</span>
+      {/* Logo area with tech styling */}
+      <div className="flex items-center gap-3 px-4 py-5 border-b border-sidebar-border relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-sidebar-primary/5 to-transparent" />
+        <img src={logoTransmobile} alt="TransMobile" className="h-9 w-auto relative z-10" />
+        <div className="flex flex-col relative z-10">
+          <span className="text-[10px] uppercase tracking-[0.2em] text-sidebar-primary font-semibold">Sistema de Gestão</span>
+          <span className="text-xs text-sidebar-foreground/50">{profile?.full_name || "Usuário"}</span>
         </div>
       </div>
+
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/50 text-xs uppercase tracking-wider">Principal</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-[0.15em] font-semibold">
+            <Signal className="h-3 w-3 mr-1.5 text-sidebar-primary" />
+            Principal
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map(item => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end={item.url === "/"} className="hover:bg-sidebar-accent" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
-                      <item.icon className="mr-2 h-4 w-4" />
+                    <NavLink
+                      to={item.url}
+                      end={item.url === "/"}
+                      className="hover:bg-sidebar-accent transition-all duration-200 group"
+                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium border-l-2 border-sidebar-primary"
+                    >
+                      <item.icon className="mr-2 h-4 w-4 group-hover:text-sidebar-primary transition-colors" />
                       <span>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
@@ -51,15 +61,23 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/50 text-xs uppercase tracking-wider">Administração</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-[0.15em] font-semibold">
+            <Signal className="h-3 w-3 mr-1.5 text-sidebar-primary" />
+            Administração
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {adminItems.map(item => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild>
-                    <NavLink to={item.url} className="hover:bg-sidebar-accent" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
-                      <item.icon className="mr-2 h-4 w-4" />
+                    <NavLink
+                      to={item.url}
+                      className="hover:bg-sidebar-accent transition-all duration-200 group"
+                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium border-l-2 border-sidebar-primary"
+                    >
+                      <item.icon className="mr-2 h-4 w-4 group-hover:text-sidebar-primary transition-colors" />
                       <span>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
@@ -69,8 +87,15 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      {/* Footer with tech divider */}
       <SidebarFooter className="border-t border-sidebar-border p-3">
-        <Button variant="ghost" className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent" onClick={signOut}>
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-sidebar-primary/30 to-transparent mb-2" />
+        <Button
+          variant="ghost"
+          className="w-full justify-start text-sidebar-foreground/60 hover:text-sidebar-primary hover:bg-sidebar-accent transition-all duration-200"
+          onClick={signOut}
+        >
           <LogOut className="mr-2 h-4 w-4" /> Sair
         </Button>
       </SidebarFooter>

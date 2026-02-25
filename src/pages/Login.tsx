@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { FolderKanban, Mail, Lock, User } from "lucide-react";
+import { Mail, Lock, User, Signal } from "lucide-react";
+import logoTransmobile from "@/assets/logo-transmobile.png";
 
 export default function Login() {
   const { session, loading } = useAuth();
@@ -43,45 +44,73 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md shadow-lg border-primary/20">
-        <CardHeader className="text-center space-y-3">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <FolderKanban className="h-7 w-7" />
+    <div className="flex min-h-screen relative overflow-hidden">
+      {/* Left panel - branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-foreground relative items-center justify-center">
+        <div className="absolute inset-0 opacity-10" style={{
+          backgroundImage: 'linear-gradient(hsl(28 90% 52% / 0.4) 1px, transparent 1px), linear-gradient(90deg, hsl(28 90% 52% / 0.4) 1px, transparent 1px)',
+          backgroundSize: '40px 40px'
+        }} />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute top-20 left-10 w-48 h-48 bg-primary/5 rounded-full blur-2xl" />
+        <div className="relative z-10 text-center space-y-8 px-12">
+          <img src={logoTransmobile} alt="TransMobile" className="h-16 mx-auto" />
+          <div>
+            <h2 className="text-3xl font-bold text-background mb-3">Sistema de Gestão</h2>
+            <p className="text-background/50 text-lg">Plataforma de gerenciamento de projetos de telemetria</p>
           </div>
-          <CardTitle className="text-2xl font-bold">Gestão de Projetos</CardTitle>
-          <CardDescription>{isSignUp ? "Crie sua conta para começar" : "Faça login para acessar o sistema"}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {isSignUp && (
+          <div className="flex items-center justify-center gap-2 text-primary">
+            <Signal className="h-4 w-4 animate-pulse" />
+            <span className="text-sm uppercase tracking-[0.15em] font-semibold">Conectado</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Right panel - form */}
+      <div className="flex-1 flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md shadow-lg border-primary/20 glow-orange">
+          <CardHeader className="text-center space-y-3">
+            <div className="lg:hidden flex justify-center mb-2">
+              <img src={logoTransmobile} alt="TransMobile" className="h-10" />
+            </div>
+            <CardTitle className="text-2xl font-bold">
+              {isSignUp ? "Criar Conta" : "Acessar Sistema"}
+            </CardTitle>
+            <CardDescription>
+              {isSignUp ? "Preencha os dados para criar sua conta" : "Entre com suas credenciais"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {isSignUp && (
+                <div className="relative">
+                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Nome completo" value={fullName} onChange={e => setFullName(e.target.value)} className="pl-10" required />
+                </div>
+              )}
               <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Nome completo" value={fullName} onChange={e => setFullName(e.target.value)} className="pl-10" required />
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" required />
               </div>
-            )}
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" required />
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input type="password" placeholder="Senha" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" required minLength={6} />
+              </div>
+              <Button type="submit" className="w-full font-semibold" disabled={submitting}>
+                {submitting ? "Aguarde..." : isSignUp ? "Criar Conta" : "Entrar"}
+              </Button>
+            </form>
+            <div className="mt-4 text-center text-sm space-y-2">
+              <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary hover:underline font-medium">
+                {isSignUp ? "Já tem conta? Faça login" : "Não tem conta? Cadastre-se"}
+              </button>
+              {!isSignUp && (
+                <div><Link to="/forgot-password" className="text-muted-foreground hover:text-primary transition-colors">Esqueci minha senha</Link></div>
+              )}
             </div>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input type="password" placeholder="Senha" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" required minLength={6} />
-            </div>
-            <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting ? "Aguarde..." : isSignUp ? "Criar Conta" : "Entrar"}
-            </Button>
-          </form>
-          <div className="mt-4 text-center text-sm space-y-2">
-            <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary hover:underline">
-              {isSignUp ? "Já tem conta? Faça login" : "Não tem conta? Cadastre-se"}
-            </button>
-            {!isSignUp && (
-              <div><Link to="/forgot-password" className="text-muted-foreground hover:text-primary">Esqueci minha senha</Link></div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

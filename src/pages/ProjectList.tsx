@@ -39,7 +39,7 @@ interface ProjectRow {
   status: ProjectStatus;
   executive: { full_name: string } | null;
   manager: { full_name: string } | null;
-  project_products: { product: { name: string } | null }[];
+  project_solutions: { solution: { name: string } | null }[];
 }
 
 type SortKey = "company_name" | "city" | "contract_date" | "d_zero_date" | "handover_date" | "status";
@@ -69,7 +69,7 @@ export default function ProjectList() {
       setLoading(true);
       const { data } = await supabase
         .from("projects")
-        .select("id, company_name, city, state, contract_date, d_zero_date, handover_date, status, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_products(product:products(name))")
+        .select("id, company_name, city, state, contract_date, d_zero_date, handover_date, status, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name))")
         .order("company_name");
       setProjects((data as unknown as ProjectRow[]) || []);
       setLoading(false);
@@ -172,7 +172,7 @@ export default function ProjectList() {
                 <SortHeader label="D-zero" field="d_zero_date" />
                 <SortHeader label="Handover" field="handover_date" />
                 <SortHeader label="Status" field="status" />
-                <TableHead className="whitespace-nowrap">Produtos</TableHead>
+                <TableHead className="whitespace-nowrap">Soluções</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -189,8 +189,8 @@ export default function ProjectList() {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
-                      {p.project_products?.map((pp, i) => (
-                        <Badge key={i} variant="secondary" className="text-xs">{pp.product?.name}</Badge>
+                      {p.project_solutions?.map((ps, i) => (
+                        <Badge key={i} variant="secondary" className="text-xs">{ps.solution?.name}</Badge>
                       ))}
                     </div>
                   </TableCell>

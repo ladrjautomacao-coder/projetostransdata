@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,7 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { format, addDays } from "date-fns";
-import { ArrowLeft, Edit2, Save, X, CalendarIcon, Upload, FileText, Trash2, Info } from "lucide-react";
+import { ArrowLeft, Edit2, Save, X, CalendarIcon, Upload, FileText, Trash2, Info, Download, Eye } from "lucide-react";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -170,15 +171,40 @@ export default function ProjectDetail() {
     }
   };
 
+  const [uploading, setUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewName, setPreviewName] = useState("");
+
+  const MAX_ATTACHMENTS = 10;
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !id) return;
-    const path = `${id}/${Date.now()}_${file.name}`;
-    const { error: upErr } = await supabase.storage.from("project-attachments").upload(path, file);
-    if (upErr) { toast({ title: "Erro no upload", description: upErr.message, variant: "destructive" }); return; }
-    await supabase.from("project_attachments").insert({ project_id: id, file_name: file.name, file_path: path, file_size: file.size, content_type: file.type, uploaded_by: user?.id || null });
-    toast({ title: "Arquivo anexado!" });
-    supabase.from("project_attachments").select("*").eq("project_id", id).order("created_at", { ascending: false }).then(({ data }) => setAttachments(data || []));
+    const files = e.target.files;
+    if (!files || !id) return;
+
+    if (attachments.length + files.length > MAX_ATTACHMENTS) {
+      toast({ title: `Máximo de ${MAX_ATTACHMENTS} anexos permitidos`, variant: "destructive" });
+      e.target.value = "";
+      return;
+    }
+
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        if (file.size > 20 * 1024 * 1024) {
+          toast({ title: `Arquivo "${file.name}" excede 20MB`, variant: "destructive" });
+          continue;
+        }
+        const path = `${id}/${Date.now()}_${file.name}`;
+        const { error: upErr } = await supabase.storage.from("project-attachments").upload(path, file);
+        if (upErr) { toast({ title: "Erro no upload", description: upErr.message, variant: "destructive" }); continue; }
+        await supabase.from("project_attachments").insert({ project_id: id, file_name: file.name, file_path: path, file_size: file.size, content_type: file.type, uploaded_by: user?.id || null });
+      }
+      toast({ title: "Arquivo(s) anexado(s)!" });
+      supabase.from("project_attachments").select("*").eq("project_id", id).order("created_at", { ascending: false }).then(({ data }) => setAttachments(data || []));
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
   };
 
   const handleDeleteAttachment = async (att: any) => {
@@ -186,6 +212,25 @@ export default function ProjectDetail() {
     await supabase.from("project_attachments").delete().eq("id", att.id);
     setAttachments(prev => prev.filter(a => a.id !== att.id));
     toast({ title: "Anexo removido" });
+  };
+
+  const handleDownload = async (att: any) => {
+    const { data } = await supabase.storage.from("project-attachments").createSignedUrl(att.file_path, 60);
+    if (data?.signedUrl) {
+      const a = document.createElement("a");
+      a.href = data.signedUrl;
+      a.download = att.file_name;
+      a.target = "_blank";
+      a.click();
+    }
+  };
+
+  const handlePreview = async (att: any) => {
+    const { data } = await supabase.storage.from("project-attachments").createSignedUrl(att.file_path, 300);
+    if (data?.signedUrl) {
+      setPreviewName(att.file_name);
+      setPreviewUrl(data.signedUrl);
+    }
   };
 
   const fmtDate = (d: string | null) => d ? format(new Date(d + "T00:00:00"), "dd/MM/yyyy") : "—";
@@ -440,31 +485,67 @@ export default function ProjectDetail() {
       {/* Attachments */}
       <Card className="mb-6">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg">Anexos</CardTitle>
-          <label>
-            <input type="file" className="hidden" onChange={handleUpload} />
-            <Button size="sm" variant="outline" asChild><span><Upload className="mr-1 h-4 w-4" /> Upload</span></Button>
-          </label>
+          <div>
+            <CardTitle className="text-lg">Anexos</CardTitle>
+            <CardDescription className="text-xs">{attachments.length}/{MAX_ATTACHMENTS} arquivos</CardDescription>
+          </div>
+          {attachments.length < MAX_ATTACHMENTS && (
+            <label>
+              <input type="file" className="hidden" onChange={handleUpload} multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt,.csv" />
+              <Button size="sm" variant="outline" asChild disabled={uploading}>
+                <span><Upload className="mr-1 h-4 w-4" /> {uploading ? "Enviando..." : "Upload"}</span>
+              </Button>
+            </label>
+          )}
         </CardHeader>
         <CardContent>
           {attachments.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhum anexo.</p>
           ) : (
             <div className="space-y-2">
-              {attachments.map(att => (
-                <div key={att.id} className="flex items-center justify-between p-2 rounded border">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{att.file_name}</span>
-                    <span className="text-xs text-muted-foreground">{att.file_size ? `${(att.file_size / 1024).toFixed(0)} KB` : ""}</span>
+              {attachments.map(att => {
+                const isPdf = att.content_type === "application/pdf" || att.file_name?.toLowerCase().endsWith(".pdf");
+                const isImage = att.content_type?.startsWith("image/");
+                const canPreview = isPdf || isImage;
+                return (
+                  <div key={att.id} className="flex items-center justify-between p-2 rounded border">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span className="text-sm truncate">{att.file_name}</span>
+                      <span className="text-xs text-muted-foreground shrink-0">{att.file_size ? `${(att.file_size / 1024).toFixed(0)} KB` : ""}</span>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {canPreview && (
+                        <Button variant="ghost" size="icon" onClick={() => handlePreview(att)} title="Visualizar">
+                          <Eye className="h-4 w-4 text-primary" />
+                        </Button>
+                      )}
+                      <Button variant="ghost" size="icon" onClick={() => handleDownload(att)} title="Baixar">
+                        <Download className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleDeleteAttachment(att)} title="Excluir">
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => handleDeleteAttachment(att)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Preview Dialog */}
+      <Dialog open={!!previewUrl} onOpenChange={open => { if (!open) setPreviewUrl(null); }}>
+        <DialogContent className="max-w-4xl h-[80vh] p-0">
+          <DialogHeader className="p-4 pb-0">
+            <DialogTitle className="text-sm truncate">{previewName}</DialogTitle>
+          </DialogHeader>
+          {previewUrl && (
+            <iframe src={previewUrl} className="w-full flex-1 border-0 rounded-b-lg" style={{ height: "calc(80vh - 60px)" }} />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* History */}
       <Card>

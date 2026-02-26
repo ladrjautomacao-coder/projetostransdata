@@ -228,17 +228,19 @@ export default function UserManagement() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    {!user.email_confirmed && (
+                  <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+                    {!user.email_confirmed ? (
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 text-xs border-emerald-500/30 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+                        className="h-8 text-xs border-emerald-500/30 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 w-[90px]"
                         disabled={actionLoading === user.id}
                         onClick={() => setConfirmAction({ type: "approve", user })}
                       >
                         <CheckCircle className="h-3.5 w-3.5 mr-1" /> Aprovar
                       </Button>
+                    ) : (
+                      <div className="w-[90px]" />
                     )}
                     <Button
                       variant="outline"

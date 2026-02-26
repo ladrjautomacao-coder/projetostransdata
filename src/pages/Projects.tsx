@@ -1,38 +1,206 @@
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, List, BarChart3, Signal } from "lucide-react";
+import { useEffect, useRef } from "react";
 
-function AnimatedBus({ className = "" }: { className?: string }) {
+function TechBus({ direction = "right", size = 1, delay = 0, y = 20 }: { direction?: "left" | "right"; size?: number; delay?: number; y?: number }) {
   return (
-    <svg
-      className={className}
-      width="120"
-      height="50"
-      viewBox="0 0 120 50"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
+    <div
+      className={`absolute pointer-events-none`}
+      style={{
+        top: `${y}%`,
+        animation: `bus-move-${direction} ${14 + delay * 2}s linear infinite ${delay}s`,
+        transform: direction === "left" ? "scaleX(-1)" : undefined,
+      }}
     >
-      {/* Bus body */}
-      <rect x="10" y="8" width="90" height="30" rx="6" fill="hsl(28, 90%, 52%)" fillOpacity="0.15" stroke="hsl(28, 90%, 52%)" strokeWidth="1.5" strokeOpacity="0.4" />
-      {/* Windows */}
-      <rect x="18" y="14" width="12" height="10" rx="2" fill="hsl(28, 90%, 52%)" fillOpacity="0.25" />
-      <rect x="34" y="14" width="12" height="10" rx="2" fill="hsl(28, 90%, 52%)" fillOpacity="0.25" />
-      <rect x="50" y="14" width="12" height="10" rx="2" fill="hsl(28, 90%, 52%)" fillOpacity="0.25" />
-      <rect x="66" y="14" width="12" height="10" rx="2" fill="hsl(28, 90%, 52%)" fillOpacity="0.25" />
-      {/* Windshield */}
-      <rect x="82" y="12" width="14" height="16" rx="3" fill="hsl(28, 90%, 52%)" fillOpacity="0.35" />
-      {/* Wheels */}
-      <circle cx="30" cy="40" r="6" fill="hsl(220, 20%, 12%)" fillOpacity="0.3" stroke="hsl(28, 90%, 52%)" strokeWidth="1.5" strokeOpacity="0.5" />
-      <circle cx="30" cy="40" r="2.5" fill="hsl(28, 90%, 52%)" fillOpacity="0.4" />
-      <circle cx="80" cy="40" r="6" fill="hsl(220, 20%, 12%)" fillOpacity="0.3" stroke="hsl(28, 90%, 52%)" strokeWidth="1.5" strokeOpacity="0.5" />
-      <circle cx="80" cy="40" r="2.5" fill="hsl(28, 90%, 52%)" fillOpacity="0.4" />
-      {/* Headlight */}
-      <rect x="100" y="22" width="6" height="6" rx="1.5" fill="hsl(28, 90%, 52%)" fillOpacity="0.6" />
-      {/* Signal antenna */}
-      <line x1="25" y1="8" x2="25" y2="2" stroke="hsl(28, 90%, 52%)" strokeWidth="1" strokeOpacity="0.5" />
-      <circle cx="25" cy="1" r="1.5" fill="hsl(28, 90%, 52%)" fillOpacity="0.6" />
-    </svg>
+      <svg
+        width={140 * size}
+        height={60 * size}
+        viewBox="0 0 140 60"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="drop-shadow-[0_0_12px_hsl(28,90%,52%,0.3)]"
+      >
+        {/* Digital trail effect */}
+        <defs>
+          <linearGradient id={`trail-${y}`} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="hsl(28, 90%, 52%)" stopOpacity="0" />
+            <stop offset="100%" stopColor="hsl(28, 90%, 52%)" stopOpacity="0.15" />
+          </linearGradient>
+          <linearGradient id={`body-grad-${y}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="hsl(28, 90%, 52%)" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="hsl(28, 90%, 42%)" stopOpacity="0.08" />
+          </linearGradient>
+          <filter id={`glow-${y}`}>
+            <feGaussianBlur stdDeviation="2" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        {/* Digital trail behind bus */}
+        <rect x="-60" y="18" width="70" height="24" rx="4" fill={`url(#trail-${y})`} />
+
+        {/* Bus body - sleek modern shape */}
+        <path
+          d="M12 38 L12 16 Q12 10 18 10 L100 10 Q108 10 112 14 L120 22 Q122 24 122 28 L122 38 Q122 42 118 42 L16 42 Q12 42 12 38Z"
+          fill={`url(#body-grad-${y})`}
+          stroke="hsl(28, 90%, 52%)"
+          strokeWidth="1"
+          strokeOpacity="0.5"
+        />
+
+        {/* Roof tech strip */}
+        <rect x="20" y="10" width="80" height="2" rx="1" fill="hsl(28, 90%, 52%)" fillOpacity="0.4">
+          <animate attributeName="fillOpacity" values="0.2;0.6;0.2" dur="2s" repeatCount="indefinite" />
+        </rect>
+
+        {/* Windows - digital style */}
+        {[22, 38, 54, 70].map((x, i) => (
+          <g key={i}>
+            <rect x={x} y="15" width="12" height="11" rx="2" fill="hsl(200, 80%, 60%)" fillOpacity="0.15" stroke="hsl(200, 80%, 60%)" strokeWidth="0.5" strokeOpacity="0.3" />
+            {/* Data line inside window */}
+            <line x1={x + 2} y1={21 - i % 2} x2={x + 10} y2={21 + i % 2} stroke="hsl(28, 90%, 52%)" strokeWidth="0.5" strokeOpacity="0.4">
+              <animate attributeName="strokeOpacity" values="0.2;0.6;0.2" dur={`${1.5 + i * 0.3}s`} repeatCount="indefinite" />
+            </line>
+          </g>
+        ))}
+
+        {/* Windshield */}
+        <path d="M88 14 L102 14 Q108 14 110 18 L116 26 L88 26 Z" fill="hsl(200, 80%, 60%)" fillOpacity="0.2" stroke="hsl(200, 80%, 60%)" strokeWidth="0.5" strokeOpacity="0.35" />
+
+        {/* HUD display on windshield */}
+        <line x1="94" y1="18" x2="106" y2="18" stroke="hsl(28, 90%, 52%)" strokeWidth="0.5" strokeOpacity="0.5">
+          <animate attributeName="x2" values="100;108;100" dur="3s" repeatCount="indefinite" />
+        </line>
+        <line x1="94" y1="21" x2="102" y2="21" stroke="hsl(28, 90%, 52%)" strokeWidth="0.5" strokeOpacity="0.3" />
+
+        {/* Headlights - LED style */}
+        <rect x="120" y="22" width="3" height="8" rx="1.5" fill="hsl(28, 90%, 52%)" fillOpacity="0.8" filter={`url(#glow-${y})`}>
+          <animate attributeName="fillOpacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite" />
+        </rect>
+
+        {/* Taillights */}
+        <rect x="12" y="24" width="2" height="6" rx="1" fill="hsl(0, 80%, 55%)" fillOpacity="0.6">
+          <animate attributeName="fillOpacity" values="0.3;0.8;0.3" dur="1s" repeatCount="indefinite" />
+        </rect>
+
+        {/* Wheels - futuristic */}
+        {[34, 98].map((cx, i) => (
+          <g key={i}>
+            <circle cx={cx} cy="42" r="7" fill="hsl(220, 20%, 10%)" fillOpacity="0.4" stroke="hsl(28, 90%, 52%)" strokeWidth="1" strokeOpacity="0.4" />
+            <circle cx={cx} cy="42" r="3" fill="hsl(28, 90%, 52%)" fillOpacity="0.3">
+              <animateTransform attributeName="transform" type="rotate" from={`0 ${cx} 42`} to={`360 ${cx} 42`} dur="1s" repeatCount="indefinite" />
+            </circle>
+            {/* Wheel rim lines */}
+            <line x1={cx} y1={36} x2={cx} y2={48} stroke="hsl(28, 90%, 52%)" strokeWidth="0.5" strokeOpacity="0.2">
+              <animateTransform attributeName="transform" type="rotate" from={`0 ${cx} 42`} to={`360 ${cx} 42`} dur="1s" repeatCount="indefinite" />
+            </line>
+          </g>
+        ))}
+
+        {/* Antenna with signal */}
+        <line x1="28" y1="10" x2="28" y2="3" stroke="hsl(28, 90%, 52%)" strokeWidth="0.8" strokeOpacity="0.5" />
+        <circle cx="28" cy="2" r="1.5" fill="hsl(28, 90%, 52%)" fillOpacity="0.7">
+          <animate attributeName="r" values="1;2;1" dur="2s" repeatCount="indefinite" />
+          <animate attributeName="fillOpacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite" />
+        </circle>
+
+        {/* Signal waves from antenna */}
+        {[4, 7, 10].map((r, i) => (
+          <circle key={i} cx="28" cy="2" r={r} fill="none" stroke="hsl(28, 90%, 52%)" strokeWidth="0.4" strokeOpacity="0">
+            <animate attributeName="strokeOpacity" values="0;0.3;0" dur="2s" begin={`${i * 0.5}s`} repeatCount="indefinite" />
+            <animate attributeName="r" values={`${r - 2};${r + 2}`} dur="2s" begin={`${i * 0.5}s`} repeatCount="indefinite" />
+          </circle>
+        ))}
+
+        {/* Undercarriage tech glow */}
+        <rect x="30" y="44" width="60" height="1" rx="0.5" fill="hsl(28, 90%, 52%)" fillOpacity="0.2">
+          <animate attributeName="fillOpacity" values="0.1;0.35;0.1" dur="2s" repeatCount="indefinite" />
+        </rect>
+      </svg>
+    </div>
   );
+}
+
+function ParticleField() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const particles: { x: number; y: number; vx: number; vy: number; size: number; opacity: number; pulse: number }[] = [];
+    for (let i = 0; i < 40; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        size: Math.random() * 2 + 0.5,
+        opacity: Math.random() * 0.3 + 0.05,
+        pulse: Math.random() * Math.PI * 2,
+      });
+    }
+
+    let animId: number;
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach((p, i) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.pulse += 0.02;
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
+
+        const alpha = p.opacity * (0.5 + 0.5 * Math.sin(p.pulse));
+        ctx.fillStyle = `hsla(28, 90%, 52%, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw connections
+        particles.forEach((p2, j) => {
+          if (j <= i) return;
+          const dx = p.x - p2.x;
+          const dy = p.y - p2.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            ctx.strokeStyle = `hsla(28, 90%, 52%, ${0.06 * (1 - dist / 120)})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        });
+      });
+
+      animId = requestAnimationFrame(draw);
+    };
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />;
 }
 
 export default function Projects() {
@@ -64,27 +232,46 @@ export default function Projects() {
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] overflow-hidden">
-      {/* Animated road lines behind everything */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Road line 1 */}
-        <div className="absolute top-[30%] w-full h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent animate-[road-line_8s_linear_infinite]" />
-        {/* Road line 2 */}
-        <div className="absolute top-[60%] w-full h-px bg-gradient-to-r from-transparent via-primary/15 to-transparent animate-[road-line_12s_linear_infinite_2s]" />
+      {/* Particle network background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <ParticleField />
       </div>
 
-      {/* Animated buses */}
+      {/* Grid overlay */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.03]" style={{
+        backgroundImage: `
+          linear-gradient(hsl(28, 90%, 52%) 1px, transparent 1px),
+          linear-gradient(90deg, hsl(28, 90%, 52%) 1px, transparent 1px)
+        `,
+        backgroundSize: "60px 60px",
+      }} />
+
+      {/* Horizontal scan lines */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute animate-[bus-move-right_14s_linear_infinite]" style={{ top: "12%" }}>
-          <AnimatedBus />
-        </div>
-        <div className="absolute animate-[bus-move-left_18s_linear_infinite_3s]" style={{ top: "78%" }}>
-          <div className="scale-x-[-1]">
-            <AnimatedBus />
+        <div className="absolute w-full h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent"
+          style={{ animation: "scan-horizontal 6s ease-in-out infinite", top: "30%" }} />
+        <div className="absolute w-full h-px bg-gradient-to-r from-transparent via-primary/15 to-transparent"
+          style={{ animation: "scan-horizontal 8s ease-in-out infinite 2s", top: "65%" }} />
+      </div>
+
+      {/* Animated tech buses */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <TechBus direction="right" y={10} delay={0} size={1} />
+        <TechBus direction="left" y={80} delay={3} size={0.9} />
+        <TechBus direction="right" y={48} delay={7} size={0.7} />
+      </div>
+
+      {/* Digital road lanes */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {[18, 55, 85].map((top, i) => (
+          <div key={i} className="absolute w-full" style={{ top: `${top}%` }}>
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-primary/10 to-transparent" />
+            {/* Dashed center line */}
+            <div className="h-px w-full mt-[1px]" style={{
+              backgroundImage: "repeating-linear-gradient(90deg, transparent, transparent 20px, hsl(28, 90%, 52%, 0.08) 20px, hsl(28, 90%, 52%, 0.08) 40px)",
+            }} />
           </div>
-        </div>
-        <div className="absolute animate-[bus-move-right_22s_linear_infinite_7s]" style={{ top: "45%" }}>
-          <AnimatedBus className="opacity-40 scale-75" />
-        </div>
+        ))}
       </div>
 
       {/* Header */}

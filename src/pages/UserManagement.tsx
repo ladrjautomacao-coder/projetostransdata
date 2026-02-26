@@ -34,7 +34,7 @@ export default function UserManagement() {
   const [search, setSearch] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<{
-    type: "delete" | "reset" | "approve" | "ban";
+    type: "delete" | "reset" | "approve" | "ban" | "toggle_role";
     user: ManagedUser;
   } | null>(null);
 
@@ -72,6 +72,7 @@ export default function UserManagement() {
       case "reset_password": return "Solicitação de reset de senha enviada";
       case "delete": return "Usuário excluído com sucesso";
       case "toggle_ban": return "Status do usuário atualizado";
+      case "toggle_role": return "Papel do usuário atualizado";
       default: return "Ação executada";
     }
   };
@@ -91,6 +92,9 @@ export default function UserManagement() {
         break;
       case "ban":
         executeAction("toggle_ban", user.id, { ban: !user.banned });
+        break;
+      case "toggle_role":
+        executeAction("toggle_role", user.id, { role: user.role === "admin" ? "user" : "admin" });
         break;
     }
   };
@@ -248,6 +252,19 @@ export default function UserManagement() {
                     <Button
                       variant="outline"
                       size="sm"
+                      className={`h-8 text-xs ${user.role === "admin" ? "border-amber-500/30 text-amber-600" : "border-blue-500/30 text-blue-600"}`}
+                      disabled={actionLoading === user.id}
+                      onClick={() => setConfirmAction({ type: "toggle_role", user })}
+                    >
+                      {user.role === "admin" ? (
+                        <><ShieldAlert className="h-3.5 w-3.5 mr-1" /> Remover Admin</>
+                      ) : (
+                        <><Shield className="h-3.5 w-3.5 mr-1" /> Tornar Admin</>
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className={`h-8 text-xs ${user.banned ? "border-emerald-500/30 text-emerald-600" : "border-amber-500/30 text-amber-600"}`}
                       disabled={actionLoading === user.id}
                       onClick={() => setConfirmAction({ type: "ban", user })}
@@ -284,6 +301,7 @@ export default function UserManagement() {
               {confirmAction?.type === "reset" && "Resetar Senha"}
               {confirmAction?.type === "approve" && "Aprovar Usuário"}
               {confirmAction?.type === "ban" && (confirmAction.user.banned ? "Desbanir Usuário" : "Banir Usuário")}
+              {confirmAction?.type === "toggle_role" && (confirmAction.user.role === "admin" ? "Remover Administrador" : "Tornar Administrador")}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {confirmAction?.type === "delete" && (
@@ -299,6 +317,11 @@ export default function UserManagement() {
                 confirmAction.user.banned
                   ? <>Deseja restaurar o acesso de <strong>{confirmAction.user.full_name}</strong>?</>
                   : <>Deseja bloquear o acesso de <strong>{confirmAction?.user.full_name}</strong> ao sistema?</>
+              )}
+              {confirmAction?.type === "toggle_role" && (
+                confirmAction.user.role === "admin"
+                  ? <>Deseja remover o papel de administrador de <strong>{confirmAction.user.full_name}</strong>?</>
+                  : <>Deseja tornar <strong>{confirmAction.user.full_name}</strong> um administrador do sistema?</>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>

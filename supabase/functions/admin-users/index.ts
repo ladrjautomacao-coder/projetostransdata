@@ -139,6 +139,22 @@ Deno.serve(async (req) => {
         });
       }
 
+      if (action === "toggle_role") {
+        if (targetUserId === callerId) {
+          return new Response(JSON.stringify({ error: "Não é possível alterar seu próprio papel" }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const newRole = body.role === "admin" ? "admin" : "user";
+        await adminClient.from("user_roles").delete().eq("user_id", targetUserId);
+        const { error } = await adminClient.from("user_roles").insert({ user_id: targetUserId, role: newRole });
+        if (error) throw error;
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       if (action === "toggle_ban") {
         if (targetUserId === callerId) {
           return new Response(JSON.stringify({ error: "Não é possível banir seu próprio usuário" }), {
@@ -146,9 +162,6 @@ Deno.serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        const banUntil = body.ban
-          ? new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString()
-          : "1970-01-01T00:00:00Z";
         const { error } = await adminClient.auth.admin.updateUserById(targetUserId, {
           ban_duration: body.ban ? "876000h" : "none",
         });

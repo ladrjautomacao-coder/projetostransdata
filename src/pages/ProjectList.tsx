@@ -1,15 +1,21 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Search, ArrowUpDown } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { ArrowLeft, Search, ArrowUpDown, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
+import { useToast } from "@/hooks/use-toast";
 
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 type BrazilianState = Database["public"]["Enums"]["brazilian_state"];
@@ -46,6 +52,8 @@ type SortKey = "company_name" | "city" | "contract_date" | "d_zero_date" | "hand
 
 export default function ProjectList() {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { user } = useAuth();
   const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -55,6 +63,9 @@ export default function ProjectList() {
   const [filterExecutive, setFilterExecutive] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("company_name");
   const [sortAsc, setSortAsc] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState<ProjectRow | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   const [managers, setManagers] = useState<{ id: string; full_name: string }[]>([]);
   const [executives, setExecutives] = useState<{ id: string; full_name: string }[]>([]);
@@ -64,18 +75,57 @@ export default function ProjectList() {
     supabase.from("team_members").select("id, full_name").eq("role", "executivo_vendas").eq("active", true).then(({ data }) => setExecutives(data || []));
   }, []);
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      const { data } = await supabase
-        .from("projects")
-        .select("id, company_name, city, state, contract_date, d_zero_date, handover_date, status, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name))")
-        .order("company_name");
-      setProjects((data as unknown as ProjectRow[]) || []);
-      setLoading(false);
-    }
-    load();
+  const loadProjects = useCallback(async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from("projects")
+      .select("id, company_name, city, state, contract_date, d_zero_date, handover_date, status, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name))")
+      .order("company_name");
+    setProjects((data as unknown as ProjectRow[]) || []);
+    setLoading(false);
   }, []);
+
+  useEffect(() => { loadProjects(); }, [loadProjects]);
+
+  const handleDelete = async () => {
+    if (!deleteTarget || deleteConfirmText !== "EXCLUIR") return;
+    setDeleting(true);
+    try {
+      // Log the deletion in project_history before deleting
+      await supabase.from("project_history").insert({
+        project_id: deleteTarget.id,
+        change_type: "exclusão",
+        changed_by: user?.id || null,
+        old_values: {
+          company_name: deleteTarget.company_name,
+          city: deleteTarget.city,
+          state: deleteTarget.state,
+          status: deleteTarget.status,
+          d_zero_date: deleteTarget.d_zero_date,
+          handover_date: deleteTarget.handover_date,
+        },
+        new_values: { deleted: true },
+      });
+
+      // Delete related records first
+      await supabase.from("project_solutions").delete().eq("project_id", deleteTarget.id);
+      await supabase.from("project_products").delete().eq("project_id", deleteTarget.id);
+      await supabase.from("project_attachments").delete().eq("project_id", deleteTarget.id);
+
+      // Delete the project
+      const { error } = await supabase.from("projects").delete().eq("id", deleteTarget.id);
+      if (error) throw error;
+
+      toast({ title: "Projeto excluído", description: `O projeto "${deleteTarget.company_name}" foi excluído com sucesso.` });
+      setDeleteTarget(null);
+      setDeleteConfirmText("");
+      loadProjects();
+    } catch (err: any) {
+      toast({ title: "Erro ao excluir", description: err.message, variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const filtered = useMemo(() => {
     let list = projects;
@@ -173,6 +223,7 @@ export default function ProjectList() {
                 <SortHeader label="Handover" field="handover_date" />
                 <SortHeader label="Status" field="status" />
                 <TableHead className="whitespace-nowrap">Soluções</TableHead>
+                <TableHead className="whitespace-nowrap w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -194,12 +245,58 @@ export default function ProjectList() {
                       ))}
                     </div>
                   </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                      onClick={(e) => { e.stopPropagation(); setDeleteTarget(p); setDeleteConfirmText(""); }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </div>
       )}
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={open => { if (!open) { setDeleteTarget(null); setDeleteConfirmText(""); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">Excluir Projeto</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <span className="block">
+                Tem certeza que deseja excluir permanentemente o projeto <strong>{deleteTarget?.company_name}</strong> ({deleteTarget?.city}/{deleteTarget?.state})?
+              </span>
+              <span className="block text-destructive font-medium">
+                Esta ação não pode ser desfeita. Todos os dados relacionados (soluções, anexos e produtos) serão removidos.
+              </span>
+              <span className="block text-sm">
+                Para confirmar, digite <strong>EXCLUIR</strong> no campo abaixo:
+              </span>
+              <Input
+                value={deleteConfirmText}
+                onChange={e => setDeleteConfirmText(e.target.value.toUpperCase())}
+                placeholder="Digite EXCLUIR para confirmar"
+                className="mt-2"
+              />
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleteConfirmText !== "EXCLUIR" || deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Excluindo..." : "Excluir Permanentemente"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

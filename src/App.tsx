@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminRoute } from "@/components/AdminRoute";
 import { AppLayout } from "@/components/AppLayout";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -38,15 +39,15 @@ const App = () => (
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/projetos" element={<Projects />} />
-              <Route path="/projetos/novo" element={<NewProject />} />
+              <Route path="/projetos/novo" element={<AdminRoute><NewProject /></AdminRoute>} />
               <Route path="/projetos/lista" element={<ProjectList />} />
               <Route path="/projetos/analitico" element={<ProjectAnalytics />} />
               <Route path="/projetos/:id" element={<ProjectDetail />} />
               <Route path="/implantacao" element={<Implantacao />} />
               <Route path="/acervo" element={<AcervoTecnico />} />
-              <Route path="/admin/equipe" element={<TeamMembers />} />
-              <Route path="/admin/produtos" element={<Products />} />
-              <Route path="/admin/usuarios" element={<UserManagement />} />
+              <Route path="/admin/equipe" element={<AdminRoute><TeamMembers /></AdminRoute>} />
+              <Route path="/admin/produtos" element={<AdminRoute><Products /></AdminRoute>} />
+              <Route path="/admin/usuarios" element={<AdminRoute><UserManagement /></AdminRoute>} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

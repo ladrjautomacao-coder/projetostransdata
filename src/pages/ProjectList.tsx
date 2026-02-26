@@ -53,7 +53,7 @@ type SortKey = "company_name" | "city" | "contract_date" | "d_zero_date" | "hand
 export default function ProjectList() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -223,7 +223,7 @@ export default function ProjectList() {
                 <SortHeader label="Handover" field="handover_date" />
                 <SortHeader label="Status" field="status" />
                 <TableHead className="whitespace-nowrap">Soluções</TableHead>
-                <TableHead className="whitespace-nowrap w-[50px]"></TableHead>
+                {isAdmin && <TableHead className="whitespace-nowrap w-[50px]"></TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -245,6 +245,7 @@ export default function ProjectList() {
                       ))}
                     </div>
                   </TableCell>
+                  {isAdmin && (
                   <TableCell>
                     <Button
                       variant="ghost"
@@ -255,6 +256,7 @@ export default function ProjectList() {
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

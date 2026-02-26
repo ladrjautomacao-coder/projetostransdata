@@ -32,7 +32,7 @@ const statusLabels: Record<ProjectStatus, string> = {
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { toast } = useToast();
   const [project, setProject] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
@@ -361,9 +361,9 @@ export default function ProjectDetail() {
             <Button variant="outline" size="sm" onClick={() => setEditing(false)}><X className="mr-1 h-4 w-4" /> Cancelar</Button>
             <Button size="sm" onClick={handleSave} disabled={saving}><Save className="mr-1 h-4 w-4" /> {saving ? "Salvando..." : "Salvar"}</Button>
           </div>
-        ) : (
+        ) : isAdmin ? (
           <Button size="sm" onClick={() => setEditing(true)}><Edit2 className="mr-1 h-4 w-4" /> Editar</Button>
-        )}
+        ) : null}
       </div>
 
       {/* Timeline */}

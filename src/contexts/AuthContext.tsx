@@ -8,6 +8,7 @@ interface AuthContextType {
   user: User | null;
   profile: { full_name: string; avatar_url: string | null } | null;
   loading: boolean;
+  isAdmin: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -20,28 +21,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<{ full_name: string; avatar_url: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const loadUserData = (userId: string) => {
+    supabase.from("profiles").select("full_name, avatar_url").eq("user_id", userId).single()
+      .then(({ data }) => { if (data) setProfile(data); });
+    supabase.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle()
+      .then(({ data }) => { setIsAdmin(!!data); });
+  };
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        setTimeout(() => {
-          supabase.from("profiles").select("full_name, avatar_url").eq("user_id", session.user.id).single()
-            .then(({ data }) => { if (data) setProfile(data); });
-        }, 0);
+        setTimeout(() => loadUserData(session.user.id), 0);
       } else {
         setProfile(null);
+        setIsAdmin(false);
       }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) {
-        supabase.from("profiles").select("full_name, avatar_url").eq("user_id", session.user.id).single()
-          .then(({ data }) => { if (data) setProfile(data); });
-      }
+      if (session?.user) loadUserData(session.user.id);
       setLoading(false);
     });
 
@@ -53,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, profile, loading, signOut }}>
+    <AuthContext.Provider value={{ session, user, profile, loading, isAdmin, signOut }}>
       {children}
     </AuthContext.Provider>
   );

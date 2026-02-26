@@ -151,19 +151,17 @@
   100% { transform: translateY(100%); }
 }
 
-/* Bus animations */
-@keyframes bus-move-right {
-  0% { transform: translateX(-200px); opacity: 0; }
-  3% { opacity: 0.8; }
-  92% { opacity: 0.8; }
-  100% { transform: translateX(calc(100vw + 200px)); opacity: 0; }
+/* Satellite float animation */
+@keyframes float-satellite {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-8px) rotate(1deg); }
+  75% { transform: translateY(6px) rotate(-1deg); }
 }
 
-@keyframes bus-move-left {
-  0% { transform: translateX(calc(100vw + 200px)) scaleX(-1); opacity: 0; }
-  3% { opacity: 0.8; }
-  92% { opacity: 0.8; }
-  100% { transform: translateX(-200px) scaleX(-1); opacity: 0; }
+/* Bus subtle hover animation */
+@keyframes bus-hover {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
 }
 
 @keyframes scan-horizontal {
@@ -171,10 +169,4 @@
   10% { opacity: 1; }
   90% { opacity: 1; }
   100% { transform: translateX(100vw); opacity: 0; }
-}
-
-@keyframes road-line {
-  0% { opacity: 0; transform: scaleX(0); }
-  50% { opacity: 1; transform: scaleX(1); }
-  100% { opacity: 0; transform: scaleX(0); }
 }

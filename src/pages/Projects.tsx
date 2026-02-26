@@ -294,7 +294,7 @@ export default function Projects() {
       </div>
 
       {/* Cards */}
-      <div className="relative z-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-5xl px-4">
+      <div className={`relative z-10 grid gap-8 w-full max-w-5xl px-4 justify-center ${cards.length <= 2 ? 'sm:grid-cols-2 max-w-3xl mx-auto' : 'sm:grid-cols-2 lg:grid-cols-3'}`}>
         {cards.map((card, i) => (
           <Card
             key={card.title}

@@ -1,4 +1,4 @@
-import { FolderKanban, LayoutDashboard, HardHat, BookOpen, Users, Package, LogOut, Signal } from "lucide-react";
+import { FolderKanban, LayoutDashboard, HardHat, BookOpen, Users, Package, LogOut, Signal, ShieldCheck } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -18,6 +18,7 @@ const mainItems = [
 const adminItems = [
   { title: "Equipe", url: "/admin/equipe", icon: Users },
   { title: "Produtos", url: "/admin/produtos", icon: Package },
+  { title: "Usuários", url: "/admin/usuarios", icon: ShieldCheck },
 ];
 
 export function AppSidebar() {

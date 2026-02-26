@@ -19,6 +19,7 @@ import Products from "./pages/Products";
 import Implantacao from "./pages/Implantacao";
 import AcervoTecnico from "./pages/AcervoTecnico";
 import ProjectAnalytics from "./pages/ProjectAnalytics";
+import UserManagement from "./pages/UserManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
               <Route path="/acervo" element={<AcervoTecnico />} />
               <Route path="/admin/equipe" element={<TeamMembers />} />
               <Route path="/admin/produtos" element={<Products />} />
+              <Route path="/admin/usuarios" element={<UserManagement />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, List, BarChart3, Signal } from "lucide-react";
 import { useEffect, useRef } from "react";
@@ -205,15 +206,16 @@ function ParticleField() {
 
 export default function Projects() {
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
 
   const cards = [
-    {
+    ...(isAdmin ? [{
       title: "Cadastrar Novo Projeto",
       description: "Crie um novo projeto no sistema",
       icon: Plus,
       onClick: () => navigate("/projetos/novo"),
       glow: false,
-    },
+    }] : []),
     {
       title: "Visualizar Projetos",
       description: "Veja e gerencie os projetos existentes",

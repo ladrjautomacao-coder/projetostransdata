@@ -22,7 +22,7 @@ const adminItems = [
 ];
 
 export function AppSidebar() {
-  const { signOut, profile } = useAuth();
+  const { signOut, profile, isAdmin } = useAuth();
 
   return (
     <Sidebar className="border-r-0">
@@ -63,6 +63,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {isAdmin && (
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-[0.15em] font-semibold">
             <Signal className="h-3 w-3 mr-1.5 text-sidebar-primary" />
@@ -87,6 +88,7 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        )}
       </SidebarContent>
 
       {/* Footer with tech divider */}

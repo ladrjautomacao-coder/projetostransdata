@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Activity, Clock, Package, TrendingUp, Users, MapPin, CalendarDays, Layers, Zap, Signal, Filter, X } from "lucide-react";
+import { ArrowLeft, Activity, Clock, Package, TrendingUp, Users, MapPin, CalendarDays, Layers, Zap, Signal, Filter, X, Calendar as CalendarIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import {
   ChartContainer,
   ChartTooltip,
@@ -112,6 +114,8 @@ export default function ProjectAnalytics() {
   const [filterState, setFilterState] = useState<string>("all");
   const [filterCity, setFilterCity] = useState<string>("all");
   const [filterSolution, setFilterSolution] = useState<string>("all");
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
     async function load() {
@@ -133,7 +137,7 @@ export default function ProjectAnalytics() {
     load();
   }, []);
 
-  const hasActiveFilters = filterStatus !== "all" || filterProject !== "all" || filterState !== "all" || filterCity !== "all" || filterSolution !== "all";
+  const hasActiveFilters = filterStatus !== "all" || filterProject !== "all" || filterState !== "all" || filterCity !== "all" || filterSolution !== "all" || !!dateFrom || !!dateTo;
 
   const clearFilters = () => {
     setFilterStatus("all");
@@ -141,6 +145,8 @@ export default function ProjectAnalytics() {
     setFilterState("all");
     setFilterCity("all");
     setFilterSolution("all");
+    setDateFrom(undefined);
+    setDateTo(undefined);
   };
 
   // Derived options for filters
@@ -165,9 +171,17 @@ export default function ProjectAnalytics() {
         const hasSolution = p.project_solutions?.some(ps => ps.solution?.name === filterSolution);
         if (!hasSolution) return false;
       }
+      if (dateFrom) {
+        const contractDate = parseISO(p.contract_date);
+        if (contractDate < dateFrom) return false;
+      }
+      if (dateTo) {
+        const contractDate = parseISO(p.contract_date);
+        if (contractDate > dateTo) return false;
+      }
       return true;
     });
-  }, [projects, filterStatus, filterProject, filterState, filterCity, filterSolution]);
+  }, [projects, filterStatus, filterProject, filterState, filterCity, filterSolution, dateFrom, dateTo]);
 
   const statusData = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -380,7 +394,32 @@ export default function ProjectAnalytics() {
                 </Button>
               )}
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
+              {/* Date From */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="bg-background border-border/50 h-9 text-xs justify-start font-normal">
+                    <CalendarIcon className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+                    {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "Data início"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 z-50" align="start">
+                  <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className="p-3 pointer-events-auto" />
+                </PopoverContent>
+              </Popover>
+
+              {/* Date To */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="bg-background border-border/50 h-9 text-xs justify-start font-normal">
+                    <CalendarIcon className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+                    {dateTo ? format(dateTo, "dd/MM/yyyy") : "Data fim"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 z-50" align="start">
+                  <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className="p-3 pointer-events-auto" />
+                </PopoverContent>
+              </Popover>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
                 <SelectTrigger className="bg-background border-border/50 h-9 text-xs">
                   <SelectValue placeholder="Status" />

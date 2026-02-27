@@ -11,7 +11,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Search, ArrowUpDown, Trash2 } from "lucide-react";
+import { ArrowLeft, Search, ArrowUpDown, Trash2, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
@@ -223,12 +223,12 @@ export default function ProjectList() {
                 <SortHeader label="Handover" field="handover_date" />
                 <SortHeader label="Status" field="status" />
                 <TableHead className="whitespace-nowrap">Soluções</TableHead>
-                {isAdmin && <TableHead className="whitespace-nowrap w-[50px]"></TableHead>}
+                <TableHead className="whitespace-nowrap w-[80px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map(p => (
-                <TableRow key={p.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/projetos/${p.id}`)}>
+                <TableRow key={p.id} className="hover:bg-muted/50">
                   <TableCell className="font-medium">{p.company_name}</TableCell>
                   <TableCell>{p.city}/{p.state}</TableCell>
                   <TableCell>{p.manager?.full_name || "—"}</TableCell>
@@ -245,18 +245,29 @@ export default function ProjectList() {
                       ))}
                     </div>
                   </TableCell>
-                  {isAdmin && (
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                      onClick={(e) => { e.stopPropagation(); setDeleteTarget(p); setDeleteConfirmText(""); }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-primary hover:bg-primary/10"
+                        onClick={() => navigate(`/projetos/${p.id}`)}
+                        title="Visualizar / Editar"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      {isAdmin && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                          onClick={() => { setDeleteTarget(p); setDeleteConfirmText(""); }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
-                  )}
                 </TableRow>
               ))}
             </TableBody>

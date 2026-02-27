@@ -293,8 +293,11 @@ function DataTransmission() {
       const c1 = cp1();
       const c2 = cp2();
 
+      // Global transparency layer
+      ctx.globalAlpha = 0.55;
+
       // Draw the beam path (pulsing)
-      const beamPulse = 0.08 + 0.06 * Math.sin(time * 3);
+      const beamPulse = 0.06 + 0.04 * Math.sin(time * 3);
       ctx.beginPath();
       ctx.moveTo(bus.x, bus.y);
       ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, sat.x, sat.y);
@@ -347,9 +350,9 @@ function DataTransmission() {
         // Draw particle head (bright)
         const headGlow = 12 + 4 * Math.sin(time * 8 + p.t * 10);
         const gradient = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, headGlow);
-        gradient.addColorStop(0, `hsla(40, 100%, 90%, 0.9)`);
-        gradient.addColorStop(0.3, `hsla(${p.hue}, 95%, 60%, 0.6)`);
-        gradient.addColorStop(0.7, `hsla(${p.hue}, 90%, 50%, 0.15)`);
+        gradient.addColorStop(0, `hsla(40, 100%, 90%, 0.7)`);
+        gradient.addColorStop(0.3, `hsla(${p.hue}, 95%, 60%, 0.4)`);
+        gradient.addColorStop(0.7, `hsla(${p.hue}, 90%, 50%, 0.1)`);
         gradient.addColorStop(1, `hsla(${p.hue}, 90%, 50%, 0)`);
 
         ctx.beginPath();
@@ -360,12 +363,12 @@ function DataTransmission() {
         // Core dot
         ctx.beginPath();
         ctx.arc(pos.x, pos.y, p.size * 0.6, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(45, 100%, 95%, 0.95)`;
+        ctx.fillStyle = `hsla(45, 100%, 95%, 0.7)`;
         ctx.fill();
       });
 
       // Emission burst at bus antenna
-      const burstAlpha = 0.15 + 0.1 * Math.sin(time * 5);
+      const burstAlpha = 0.1 + 0.06 * Math.sin(time * 5);
       const burstGrad = ctx.createRadialGradient(bus.x, bus.y, 0, bus.x, bus.y, 25);
       burstGrad.addColorStop(0, `hsla(28, 90%, 60%, ${burstAlpha})`);
       burstGrad.addColorStop(1, `hsla(28, 90%, 50%, 0)`);
@@ -375,7 +378,7 @@ function DataTransmission() {
       ctx.fill();
 
       // Reception burst at satellite
-      const recvAlpha = 0.12 + 0.08 * Math.sin(time * 4 + 1);
+      const recvAlpha = 0.08 + 0.05 * Math.sin(time * 4 + 1);
       const recvGrad = ctx.createRadialGradient(sat.x, sat.y, 0, sat.x, sat.y, 20);
       recvGrad.addColorStop(0, `hsla(28, 90%, 65%, ${recvAlpha})`);
       recvGrad.addColorStop(1, `hsla(28, 90%, 50%, 0)`);

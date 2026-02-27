@@ -1,11 +1,10 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Activity, Clock, Package, TrendingUp, Users, MapPin, CalendarDays, Layers, Zap, Signal, Filter, X, Calendar as CalendarIcon } from "lucide-react";
+import { ArrowLeft, Activity, Clock, Package, TrendingUp, Users, MapPin, CalendarDays, Layers, Zap, Signal, Filter, X, Calendar as CalendarIcon, BarChart3, CheckCircle2, PauseCircle, PlayCircle, FileText } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -18,13 +17,12 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   PieChart, Pie, Cell,
   AreaChart, Area,
-  RadialBarChart, RadialBar,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
+import { motion, AnimatePresence } from "framer-motion";
 
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 
@@ -36,11 +34,18 @@ const statusLabels: Record<ProjectStatus, string> = {
 };
 
 const STATUS_COLORS = [
-  "hsl(28 90% 52%)",
-  "hsl(38 92% 50%)",
-  "hsl(142 72% 42%)",
-  "hsl(0 62% 50%)",
+  "hsl(38 92% 50%)",   // planejamento - amber
+  "hsl(28 90% 52%)",   // implantacao - orange
+  "hsl(142 72% 42%)",  // encerrado - green
+  "hsl(0 62% 50%)",    // suspenso - red
 ];
+
+const STATUS_ICONS = {
+  planejamento: FileText,
+  implantacao: PlayCircle,
+  encerrado: CheckCircle2,
+  suspenso: PauseCircle,
+};
 
 const PRODUCT_COLORS = [
   "hsl(28 90% 52%)",
@@ -72,36 +77,96 @@ interface ProjectRow {
   project_solutions: { solution: { name: string } | null }[];
 }
 
-function GlowCard({ children, className = "", glow = false }: { children: React.ReactNode; className?: string; glow?: boolean }) {
+// Animated number counter
+function AnimatedNumber({ value, duration = 1200 }: { value: number; duration?: number }) {
+  const [display, setDisplay] = useState(0);
+  const ref = useRef<number | null>(null);
+
+  useEffect(() => {
+    const start = display;
+    const diff = value - start;
+    if (diff === 0) return;
+    const startTime = performance.now();
+    const animate = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      setDisplay(Math.round(start + diff * eased));
+      if (progress < 1) ref.current = requestAnimationFrame(animate);
+    };
+    ref.current = requestAnimationFrame(animate);
+    return () => { if (ref.current) cancelAnimationFrame(ref.current); };
+  }, [value, duration]);
+
+  return <>{display}</>;
+}
+
+function GlowCard({ children, className = "", glow = false, delay = 0 }: { children: React.ReactNode; className?: string; glow?: boolean; delay?: number }) {
   return (
-    <div className={`relative rounded-xl border border-border/50 bg-card/80 backdrop-blur-sm overflow-hidden ${glow ? "glow-orange" : ""} ${className}`}>
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-transparent pointer-events-none" />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className={`relative rounded-2xl border border-border/40 bg-card/90 backdrop-blur-md overflow-hidden ${glow ? "glow-orange" : ""} ${className}`}
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-transparent pointer-events-none" />
       <div className="relative">{children}</div>
-    </div>
+    </motion.div>
   );
 }
 
-function KpiCard({ icon: Icon, label, value, accent = "primary" }: { icon: any; label: string; value: string | number; accent?: string }) {
-  const accentMap: Record<string, string> = {
-    primary: "from-primary/20 to-primary/5 text-primary border-primary/20",
-    amber: "from-amber-500/20 to-amber-500/5 text-amber-500 border-amber-500/20",
-    emerald: "from-emerald-500/20 to-emerald-500/5 text-emerald-500 border-emerald-500/20",
-    cyan: "from-cyan-500/20 to-cyan-500/5 text-cyan-500 border-cyan-500/20",
+function KpiCard({ icon: Icon, label, value, accent = "primary", index = 0 }: { icon: any; label: string; value: number; accent?: string; index?: number }) {
+  const accentMap: Record<string, { bg: string; icon: string; border: string; glow: string }> = {
+    primary: { bg: "from-primary/15 to-primary/5", icon: "text-primary", border: "border-primary/20", glow: "shadow-primary/10" },
+    amber: { bg: "from-amber-500/15 to-amber-500/5", icon: "text-amber-500", border: "border-amber-500/20", glow: "shadow-amber-500/10" },
+    emerald: { bg: "from-emerald-500/15 to-emerald-500/5", icon: "text-emerald-500", border: "border-emerald-500/20", glow: "shadow-emerald-500/10" },
+    cyan: { bg: "from-cyan-500/15 to-cyan-500/5", icon: "text-cyan-500", border: "border-cyan-500/20", glow: "shadow-cyan-500/10" },
+    red: { bg: "from-red-500/15 to-red-500/5", icon: "text-red-500", border: "border-red-500/20", glow: "shadow-red-500/10" },
   };
   const colors = accentMap[accent] || accentMap.primary;
 
   return (
-    <GlowCard glow={accent === "primary"}>
-      <div className="p-5 flex items-center gap-4">
-        <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${colors} border`}>
-          <Icon className="h-6 w-6" />
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95, y: 16 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: index * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className={`relative rounded-2xl border ${colors.border} bg-card/90 backdrop-blur-md overflow-hidden shadow-lg ${colors.glow}`}
+    >
+      <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg} pointer-events-none`} />
+      <div className="relative p-5 flex items-center gap-4">
+        <div className={`flex h-13 w-13 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${colors.bg} border ${colors.border}`}>
+          <Icon className={`h-6 w-6 ${colors.icon}`} />
         </div>
         <div>
           <p className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] font-medium">{label}</p>
-          <p className="text-3xl font-bold tracking-tight mt-0.5" style={{ fontFamily: "'Rajdhani', sans-serif" }}>{value}</p>
+          <p className="text-3xl font-bold tracking-tight mt-0.5" style={{ fontFamily: "'Rajdhani', sans-serif" }}>
+            <AnimatedNumber value={value} />
+          </p>
         </div>
       </div>
-    </GlowCard>
+    </motion.div>
+  );
+}
+
+// Status mini-card for the status strip
+function StatusKpiCard({ status, count, color, icon: Icon, index }: { status: string; count: number; color: string; icon: any; index: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
+      className="flex items-center gap-3 rounded-xl border border-border/40 bg-card/70 backdrop-blur-sm px-4 py-3 min-w-0"
+    >
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: `${color}15` }}>
+        <Icon className="h-4 w-4" style={{ color }} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[9px] text-muted-foreground uppercase tracking-[0.15em] font-medium truncate">{status}</p>
+        <p className="text-xl font-bold tracking-tight" style={{ fontFamily: "'Rajdhani', sans-serif", color }}>
+          <AnimatedNumber value={count} duration={800} />
+        </p>
+      </div>
+    </motion.div>
   );
 }
 
@@ -149,7 +214,6 @@ export default function ProjectAnalytics() {
     setDateTo(undefined);
   };
 
-  // Derived options for filters
   const stateOptions = useMemo(() => [...new Set(projects.map(p => p.state))].sort(), [projects]);
   const cityOptions = useMemo(() => {
     const filtered = filterState !== "all" ? projects.filter(p => p.state === filterState) : projects;
@@ -183,15 +247,22 @@ export default function ProjectAnalytics() {
     });
   }, [projects, filterStatus, filterProject, filterState, filterCity, filterSolution, dateFrom, dateTo]);
 
-  const statusData = useMemo(() => {
-    const counts: Record<string, number> = {};
+  // Status counts for ALL statuses
+  const statusCounts = useMemo(() => {
+    const counts: Record<ProjectStatus, number> = {
+      planejamento: 0, implantacao: 0, encerrado: 0, suspenso: 0,
+    };
     filteredProjects.forEach(p => { counts[p.status] = (counts[p.status] || 0) + 1; });
+    return counts;
+  }, [filteredProjects]);
+
+  const statusData = useMemo(() => {
     return Constants.public.Enums.project_status.map((s, i) => ({
       name: statusLabels[s],
-      value: counts[s] || 0,
+      value: statusCounts[s],
       fill: STATUS_COLORS[i],
     }));
-  }, [filteredProjects]);
+  }, [statusCounts]);
 
   const stateData = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -212,7 +283,6 @@ export default function ProjectAnalytics() {
     }));
   }, [filteredProjects]);
 
-  // Cumulative fleet evolution by contract_date
   const fleetTimelineData = useMemo(() => {
     const sorted = [...filteredProjects]
       .filter(p => p.fleet_size && p.fleet_size > 0)
@@ -229,7 +299,6 @@ export default function ProjectAnalytics() {
     });
   }, [filteredProjects]);
 
-  // Cumulative fleet evolution by solution
   const solutionTimelineData = useMemo(() => {
     const solutionNames = new Set<string>();
     filteredProjects.forEach(p => p.project_solutions?.forEach(ps => {
@@ -296,17 +365,8 @@ export default function ProjectAnalytics() {
       .slice(0, 10);
   }, [filteredProjects]);
 
-  const radialStatusData = useMemo(() => {
-    const total = filteredProjects.length || 1;
-    return statusData.filter(d => d.value > 0).map(d => ({
-      ...d,
-      pct: Math.round((d.value / total) * 100),
-    }));
-  }, [statusData, filteredProjects]);
-
   const totalProjects = filteredProjects.length;
   const avgFleet = filteredProjects.filter(p => p.fleet_size).reduce((a, p) => a + (p.fleet_size || 0), 0) / (filteredProjects.filter(p => p.fleet_size).length || 1);
-  const activeProjects = filteredProjects.filter(p => p.status === "implantacao").length;
   const totalStates = new Set(filteredProjects.map(p => p.state)).size;
 
   const fleetConfig: ChartConfig = {
@@ -315,37 +375,6 @@ export default function ProjectAnalytics() {
   const solutionTimelineConfig: ChartConfig = Object.fromEntries(
     solutionNamesForChart.map((name, i) => [name, { label: name, color: PRODUCT_COLORS[i % PRODUCT_COLORS.length] }])
   );
-  const durationConfig: ChartConfig = {
-    contratoDzero: { label: "Contrato → D-Zero", color: "hsl(28 90% 52%)" },
-    dzeroHandover: { label: "D-Zero → Handover", color: "hsl(190 80% 50%)" },
-  };
-
-  const timelineCustomTooltip = ({ active, payload }: any) => {
-    if (!active || !payload?.length) return null;
-    const data = payload[0]?.payload;
-    if (!data) return null;
-    return (
-      <div className="rounded-lg border border-border/50 bg-background px-3 py-2 text-xs shadow-xl space-y-1.5">
-        <p className="font-semibold text-sm">{data.name}</p>
-        <div className="flex items-center gap-2">
-          <div className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: "hsl(28 90% 52%)" }} />
-          <span className="text-muted-foreground">Contrato → D-Zero:</span>
-          <span className="font-bold">{data.contratoDzero} dias</span>
-        </div>
-        {data.hasHandover && (
-          <div className="flex items-center gap-2">
-            <div className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: "hsl(190 80% 50%)" }} />
-            <span className="text-muted-foreground">D-Zero → Handover:</span>
-            <span className="font-bold">{data.dzeroHandover} dias</span>
-          </div>
-        )}
-        <div className="border-t border-border/50 pt-1 flex items-center gap-2">
-          <span className="text-muted-foreground">Total:</span>
-          <span className="font-bold">{data.total} dias</span>
-        </div>
-      </div>
-    );
-  };
   const genericConfig: ChartConfig = { value: { label: "Projetos" }, count: { label: "Projetos" } };
 
   if (loading) {
@@ -365,7 +394,12 @@ export default function ProjectAnalytics() {
   return (
     <div className="space-y-6 pb-8">
       {/* Header */}
-      <div className="flex flex-col gap-4">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex flex-col gap-4"
+      >
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <Button variant="ghost" onClick={() => navigate("/projetos")} className="w-fit">
             <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
@@ -383,7 +417,7 @@ export default function ProjectAnalytics() {
         </div>
 
         {/* Filter Bar */}
-        <GlowCard>
+        <GlowCard delay={0.1}>
           <div className="p-4">
             <div className="flex items-center gap-2 mb-3">
               <Filter className="h-4 w-4 text-muted-foreground" />
@@ -395,7 +429,6 @@ export default function ProjectAnalytics() {
               )}
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
-              {/* Date From */}
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="bg-background border-border/50 h-9 text-xs justify-start font-normal">
@@ -408,7 +441,6 @@ export default function ProjectAnalytics() {
                 </PopoverContent>
               </Popover>
 
-              {/* Date To */}
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="bg-background border-border/50 h-9 text-xs justify-start font-normal">
@@ -420,10 +452,9 @@ export default function ProjectAnalytics() {
                   <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className="p-3 pointer-events-auto" />
                 </PopoverContent>
               </Popover>
+
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="bg-background border-border/50 h-9 text-xs">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
+                <SelectTrigger className="bg-background border-border/50 h-9 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
                 <SelectContent className="bg-popover z-50">
                   <SelectItem value="all">Todos os Status</SelectItem>
                   {Constants.public.Enums.project_status.map(s => (
@@ -433,9 +464,7 @@ export default function ProjectAnalytics() {
               </Select>
 
               <Select value={filterProject} onValueChange={setFilterProject}>
-                <SelectTrigger className="bg-background border-border/50 h-9 text-xs">
-                  <SelectValue placeholder="Projeto" />
-                </SelectTrigger>
+                <SelectTrigger className="bg-background border-border/50 h-9 text-xs"><SelectValue placeholder="Projeto" /></SelectTrigger>
                 <SelectContent className="bg-popover z-50">
                   <SelectItem value="all">Todos os Projetos</SelectItem>
                   {projects.map(p => (
@@ -445,9 +474,7 @@ export default function ProjectAnalytics() {
               </Select>
 
               <Select value={filterState} onValueChange={v => { setFilterState(v); setFilterCity("all"); }}>
-                <SelectTrigger className="bg-background border-border/50 h-9 text-xs">
-                  <SelectValue placeholder="Estado" />
-                </SelectTrigger>
+                <SelectTrigger className="bg-background border-border/50 h-9 text-xs"><SelectValue placeholder="Estado" /></SelectTrigger>
                 <SelectContent className="bg-popover z-50">
                   <SelectItem value="all">Todos os Estados</SelectItem>
                   {stateOptions.map(s => (
@@ -457,9 +484,7 @@ export default function ProjectAnalytics() {
               </Select>
 
               <Select value={filterCity} onValueChange={setFilterCity}>
-                <SelectTrigger className="bg-background border-border/50 h-9 text-xs">
-                  <SelectValue placeholder="Cidade" />
-                </SelectTrigger>
+                <SelectTrigger className="bg-background border-border/50 h-9 text-xs"><SelectValue placeholder="Cidade" /></SelectTrigger>
                 <SelectContent className="bg-popover z-50">
                   <SelectItem value="all">Todas as Cidades</SelectItem>
                   {cityOptions.map(c => (
@@ -469,9 +494,7 @@ export default function ProjectAnalytics() {
               </Select>
 
               <Select value={filterSolution} onValueChange={setFilterSolution}>
-                <SelectTrigger className="bg-background border-border/50 h-9 text-xs">
-                  <SelectValue placeholder="Solução" />
-                </SelectTrigger>
+                <SelectTrigger className="bg-background border-border/50 h-9 text-xs"><SelectValue placeholder="Solução" /></SelectTrigger>
                 <SelectContent className="bg-popover z-50">
                   <SelectItem value="all">Todas as Soluções</SelectItem>
                   {solutionOptions.map(s => (
@@ -482,22 +505,35 @@ export default function ProjectAnalytics() {
             </div>
           </div>
         </GlowCard>
+      </motion.div>
+
+      {/* KPI Strip - Main metrics */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        <KpiCard icon={Layers} label="Total Projetos" value={totalProjects} accent="primary" index={0} />
+        <KpiCard icon={MapPin} label="Estados" value={totalStates} accent="emerald" index={1} />
+        <KpiCard icon={TrendingUp} label="Frota Média" value={Math.round(avgFleet)} accent="cyan" index={2} />
       </div>
 
-      {/* KPI Strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard icon={Layers} label="Total Projetos" value={totalProjects} accent="primary" />
-        <KpiCard icon={Activity} label="Em Implantação" value={activeProjects} accent="amber" />
-        <KpiCard icon={MapPin} label="Estados" value={totalStates} accent="emerald" />
-        <KpiCard icon={TrendingUp} label="Frota Média" value={Math.round(avgFleet)} accent="cyan" />
+      {/* Status breakdown strip - ALL statuses */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {Constants.public.Enums.project_status.map((s, i) => (
+          <StatusKpiCard
+            key={s}
+            status={statusLabels[s]}
+            count={statusCounts[s]}
+            color={STATUS_COLORS[i]}
+            icon={STATUS_ICONS[s]}
+            index={i}
+          />
+        ))}
       </div>
 
-      {/* Row 1: Status Radial + Products Donut */}
+      {/* Row 1: Status Donut + Solutions Donut */}
       <div className="grid lg:grid-cols-2 gap-6">
-        <GlowCard>
+        <GlowCard delay={0.15}>
           <div className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
+              <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Status dos Projetos</h3>
             </div>
             <div className="flex items-center gap-6">
@@ -513,6 +549,8 @@ export default function ProjectAnalytics() {
                     dataKey="value"
                     nameKey="name"
                     strokeWidth={0}
+                    animationBegin={200}
+                    animationDuration={1000}
                   >
                     {statusData.filter(d => d.value > 0).map((entry, i) => (
                       <Cell key={i} fill={entry.fill} />
@@ -523,23 +561,29 @@ export default function ProjectAnalytics() {
               </ChartContainer>
               <div className="flex flex-col gap-2.5 min-w-[140px]">
                 {statusData.filter(d => d.value > 0).map((d, i) => (
-                  <div key={i} className="flex items-center gap-2.5">
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 + i * 0.1 }}
+                    className="flex items-center gap-2.5"
+                  >
                     <div className="h-3 w-3 rounded-sm shrink-0" style={{ backgroundColor: d.fill }} />
                     <div className="flex-1">
                       <p className="text-xs text-muted-foreground leading-none">{d.name}</p>
                       <p className="text-sm font-bold mt-0.5">{d.value}</p>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
           </div>
         </GlowCard>
 
-        <GlowCard>
+        <GlowCard delay={0.2}>
           <div className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
+              <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Soluções</h3>
             </div>
             <div className="flex items-center gap-6">
@@ -555,6 +599,8 @@ export default function ProjectAnalytics() {
                     dataKey="value"
                     nameKey="name"
                     strokeWidth={0}
+                    animationBegin={400}
+                    animationDuration={1000}
                   >
                     {solutionData.map((entry, i) => (
                       <Cell key={i} fill={entry.fill} />
@@ -565,11 +611,17 @@ export default function ProjectAnalytics() {
               </ChartContainer>
               <div className="flex flex-col gap-2 min-w-[120px] max-h-[220px] overflow-auto">
                 {solutionData.map((d, i) => (
-                  <div key={i} className="flex items-center gap-2">
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6 + i * 0.1 }}
+                    className="flex items-center gap-2"
+                  >
                     <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: d.fill }} />
                     <span className="text-xs text-muted-foreground truncate">{d.name}</span>
                     <span className="text-xs font-bold ml-auto">{d.value}</span>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -579,17 +631,17 @@ export default function ProjectAnalytics() {
 
       {/* Row 2: Fleet Timeline + Solution Timeline */}
       <div className="grid lg:grid-cols-2 gap-6">
-        <GlowCard glow>
+        <GlowCard glow delay={0.25}>
           <div className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
+              <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Evolução da Frota</h3>
             </div>
             <ChartContainer config={fleetConfig} className="h-[280px]">
               <AreaChart data={fleetTimelineData}>
                 <defs>
                   <linearGradient id="gFleet" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(28 90% 52%)" stopOpacity={0.3} />
+                    <stop offset="0%" stopColor="hsl(28 90% 52%)" stopOpacity={0.35} />
                     <stop offset="100%" stopColor="hsl(28 90% 52%)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
@@ -597,16 +649,16 @@ export default function ProjectAnalytics() {
                 <XAxis dataKey="month" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Area type="monotone" dataKey="frota" stroke="hsl(28 90% 52%)" fill="url(#gFleet)" strokeWidth={2.5} dot={{ r: 4, fill: "hsl(28 90% 52%)", strokeWidth: 0 }} />
+                <Area type="monotone" dataKey="frota" stroke="hsl(28 90% 52%)" fill="url(#gFleet)" strokeWidth={2.5} dot={{ r: 4, fill: "hsl(28 90% 52%)", strokeWidth: 0 }} animationDuration={1500} />
               </AreaChart>
             </ChartContainer>
           </div>
         </GlowCard>
 
-        <GlowCard glow>
+        <GlowCard glow delay={0.3}>
           <div className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
+              <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Evolução por Solução</h3>
               <div className="flex gap-3 ml-auto flex-wrap justify-end">
                 {solutionNamesForChart.map((name, i) => (
@@ -632,7 +684,7 @@ export default function ProjectAnalytics() {
                 <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 {solutionNamesForChart.map((name, i) => (
-                  <Area key={name} type="monotone" dataKey={name} stroke={PRODUCT_COLORS[i % PRODUCT_COLORS.length]} fill={`url(#gSol${i})`} strokeWidth={2} dot={{ r: 3, fill: PRODUCT_COLORS[i % PRODUCT_COLORS.length], strokeWidth: 0 }} />
+                  <Area key={name} type="monotone" dataKey={name} stroke={PRODUCT_COLORS[i % PRODUCT_COLORS.length]} fill={`url(#gSol${i})`} strokeWidth={2} dot={{ r: 3, fill: PRODUCT_COLORS[i % PRODUCT_COLORS.length], strokeWidth: 0 }} animationDuration={1500} animationBegin={300 + i * 200} />
                 ))}
               </AreaChart>
             </ChartContainer>
@@ -640,15 +692,14 @@ export default function ProjectAnalytics() {
         </GlowCard>
       </div>
 
-      {/* Row 3: Duration + State */}
+      {/* Row 3: Duration Timeline + State */}
       <div className="grid lg:grid-cols-2 gap-6">
-        <GlowCard glow>
+        <GlowCard glow delay={0.35}>
           <div className="p-5">
             <div className="flex items-center gap-2 mb-5">
-              <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
+              <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Linha do Tempo (dias)</h3>
             </div>
-            {/* Legend */}
             <div className="flex items-center gap-5 mb-6">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-8 rounded-full bg-gradient-to-r from-primary/80 to-primary" />
@@ -659,7 +710,6 @@ export default function ProjectAnalytics() {
                 <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">D-Zero → Handover</span>
               </div>
             </div>
-            {/* Timeline rows */}
             <div className="space-y-3 max-h-[360px] overflow-auto pr-1">
               {durationData.length === 0 && <p className="text-center text-muted-foreground text-xs py-8">Sem dados para exibir</p>}
               {durationData.map((d, i) => {
@@ -667,66 +717,70 @@ export default function ProjectAnalytics() {
                 const seg1Pct = (d.contratoDzero / maxTotal) * 100;
                 const seg2Pct = (d.dzeroHandover / maxTotal) * 100;
                 return (
-                  <div key={i} className="group">
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 + i * 0.08 }}
+                    className="group"
+                  >
                     <div className="flex items-center gap-3">
-                      {/* Project name */}
                       <div className="w-[140px] shrink-0 text-right">
                         <span className="text-[11px] font-semibold text-foreground/80 group-hover:text-foreground transition-colors truncate block">{d.name}</span>
                       </div>
-                      {/* Bar track */}
                       <div className="flex-1 relative">
                         <div className="h-7 rounded-md bg-muted/40 border border-border/30 overflow-hidden relative group-hover:border-primary/30 transition-colors">
-                          {/* Segment 1: Contrato → D-Zero */}
-                          <div
-                            className="absolute inset-y-0 left-0 rounded-l-md flex items-center justify-center transition-all duration-500"
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${seg1Pct}%` }}
+                            transition={{ duration: 0.8, delay: 0.5 + i * 0.08, ease: "easeOut" }}
+                            className="absolute inset-y-0 left-0 rounded-l-md flex items-center justify-center"
                             style={{
-                              width: `${seg1Pct}%`,
                               background: "linear-gradient(90deg, hsl(28 90% 52% / 0.6), hsl(28 90% 52% / 0.9))",
                               boxShadow: "inset 0 1px 0 hsl(28 90% 70% / 0.3), 0 0 12px hsl(28 90% 52% / 0.15)",
                             }}
                           >
                             {seg1Pct > 12 && <span className="text-[9px] font-bold text-primary-foreground/90 drop-shadow-sm">{d.contratoDzero}d</span>}
-                          </div>
-                          {/* Segment 2: D-Zero → Handover */}
+                          </motion.div>
                           {d.hasHandover && d.dzeroHandover > 0 && (
-                            <div
-                              className="absolute inset-y-0 flex items-center justify-center transition-all duration-500"
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${seg2Pct}%` }}
+                              transition={{ duration: 0.8, delay: 0.7 + i * 0.08, ease: "easeOut" }}
+                              className="absolute inset-y-0 flex items-center justify-center"
                               style={{
                                 left: `${seg1Pct}%`,
-                                width: `${seg2Pct}%`,
                                 background: "linear-gradient(90deg, hsl(190 80% 50% / 0.6), hsl(190 80% 50% / 0.9))",
                                 boxShadow: "inset 0 1px 0 hsl(190 80% 70% / 0.3), 0 0 12px hsl(190 80% 50% / 0.15)",
-                                borderRadius: seg2Pct > 0 ? "0 6px 6px 0" : "0",
+                                borderRadius: "0 6px 6px 0",
                               }}
                             >
                               {seg2Pct > 12 && <span className="text-[9px] font-bold text-white/90 drop-shadow-sm">{d.dzeroHandover}d</span>}
-                            </div>
+                            </motion.div>
                           )}
-                          {/* Milestone dots */}
                           <div className="absolute top-1/2 -translate-y-1/2 left-0 h-3 w-3 rounded-full border-2 border-primary bg-background shadow-sm shadow-primary/30 -translate-x-1/2 z-10" />
                           {d.hasHandover && seg1Pct > 0 && (
                             <div className="absolute top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full border-2 border-cyan-500 bg-background shadow-sm shadow-cyan-500/30 z-10" style={{ left: `${seg1Pct}%`, transform: "translate(-50%, -50%)" }} />
                           )}
                         </div>
                       </div>
-                      {/* Total badge */}
                       <div className="shrink-0 w-[52px] text-right">
                         <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-foreground/70 bg-muted/60 px-2 py-0.5 rounded-md border border-border/40 tabular-nums" style={{ fontFamily: "'Rajdhani', sans-serif" }}>
                           {d.total}<span className="text-[9px] text-muted-foreground font-normal ml-0.5">d</span>
                         </span>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
           </div>
         </GlowCard>
 
-        <GlowCard>
+        <GlowCard delay={0.4}>
           <div className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
+              <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Projetos por Estado</h3>
             </div>
             <ChartContainer config={genericConfig} className="h-[280px]">
@@ -741,7 +795,7 @@ export default function ProjectAnalytics() {
                     <stop offset="100%" stopColor="hsl(28 90% 52%)" stopOpacity={0.5} />
                   </linearGradient>
                 </defs>
-                <Bar dataKey="count" fill="url(#barGrad)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="count" fill="url(#barGrad)" radius={[6, 6, 0, 0]} animationDuration={1200} />
               </BarChart>
             </ChartContainer>
           </div>
@@ -749,10 +803,10 @@ export default function ProjectAnalytics() {
       </div>
 
       {/* Row 4: Manager */}
-      <GlowCard>
+      <GlowCard delay={0.45}>
         <div className="p-5">
           <div className="flex items-center gap-2 mb-4">
-            <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
+            <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
             <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Projetos por Gerente</h3>
           </div>
           <ChartContainer config={genericConfig} className="h-[250px]">
@@ -761,7 +815,7 @@ export default function ProjectAnalytics() {
               <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+              <Bar dataKey="value" radius={[6, 6, 0, 0]} animationDuration={1200}>
                 {managerData.map((_, i) => (
                   <Cell key={i} fill={PRODUCT_COLORS[i % PRODUCT_COLORS.length]} />
                 ))}
@@ -772,48 +826,55 @@ export default function ProjectAnalytics() {
       </GlowCard>
 
       {/* Detail card for single project */}
-      {filterProject !== "all" && filteredProjects.length === 1 && (() => {
-        const p = filteredProjects[0];
-        const fmtDate = (d: string | null) => d ? format(parseISO(d), "dd/MM/yyyy") : "—";
-        return (
-          <GlowCard glow>
-            <div className="p-5">
-              <div className="flex items-center gap-2 mb-5">
-                <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Ficha do Projeto</h3>
-              </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
-                {[
-                  { l: "Empresa", v: p.company_name },
-                  { l: "Localização", v: `${p.city}/${p.state}` },
-                  { l: "Status", v: statusLabels[p.status] },
-                  { l: "Contrato", v: fmtDate(p.contract_date) },
-                  { l: "D-Zero", v: fmtDate(p.d_zero_date) },
-                  { l: "Handover", v: fmtDate(p.handover_date) },
-                  { l: "Gerente", v: p.manager?.full_name || "—" },
-                  { l: "Executivo", v: p.executive?.full_name || "—" },
-                  { l: "Frota", v: String(p.fleet_size || "—") },
-                  { l: "Piloto", v: p.is_pilot ? "Sim" : "Não" },
-                ].map((item, i) => (
-                  <div key={i}>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.15em]">{item.l}</p>
-                    <p className="text-sm font-semibold mt-0.5">{item.v}</p>
-                  </div>
-                ))}
-                <div className="sm:col-span-2">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] mb-1">Soluções</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {p.project_solutions?.map((ps, i) => (
-                      <Badge key={i} variant="secondary" className="text-xs">{ps.solution?.name}</Badge>
-                    ))}
-                    {(!p.project_solutions || p.project_solutions.length === 0) && <span className="text-xs text-muted-foreground">Nenhuma</span>}
+      <AnimatePresence>
+        {filterProject !== "all" && filteredProjects.length === 1 && (() => {
+          const p = filteredProjects[0];
+          const fmtDate = (d: string | null) => d ? format(parseISO(d), "dd/MM/yyyy") : "—";
+          return (
+            <GlowCard glow delay={0.1}>
+              <div className="p-5">
+                <div className="flex items-center gap-2 mb-5">
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Ficha do Projeto</h3>
+                </div>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+                  {[
+                    { l: "Empresa", v: p.company_name },
+                    { l: "Localização", v: `${p.city}/${p.state}` },
+                    { l: "Status", v: statusLabels[p.status] },
+                    { l: "Contrato", v: fmtDate(p.contract_date) },
+                    { l: "D-Zero", v: fmtDate(p.d_zero_date) },
+                    { l: "Handover", v: fmtDate(p.handover_date) },
+                    { l: "Gerente", v: p.manager?.full_name || "—" },
+                    { l: "Executivo", v: p.executive?.full_name || "—" },
+                    { l: "Frota", v: String(p.fleet_size || "—") },
+                    { l: "Piloto", v: p.is_pilot ? "Sim" : "Não" },
+                  ].map((item, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                    >
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-[0.15em]">{item.l}</p>
+                      <p className="text-sm font-semibold mt-0.5">{item.v}</p>
+                    </motion.div>
+                  ))}
+                  <div className="sm:col-span-2">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] mb-1">Soluções</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {p.project_solutions?.map((ps, i) => (
+                        <Badge key={i} variant="secondary" className="text-xs">{ps.solution?.name}</Badge>
+                      ))}
+                      {(!p.project_solutions || p.project_solutions.length === 0) && <span className="text-xs text-muted-foreground">Nenhuma</span>}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </GlowCard>
-        );
-      })()}
+            </GlowCard>
+          );
+        })()}
+      </AnimatePresence>
     </div>
   );
 }

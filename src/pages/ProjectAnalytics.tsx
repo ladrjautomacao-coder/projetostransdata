@@ -149,13 +149,15 @@ function KpiCard({ icon: Icon, label, value, accent = "primary", index = 0 }: { 
 }
 
 // Status mini-card for the status strip
-function StatusKpiCard({ status, count, color, icon: Icon, index }: { status: string; count: number; color: string; icon: any; index: number }) {
+function StatusKpiCard({ status, count, color, icon: Icon, index, active, onClick }: { status: string; count: number; color: string; icon: any; index: number; active?: boolean; onClick?: () => void }) {
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
-      className="flex items-center gap-3 rounded-xl border border-border/40 bg-card/70 backdrop-blur-sm px-4 py-3 min-w-0"
+      onClick={onClick}
+      className={`flex items-center gap-3 rounded-xl border bg-card/70 backdrop-blur-sm px-4 py-3 min-w-0 cursor-pointer transition-all hover:shadow-md ${active ? "border-2 ring-1 ring-offset-1" : "border-border/40"}`}
+      style={active ? { borderColor: color, boxShadow: `0 0 16px ${color}25`, ringColor: color } as any : undefined}
     >
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: `${color}15` }}>
         <Icon className="h-4 w-4" style={{ color }} />
@@ -181,6 +183,7 @@ export default function ProjectAnalytics() {
   const [filterSolution, setFilterSolution] = useState<string>("all");
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
+  const [selectedStatus, setSelectedStatus] = useState<ProjectStatus | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -514,7 +517,7 @@ export default function ProjectAnalytics() {
         <KpiCard icon={TrendingUp} label="Frota Média" value={Math.round(avgFleet)} accent="cyan" index={2} />
       </div>
 
-      {/* Status breakdown strip - ALL statuses */}
+      {/* Status breakdown strip - ALL statuses (clickable) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {Constants.public.Enums.project_status.map((s, i) => (
           <StatusKpiCard
@@ -524,9 +527,97 @@ export default function ProjectAnalytics() {
             color={STATUS_COLORS[i]}
             icon={STATUS_ICONS[s]}
             index={i}
+            active={selectedStatus === s}
+            onClick={() => setSelectedStatus(prev => prev === s ? null : s)}
           />
         ))}
       </div>
+
+      {/* Expandable project list for selected status */}
+      <AnimatePresence>
+        {selectedStatus && (() => {
+          const statusProjects = filteredProjects.filter(p => p.status === selectedStatus);
+          const statusIndex = Constants.public.Enums.project_status.indexOf(selectedStatus);
+          const statusColor = STATUS_COLORS[statusIndex] || STATUS_COLORS[0];
+          return (
+            <motion.div
+              key={selectedStatus}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.35, ease: "easeInOut" }}
+              className="overflow-hidden"
+            >
+              <GlowCard delay={0}>
+                <div className="p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: statusColor }} />
+                      <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                        Projetos em {statusLabels[selectedStatus]}
+                      </h3>
+                      <Badge variant="secondary" className="text-xs ml-1">{statusProjects.length}</Badge>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => setSelectedStatus(null)} className="h-7 text-xs gap-1">
+                      <X className="h-3 w-3" /> Fechar
+                    </Button>
+                  </div>
+
+                  {statusProjects.length === 0 ? (
+                    <p className="text-center text-muted-foreground text-xs py-6">Nenhum projeto neste status</p>
+                  ) : (
+                    <div className="overflow-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-border/50">
+                            <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Empresa</th>
+                            <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Localização</th>
+                            <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Gerente de Projetos</th>
+                            <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Frota</th>
+                            <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Contrato</th>
+                            <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Soluções</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {statusProjects.map((p, i) => (
+                            <motion.tr
+                              key={p.id}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: i * 0.05 }}
+                              className="border-b border-border/30 hover:bg-muted/30 transition-colors cursor-pointer"
+                              onClick={() => navigate(`/projetos/${p.id}`)}
+                            >
+                              <td className="py-2.5 px-3 font-medium text-foreground">{p.company_name}</td>
+                              <td className="py-2.5 px-3 text-muted-foreground">{p.city}/{p.state}</td>
+                              <td className="py-2.5 px-3">
+                                <span className="inline-flex items-center gap-1.5">
+                                  <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                                  {p.manager?.full_name || <span className="text-muted-foreground italic">Sem gerente</span>}
+                                </span>
+                              </td>
+                              <td className="py-2.5 px-3 font-semibold tabular-nums" style={{ fontFamily: "'Rajdhani', sans-serif" }}>{p.fleet_size || "—"}</td>
+                              <td className="py-2.5 px-3 text-muted-foreground">{format(parseISO(p.contract_date), "dd/MM/yyyy")}</td>
+                              <td className="py-2.5 px-3">
+                                <div className="flex flex-wrap gap-1">
+                                  {p.project_solutions?.map((ps, j) => (
+                                    <Badge key={j} variant="secondary" className="text-[10px] px-1.5 py-0">{ps.solution?.name}</Badge>
+                                  ))}
+                                  {(!p.project_solutions || p.project_solutions.length === 0) && <span className="text-xs text-muted-foreground">—</span>}
+                                </div>
+                              </td>
+                            </motion.tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </GlowCard>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
 
       {/* Row 1: Status Donut + Solutions Donut */}
       <div className="grid lg:grid-cols-2 gap-6">

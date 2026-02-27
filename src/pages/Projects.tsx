@@ -552,19 +552,11 @@ export default function Projects() {
         {cards.map((card, i) => (
           <Card
             key={card.title}
-            className={`
-              group cursor-pointer transition-all duration-500 hover:-translate-y-2 relative overflow-hidden
-              border-border/50 backdrop-blur-sm bg-card/80
-              ${card.glow ? "glow-orange-strong" : "hover:glow-orange"}
-            `}
+            className="group cursor-pointer transition-all duration-500 hover:-translate-y-2 relative overflow-hidden border-border/50 backdrop-blur-sm bg-card/80 shadow-none"
             onClick={card.onClick}
             style={{ animationDelay: `${i * 150}ms` }}
           >
-            <div className={`absolute top-0 left-0 right-0 h-1 transition-all duration-500 ${
-              card.glow
-                ? "bg-gradient-to-r from-primary via-primary/80 to-primary/40"
-                : "bg-gradient-to-r from-transparent via-primary/0 to-transparent group-hover:from-primary/40 group-hover:via-primary group-hover:to-primary/40"
-            }`} />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-primary/80 to-primary/40" />
             <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-primary/10 transition-all duration-500" />
             <div className="absolute top-3 right-3 w-8 h-8 border-t border-r border-primary/0 group-hover:border-primary/30 transition-all duration-500 rounded-tr-lg" />
             <div className="absolute bottom-3 left-3 w-8 h-8 border-b border-l border-primary/0 group-hover:border-primary/30 transition-all duration-500 rounded-bl-lg" />

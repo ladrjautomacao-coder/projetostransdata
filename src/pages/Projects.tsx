@@ -120,18 +120,7 @@ function AVLBus() {
       {/* Roof line accent */}
       <path d="M60 62 L240 62 Q260 62 268 70" stroke="hsl(28, 90%, 52%)" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
 
-      {/* AVL Equipment on roof */}
-      <rect x="140" y="46" width="40" height="18" rx="3" fill="hsl(28, 90%, 52%)" fillOpacity="0.15" stroke="hsl(28, 90%, 52%)" strokeWidth="1" strokeOpacity="0.5" />
-      <rect x="145" y="49" width="12" height="6" rx="1" fill="hsl(200, 80%, 60%)" fillOpacity="0.2" stroke="hsl(200, 80%, 60%)" strokeWidth="0.5" strokeOpacity="0.3" />
-      <text x="160" y="58" fill="hsl(28, 90%, 52%)" fillOpacity="0.7" fontSize="7" fontFamily="monospace" fontWeight="bold">AVL</text>
-
-      {/* Status LEDs on AVL box */}
-      <circle cx="148" cy="58" r="1.5" fill="hsl(120, 80%, 50%)" fillOpacity="0.6">
-        <animate attributeName="fillOpacity" values="0.3;0.9;0.3" dur="1s" repeatCount="indefinite" />
-      </circle>
-      <circle cx="153" cy="58" r="1.5" fill="hsl(28, 90%, 52%)" fillOpacity="0.6">
-        <animate attributeName="fillOpacity" values="0.2;0.8;0.2" dur="1.5s" repeatCount="indefinite" />
-      </circle>
+      {/* Antenna from roof */}
 
       {/* Antenna from AVL box */}
       <line x1="160" y1="46" x2="160" y2="28" stroke="hsl(28, 90%, 52%)" strokeWidth="1.2" strokeOpacity="0.7" />

@@ -372,7 +372,7 @@ export default function ProjectAnalytics() {
           </Button>
           <div className="flex-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight">Visão Analítica</h1>
+              <h1 className="text-2xl font-bold tracking-tight">Análise de Dados</h1>
               <div className="flex items-center gap-1.5 text-[10px] text-primary uppercase tracking-widest font-medium">
                 <Signal className="h-3 w-3 animate-pulse" />
                 Live

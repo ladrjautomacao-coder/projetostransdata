@@ -486,7 +486,7 @@ export default function Projects() {
       glow: false,
     },
     {
-      title: "Visão Analítica",
+      title: "Análise de Dados",
       description: "Dashboard com gráficos e métricas dos projetos",
       icon: BarChart3,
       onClick: () => navigate("/projetos/analitico"),

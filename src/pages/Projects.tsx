@@ -223,113 +223,178 @@ function AVLBus() {
   );
 }
 
-/* ───────────── Data Packets (animated from bus to satellite) ───────────── */
-function DataPackets() {
-  return (
-    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet">
-      <defs>
-        <filter id="pkt-glow">
-          <feGaussianBlur stdDeviation="2" result="blur" />
-          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
-      </defs>
+/* ───────────── Data Transmission (Canvas-based modern animation) ───────────── */
+function DataTransmission() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-      {/* Data transmission path (curved) */}
-      <path id="data-path-1" d="M400 340 Q380 260 420 200 Q460 140 540 90 Q590 65 620 55" fill="none" stroke="none" />
-      <path id="data-path-2" d="M400 330 Q360 250 390 190 Q430 120 530 80 Q580 60 620 50" fill="none" stroke="none" />
-      <path id="data-path-3" d="M410 335 Q400 270 440 210 Q480 150 550 100 Q600 70 625 58" fill="none" stroke="none" />
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-      {/* Main visible beam with flash effect */}
-      <path d="M400 340 Q420 250 520 120 Q570 70 620 55"
-        fill="none" stroke="hsl(28, 90%, 52%)" strokeWidth="2" strokeOpacity="0.08" strokeDasharray="6 3">
-        <animate attributeName="strokeOpacity" values="0.04;0.15;0.04" dur="1.5s" repeatCount="indefinite" />
-      </path>
-      {/* Second beam line for thickness */}
-      <path d="M400 340 Q420 250 520 120 Q570 70 620 55"
-        fill="none" stroke="hsl(28, 90%, 65%)" strokeWidth="0.8" strokeOpacity="0.06">
-        <animate attributeName="strokeOpacity" values="0.03;0.12;0.03" dur="1.2s" repeatCount="indefinite" />
-      </path>
+    const resize = () => {
+      canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+      canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    };
+    resize();
+    window.addEventListener("resize", resize);
 
-      {/* FLASH pulse along beam - bright burst effect */}
-      {[0, 1, 2, 3].map((i) => (
-        <g key={`flash-${i}`}>
-          {/* Outer glow halo */}
-          <circle r="0" fill="hsl(28, 85%, 58%)" fillOpacity="0" filter="url(#pkt-glow)">
-            <animateMotion dur="1.2s" begin={`${i * 0.35}s`} repeatCount="indefinite">
-              <mpath href="#data-path-1" />
-            </animateMotion>
-            <animate attributeName="r" values="0;12;0" dur="1.2s" begin={`${i * 0.35}s`} repeatCount="indefinite" />
-            <animate attributeName="fillOpacity" values="0;0.45;0" dur="1.2s" begin={`${i * 0.35}s`} repeatCount="indefinite" />
-          </circle>
-          {/* Mid glow */}
-          <circle r="0" fill="hsl(30, 95%, 68%)" fillOpacity="0" filter="url(#pkt-glow)">
-            <animateMotion dur="1.2s" begin={`${i * 0.35}s`} repeatCount="indefinite">
-              <mpath href="#data-path-1" />
-            </animateMotion>
-            <animate attributeName="r" values="0;6;0" dur="1.2s" begin={`${i * 0.35}s`} repeatCount="indefinite" />
-            <animate attributeName="fillOpacity" values="0;0.8;0" dur="1.2s" begin={`${i * 0.35}s`} repeatCount="indefinite" />
-          </circle>
-          {/* Core white-hot dot */}
-          <circle r="0" fill="hsl(45, 100%, 92%)" fillOpacity="0">
-            <animateMotion dur="1.2s" begin={`${i * 0.35}s`} repeatCount="indefinite">
-              <mpath href="#data-path-1" />
-            </animateMotion>
-            <animate attributeName="r" values="0;3;0" dur="1.2s" begin={`${i * 0.35}s`} repeatCount="indefinite" />
-            <animate attributeName="fillOpacity" values="0;1;0" dur="1.2s" begin={`${i * 0.35}s`} repeatCount="indefinite" />
-          </circle>
-        </g>
-      ))}
+    const w = () => canvas.offsetWidth;
+    const h = () => canvas.offsetHeight;
 
-      {/* Secondary beam flashes - path 2 */}
-      {[0, 1, 2].map((i) => (
-        <g key={`flash2-${i}`}>
-          <circle r="0" fill="hsl(28, 90%, 55%)" fillOpacity="0" filter="url(#pkt-glow)">
-            <animateMotion dur="1.4s" begin={`${i * 0.5 + 0.15}s`} repeatCount="indefinite">
-              <mpath href="#data-path-2" />
-            </animateMotion>
-            <animate attributeName="r" values="0;10;0" dur="1.4s" begin={`${i * 0.5 + 0.15}s`} repeatCount="indefinite" />
-            <animate attributeName="fillOpacity" values="0;0.5;0" dur="1.4s" begin={`${i * 0.5 + 0.15}s`} repeatCount="indefinite" />
-          </circle>
-          <circle r="0" fill="hsl(45, 100%, 90%)" fillOpacity="0">
-            <animateMotion dur="1.4s" begin={`${i * 0.5 + 0.15}s`} repeatCount="indefinite">
-              <mpath href="#data-path-2" />
-            </animateMotion>
-            <animate attributeName="r" values="0;3;0" dur="1.4s" begin={`${i * 0.5 + 0.15}s`} repeatCount="indefinite" />
-            <animate attributeName="fillOpacity" values="0;0.95;0" dur="1.4s" begin={`${i * 0.5 + 0.15}s`} repeatCount="indefinite" />
-          </circle>
-        </g>
-      ))}
+    // Bus antenna position (bottom-left area) and satellite position (top-right)
+    const busPos = () => ({ x: w() * 0.28, y: h() * 0.78 });
+    const satPos = () => ({ x: w() * 0.82, y: h() * 0.12 });
 
-      {/* Third path flashes */}
-      {[0, 1].map((i) => (
-        <g key={`flash3-${i}`}>
-          <circle r="0" fill="hsl(28, 85%, 60%)" fillOpacity="0" filter="url(#pkt-glow)">
-            <animateMotion dur="1.6s" begin={`${i * 0.7 + 0.3}s`} repeatCount="indefinite">
-              <mpath href="#data-path-3" />
-            </animateMotion>
-            <animate attributeName="r" values="0;9;0" dur="1.6s" begin={`${i * 0.7 + 0.3}s`} repeatCount="indefinite" />
-            <animate attributeName="fillOpacity" values="0;0.55;0" dur="1.6s" begin={`${i * 0.7 + 0.3}s`} repeatCount="indefinite" />
-          </circle>
-          <circle r="0" fill="hsl(40, 100%, 88%)" fillOpacity="0">
-            <animateMotion dur="1.6s" begin={`${i * 0.7 + 0.3}s`} repeatCount="indefinite">
-              <mpath href="#data-path-3" />
-            </animateMotion>
-            <animate attributeName="r" values="0;2.5;0" dur="1.6s" begin={`${i * 0.7 + 0.3}s`} repeatCount="indefinite" />
-            <animate attributeName="fillOpacity" values="0;1;0" dur="1.6s" begin={`${i * 0.7 + 0.3}s`} repeatCount="indefinite" />
-          </circle>
-        </g>
-      ))}
+    // Bezier curve control points for the beam
+    const cp1 = () => ({ x: w() * 0.25, y: h() * 0.45 });
+    const cp2 = () => ({ x: w() * 0.65, y: h() * 0.15 });
 
-      {/* Sparkle bursts along the beam */}
-      {[140, 180, 220, 260, 300, 340].map((y, i) => (
-        <circle key={i} cx={395 + (i - 2.5) * 22 + i * 12} cy={y} r="1"
-          fill="hsl(28, 90%, 65%)" fillOpacity="0">
-          <animate attributeName="fillOpacity" values="0;0.7;0" dur="1s" begin={`${i * 0.2}s`} repeatCount="indefinite" />
-          <animate attributeName="r" values="0.3;5;0.3" dur="1s" begin={`${i * 0.2}s`} repeatCount="indefinite" />
-        </circle>
-      ))}
-    </svg>
-  );
+    // Get point on cubic bezier
+    function bezierPoint(t: number, p0: {x:number,y:number}, c1: {x:number,y:number}, c2: {x:number,y:number}, p3: {x:number,y:number}) {
+      const u = 1 - t;
+      return {
+        x: u*u*u*p0.x + 3*u*u*t*c1.x + 3*u*t*t*c2.x + t*t*t*p3.x,
+        y: u*u*u*p0.y + 3*u*u*t*c1.y + 3*u*t*t*c2.y + t*t*t*p3.y,
+      };
+    }
+
+    // Particles traveling along the beam
+    interface Particle {
+      t: number; speed: number; size: number; trail: {x:number,y:number,alpha:number}[];
+      hue: number; brightness: number;
+    }
+
+    const particles: Particle[] = [];
+    for (let i = 0; i < 8; i++) {
+      particles.push({
+        t: Math.random(),
+        speed: 0.003 + Math.random() * 0.004,
+        size: 2 + Math.random() * 3,
+        trail: [],
+        hue: 25 + Math.random() * 15,
+        brightness: 50 + Math.random() * 20,
+      });
+    }
+
+    let time = 0;
+    let animId: number;
+
+    const draw = () => {
+      const cw = w();
+      const ch = h();
+      ctx.clearRect(0, 0, cw, ch);
+      time += 0.016;
+
+      const bus = busPos();
+      const sat = satPos();
+      const c1 = cp1();
+      const c2 = cp2();
+
+      // Draw the beam path (pulsing)
+      const beamPulse = 0.08 + 0.06 * Math.sin(time * 3);
+      ctx.beginPath();
+      ctx.moveTo(bus.x, bus.y);
+      ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, sat.x, sat.y);
+      ctx.strokeStyle = `hsla(28, 90%, 55%, ${beamPulse})`;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 6]);
+      ctx.lineDashOffset = -time * 40;
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Draw a second thinner beam
+      ctx.beginPath();
+      ctx.moveTo(bus.x, bus.y);
+      ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, sat.x, sat.y);
+      ctx.strokeStyle = `hsla(28, 90%, 65%, ${beamPulse * 0.5})`;
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // Update and draw particles
+      particles.forEach((p) => {
+        p.t += p.speed;
+        if (p.t > 1) {
+          p.t = 0;
+          p.trail = [];
+          p.speed = 0.003 + Math.random() * 0.004;
+          p.size = 2 + Math.random() * 3;
+        }
+
+        const pos = bezierPoint(p.t, bus, c1, c2, sat);
+
+        // Add to trail
+        p.trail.push({ x: pos.x, y: pos.y, alpha: 1 });
+        if (p.trail.length > 20) p.trail.shift();
+
+        // Draw trail
+        for (let i = 0; i < p.trail.length - 1; i++) {
+          const seg = p.trail[i];
+          const nextSeg = p.trail[i + 1];
+          const progress = i / p.trail.length;
+          seg.alpha *= 0.92;
+
+          ctx.beginPath();
+          ctx.moveTo(seg.x, seg.y);
+          ctx.lineTo(nextSeg.x, nextSeg.y);
+          ctx.strokeStyle = `hsla(${p.hue}, 90%, ${p.brightness}%, ${seg.alpha * 0.6})`;
+          ctx.lineWidth = p.size * progress * 0.8;
+          ctx.stroke();
+        }
+
+        // Draw particle head (bright)
+        const headGlow = 12 + 4 * Math.sin(time * 8 + p.t * 10);
+        const gradient = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, headGlow);
+        gradient.addColorStop(0, `hsla(40, 100%, 90%, 0.9)`);
+        gradient.addColorStop(0.3, `hsla(${p.hue}, 95%, 60%, 0.6)`);
+        gradient.addColorStop(0.7, `hsla(${p.hue}, 90%, 50%, 0.15)`);
+        gradient.addColorStop(1, `hsla(${p.hue}, 90%, 50%, 0)`);
+
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, headGlow, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        // Core dot
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, p.size * 0.6, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(45, 100%, 95%, 0.95)`;
+        ctx.fill();
+      });
+
+      // Emission burst at bus antenna
+      const burstAlpha = 0.15 + 0.1 * Math.sin(time * 5);
+      const burstGrad = ctx.createRadialGradient(bus.x, bus.y, 0, bus.x, bus.y, 25);
+      burstGrad.addColorStop(0, `hsla(28, 90%, 60%, ${burstAlpha})`);
+      burstGrad.addColorStop(1, `hsla(28, 90%, 50%, 0)`);
+      ctx.beginPath();
+      ctx.arc(bus.x, bus.y, 25, 0, Math.PI * 2);
+      ctx.fillStyle = burstGrad;
+      ctx.fill();
+
+      // Reception burst at satellite
+      const recvAlpha = 0.12 + 0.08 * Math.sin(time * 4 + 1);
+      const recvGrad = ctx.createRadialGradient(sat.x, sat.y, 0, sat.x, sat.y, 20);
+      recvGrad.addColorStop(0, `hsla(28, 90%, 65%, ${recvAlpha})`);
+      recvGrad.addColorStop(1, `hsla(28, 90%, 50%, 0)`);
+      ctx.beginPath();
+      ctx.arc(sat.x, sat.y, 20, 0, Math.PI * 2);
+      ctx.fillStyle = recvGrad;
+      ctx.fill();
+
+      animId = requestAnimationFrame(draw);
+    };
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }} />;
 }
 
 /* ───────────── Particle Field Background ───────────── */
@@ -453,8 +518,8 @@ export default function Projects() {
 
       {/* ── TELEMETRY SCENE ── */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Data packets animation layer */}
-        <DataPackets />
+        {/* Data transmission animation layer */}
+        <DataTransmission />
 
         {/* Satellite - top right area */}
         <div className="absolute" style={{ top: "3%", right: "12%", animation: "float-satellite 8s ease-in-out infinite" }}>

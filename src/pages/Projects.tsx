@@ -241,75 +241,91 @@ function DataPackets() {
 
       {/* Main visible beam with flash effect */}
       <path d="M400 340 Q420 250 520 120 Q570 70 620 55"
-        fill="none" stroke="hsl(28, 90%, 52%)" strokeWidth="1.5" strokeOpacity="0.12" strokeDasharray="8 4">
-        <animate attributeName="strokeOpacity" values="0.05;0.2;0.05" dur="2s" repeatCount="indefinite" />
+        fill="none" stroke="hsl(28, 90%, 52%)" strokeWidth="2" strokeOpacity="0.08" strokeDasharray="6 3">
+        <animate attributeName="strokeOpacity" values="0.04;0.15;0.04" dur="1.5s" repeatCount="indefinite" />
+      </path>
+      {/* Second beam line for thickness */}
+      <path d="M400 340 Q420 250 520 120 Q570 70 620 55"
+        fill="none" stroke="hsl(28, 90%, 65%)" strokeWidth="0.8" strokeOpacity="0.06">
+        <animate attributeName="strokeOpacity" values="0.03;0.12;0.03" dur="1.2s" repeatCount="indefinite" />
       </path>
 
       {/* FLASH pulse along beam - bright burst effect */}
-      {[0, 1, 2].map((i) => (
+      {[0, 1, 2, 3].map((i) => (
         <g key={`flash-${i}`}>
-          <circle r="0" fill="hsl(28, 90%, 65%)" fillOpacity="0" filter="url(#pkt-glow)">
-            <animateMotion dur="1.8s" begin={`${i * 0.6}s`} repeatCount="indefinite">
+          {/* Outer glow halo */}
+          <circle r="0" fill="hsl(28, 85%, 58%)" fillOpacity="0" filter="url(#pkt-glow)">
+            <animateMotion dur="1.2s" begin={`${i * 0.35}s`} repeatCount="indefinite">
               <mpath href="#data-path-1" />
             </animateMotion>
-            <animate attributeName="r" values="0;8;0" dur="1.8s" begin={`${i * 0.6}s`} repeatCount="indefinite" />
-            <animate attributeName="fillOpacity" values="0;0.7;0" dur="1.8s" begin={`${i * 0.6}s`} repeatCount="indefinite" />
+            <animate attributeName="r" values="0;12;0" dur="1.2s" begin={`${i * 0.35}s`} repeatCount="indefinite" />
+            <animate attributeName="fillOpacity" values="0;0.45;0" dur="1.2s" begin={`${i * 0.35}s`} repeatCount="indefinite" />
           </circle>
-          {/* Core bright dot */}
-          <circle r="0" fill="hsl(40, 100%, 85%)" fillOpacity="0">
-            <animateMotion dur="1.8s" begin={`${i * 0.6}s`} repeatCount="indefinite">
+          {/* Mid glow */}
+          <circle r="0" fill="hsl(30, 95%, 68%)" fillOpacity="0" filter="url(#pkt-glow)">
+            <animateMotion dur="1.2s" begin={`${i * 0.35}s`} repeatCount="indefinite">
               <mpath href="#data-path-1" />
             </animateMotion>
-            <animate attributeName="r" values="0;3;0" dur="1.8s" begin={`${i * 0.6}s`} repeatCount="indefinite" />
-            <animate attributeName="fillOpacity" values="0;1;0" dur="1.8s" begin={`${i * 0.6}s`} repeatCount="indefinite" />
+            <animate attributeName="r" values="0;6;0" dur="1.2s" begin={`${i * 0.35}s`} repeatCount="indefinite" />
+            <animate attributeName="fillOpacity" values="0;0.8;0" dur="1.2s" begin={`${i * 0.35}s`} repeatCount="indefinite" />
+          </circle>
+          {/* Core white-hot dot */}
+          <circle r="0" fill="hsl(45, 100%, 92%)" fillOpacity="0">
+            <animateMotion dur="1.2s" begin={`${i * 0.35}s`} repeatCount="indefinite">
+              <mpath href="#data-path-1" />
+            </animateMotion>
+            <animate attributeName="r" values="0;3;0" dur="1.2s" begin={`${i * 0.35}s`} repeatCount="indefinite" />
+            <animate attributeName="fillOpacity" values="0;1;0" dur="1.2s" begin={`${i * 0.35}s`} repeatCount="indefinite" />
           </circle>
         </g>
       ))}
 
-      {/* Secondary beam flashes */}
-      {[0, 1].map((i) => (
+      {/* Secondary beam flashes - path 2 */}
+      {[0, 1, 2].map((i) => (
         <g key={`flash2-${i}`}>
           <circle r="0" fill="hsl(28, 90%, 55%)" fillOpacity="0" filter="url(#pkt-glow)">
-            <animateMotion dur="2.2s" begin={`${i * 1.1 + 0.3}s`} repeatCount="indefinite">
+            <animateMotion dur="1.4s" begin={`${i * 0.5 + 0.15}s`} repeatCount="indefinite">
               <mpath href="#data-path-2" />
             </animateMotion>
-            <animate attributeName="r" values="0;6;0" dur="2.2s" begin={`${i * 1.1 + 0.3}s`} repeatCount="indefinite" />
-            <animate attributeName="fillOpacity" values="0;0.5;0" dur="2.2s" begin={`${i * 1.1 + 0.3}s`} repeatCount="indefinite" />
+            <animate attributeName="r" values="0;10;0" dur="1.4s" begin={`${i * 0.5 + 0.15}s`} repeatCount="indefinite" />
+            <animate attributeName="fillOpacity" values="0;0.5;0" dur="1.4s" begin={`${i * 0.5 + 0.15}s`} repeatCount="indefinite" />
           </circle>
-          <circle r="0" fill="hsl(40, 100%, 90%)" fillOpacity="0">
-            <animateMotion dur="2.2s" begin={`${i * 1.1 + 0.3}s`} repeatCount="indefinite">
+          <circle r="0" fill="hsl(45, 100%, 90%)" fillOpacity="0">
+            <animateMotion dur="1.4s" begin={`${i * 0.5 + 0.15}s`} repeatCount="indefinite">
               <mpath href="#data-path-2" />
             </animateMotion>
-            <animate attributeName="r" values="0;2;0" dur="2.2s" begin={`${i * 1.1 + 0.3}s`} repeatCount="indefinite" />
-            <animate attributeName="fillOpacity" values="0;0.9;0" dur="2.2s" begin={`${i * 1.1 + 0.3}s`} repeatCount="indefinite" />
+            <animate attributeName="r" values="0;3;0" dur="1.4s" begin={`${i * 0.5 + 0.15}s`} repeatCount="indefinite" />
+            <animate attributeName="fillOpacity" values="0;0.95;0" dur="1.4s" begin={`${i * 0.5 + 0.15}s`} repeatCount="indefinite" />
           </circle>
         </g>
       ))}
 
-      {/* Data cubes (smaller, supporting the flashes) */}
-      {[
-        { path: "#data-path-1", dur: "3s", delay: "0s", size: 5 },
-        { path: "#data-path-3", dur: "2.8s", delay: "1s", size: 4 },
-        { path: "#data-path-2", dur: "3.2s", delay: "2s", size: 3 },
-      ].map((pkt, i) => (
-        <rect key={`cube-${i}`} width={pkt.size} height={pkt.size} rx="1"
-          fill="hsl(28, 90%, 52%)" fillOpacity="0"
-          stroke="hsl(28, 90%, 52%)" strokeWidth="0.8" strokeOpacity="0"
-        >
-          <animateMotion dur={pkt.dur} begin={pkt.delay} repeatCount="indefinite" rotate="auto">
-            <mpath href={pkt.path} />
-          </animateMotion>
-          <animate attributeName="fillOpacity" values="0;0.5;0.3;0" dur={pkt.dur} begin={pkt.delay} repeatCount="indefinite" />
-          <animate attributeName="strokeOpacity" values="0;0.7;0.4;0" dur={pkt.dur} begin={pkt.delay} repeatCount="indefinite" />
-        </rect>
+      {/* Third path flashes */}
+      {[0, 1].map((i) => (
+        <g key={`flash3-${i}`}>
+          <circle r="0" fill="hsl(28, 85%, 60%)" fillOpacity="0" filter="url(#pkt-glow)">
+            <animateMotion dur="1.6s" begin={`${i * 0.7 + 0.3}s`} repeatCount="indefinite">
+              <mpath href="#data-path-3" />
+            </animateMotion>
+            <animate attributeName="r" values="0;9;0" dur="1.6s" begin={`${i * 0.7 + 0.3}s`} repeatCount="indefinite" />
+            <animate attributeName="fillOpacity" values="0;0.55;0" dur="1.6s" begin={`${i * 0.7 + 0.3}s`} repeatCount="indefinite" />
+          </circle>
+          <circle r="0" fill="hsl(40, 100%, 88%)" fillOpacity="0">
+            <animateMotion dur="1.6s" begin={`${i * 0.7 + 0.3}s`} repeatCount="indefinite">
+              <mpath href="#data-path-3" />
+            </animateMotion>
+            <animate attributeName="r" values="0;2.5;0" dur="1.6s" begin={`${i * 0.7 + 0.3}s`} repeatCount="indefinite" />
+            <animate attributeName="fillOpacity" values="0;1;0" dur="1.6s" begin={`${i * 0.7 + 0.3}s`} repeatCount="indefinite" />
+          </circle>
+        </g>
       ))}
 
       {/* Sparkle bursts along the beam */}
-      {[160, 200, 240, 280, 320].map((y, i) => (
-        <circle key={i} cx={400 + (i - 2) * 25 + i * 15} cy={y} r="1.5"
-          fill="hsl(28, 90%, 60%)" fillOpacity="0">
-          <animate attributeName="fillOpacity" values="0;0.6;0" dur="1.5s" begin={`${i * 0.3}s`} repeatCount="indefinite" />
-          <animate attributeName="r" values="0.5;4;0.5" dur="1.5s" begin={`${i * 0.3}s`} repeatCount="indefinite" />
+      {[140, 180, 220, 260, 300, 340].map((y, i) => (
+        <circle key={i} cx={395 + (i - 2.5) * 22 + i * 12} cy={y} r="1"
+          fill="hsl(28, 90%, 65%)" fillOpacity="0">
+          <animate attributeName="fillOpacity" values="0;0.7;0" dur="1s" begin={`${i * 0.2}s`} repeatCount="indefinite" />
+          <animate attributeName="r" values="0.3;5;0.3" dur="1s" begin={`${i * 0.2}s`} repeatCount="indefinite" />
         </circle>
       ))}
     </svg>

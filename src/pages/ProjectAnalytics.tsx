@@ -362,7 +362,93 @@ export default function ProjectAnalytics() {
   );
   const genericConfig: ChartConfig = { value: { label: "Projetos" }, count: { label: "Projetos" } };
 
-  if (loading) {
+  const toggleSection = (section: string) => {
+    setExpandedSection(prev => prev === section ? null : section);
+  };
+
+  function ExpandableProjectTable({ sectionKey, title, projectList }: { sectionKey: string; title: string; projectList: ProjectRow[] }) {
+    return (
+      <AnimatePresence>
+        {expandedSection === sectionKey && (
+          <motion.div
+            key={sectionKey}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.35, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <GlowCard delay={0}>
+              <div className="p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                    <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{title}</h3>
+                    <Badge variant="secondary" className="text-xs ml-1">{projectList.length}</Badge>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setExpandedSection(null)} className="h-7 text-xs gap-1">
+                    <X className="h-3 w-3" /> Fechar
+                  </Button>
+                </div>
+                {projectList.length === 0 ? (
+                  <p className="text-center text-muted-foreground text-xs py-6">Nenhum projeto encontrado</p>
+                ) : (
+                  <div className="overflow-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-border/50">
+                          <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Empresa</th>
+                          <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Localização</th>
+                          <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Status</th>
+                          <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Gerente</th>
+                          <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Frota</th>
+                          <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Soluções</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {projectList.map((p, i) => (
+                          <motion.tr
+                            key={p.id}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.03 }}
+                            className="border-b border-border/30 hover:bg-muted/30 transition-colors cursor-pointer"
+                            onClick={() => navigate(`/projetos/${p.id}`)}
+                          >
+                            <td className="py-2.5 px-3 font-medium text-foreground">{p.company_name}</td>
+                            <td className="py-2.5 px-3 text-muted-foreground">{p.city}/{p.state}</td>
+                            <td className="py-2.5 px-3">
+                              <Badge variant="secondary" className="text-[10px]">{statusLabels[p.status]}</Badge>
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <span className="inline-flex items-center gap-1.5">
+                                <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                                {p.manager?.full_name || <span className="text-muted-foreground italic">Sem gerente</span>}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3 font-semibold tabular-nums" style={{ fontFamily: "'Rajdhani', sans-serif" }}>{p.fleet_size || "—"}</td>
+                            <td className="py-2.5 px-3">
+                              <div className="flex flex-wrap gap-1">
+                                {p.project_solutions?.map((ps, j) => (
+                                  <Badge key={j} variant="secondary" className="text-[10px] px-1.5 py-0">{ps.solution?.name}</Badge>
+                                ))}
+                                {(!p.project_solutions || p.project_solutions.length === 0) && <span className="text-xs text-muted-foreground">—</span>}
+                              </div>
+                            </td>
+                          </motion.tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </GlowCard>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  }
+
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-4">

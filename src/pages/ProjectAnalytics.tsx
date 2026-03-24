@@ -352,6 +352,7 @@ export default function ProjectAnalytics() {
 
   const totalProjects = filteredProjects.length;
   const avgFleet = filteredProjects.filter(p => p.fleet_size).reduce((a, p) => a + (p.fleet_size || 0), 0) / (filteredProjects.filter(p => p.fleet_size).length || 1);
+  const totalFleet = filteredProjects.reduce((a, p) => a + (p.fleet_size || 0), 0);
   const totalStates = new Set(filteredProjects.map(p => p.state)).size;
 
   const fleetConfig: ChartConfig = {

@@ -346,27 +346,7 @@ export default function ProjectAnalytics() {
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
   }, [filteredProjects]);
 
-  const durationData = useMemo(() => {
-    return filteredProjects
-      .filter(p => p.d_zero_date)
-      .map(p => {
-        const contract = parseISO(p.contract_date);
-        const dzero = parseISO(p.d_zero_date!);
-        const handover = p.handover_date ? parseISO(p.handover_date) : null;
-        const contratoDzero = differenceInDays(dzero, contract);
-        const dzeroHandover = handover ? differenceInDays(handover, dzero) : 0;
-        const total = contratoDzero + dzeroHandover;
-        return {
-          name: p.company_name.length > 20 ? p.company_name.substring(0, 20) + "…" : p.company_name,
-          contratoDzero,
-          dzeroHandover,
-          total,
-          hasHandover: !!handover,
-        };
-      })
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 10);
-  }, [filteredProjects]);
+
 
   const totalProjects = filteredProjects.length;
   const avgFleet = filteredProjects.filter(p => p.fleet_size).reduce((a, p) => a + (p.fleet_size || 0), 0) / (filteredProjects.filter(p => p.fleet_size).length || 1);

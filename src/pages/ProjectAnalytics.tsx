@@ -115,7 +115,7 @@ function GlowCard({ children, className = "", glow = false, delay = 0 }: { child
   );
 }
 
-function KpiCard({ icon: Icon, label, value, accent = "primary", index = 0 }: { icon: any; label: string; value: number; accent?: string; index?: number }) {
+function KpiCard({ icon: Icon, label, value, accent = "primary", index = 0, active = false, onClick }: { icon: any; label: string; value: number; accent?: string; index?: number; active?: boolean; onClick?: () => void }) {
   const accentMap: Record<string, { bg: string; icon: string; border: string; glow: string }> = {
     primary: { bg: "from-primary/15 to-primary/5", icon: "text-primary", border: "border-primary/20", glow: "shadow-primary/10" },
     amber: { bg: "from-amber-500/15 to-amber-500/5", icon: "text-amber-500", border: "border-amber-500/20", glow: "shadow-amber-500/10" },
@@ -130,7 +130,8 @@ function KpiCard({ icon: Icon, label, value, accent = "primary", index = 0 }: { 
       initial={{ opacity: 0, scale: 0.95, y: 16 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className={`relative rounded-2xl border ${colors.border} bg-card/90 backdrop-blur-md overflow-hidden shadow-lg ${colors.glow}`}
+      onClick={onClick}
+      className={`relative rounded-2xl border ${colors.border} bg-card/90 backdrop-blur-md overflow-hidden shadow-lg ${colors.glow} cursor-pointer transition-all hover:shadow-xl ${active ? "ring-2 ring-primary/50 ring-offset-1" : ""}`}
     >
       <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg} pointer-events-none`} />
       <div className="relative p-5 flex items-center gap-4">

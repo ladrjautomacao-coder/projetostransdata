@@ -189,6 +189,52 @@ export default function ProjectAnalytics() {
   const [selectedBarState, setSelectedBarState] = useState<string | null>(null);
   const [selectedBarManager, setSelectedBarManager] = useState<string | null>(null);
 
+  // Drag and drop state for chart ordering
+  const DEFAULT_CHART_ORDER = ["status", "solucoes", "frota", "solucao-timeline", "estado", "gerente"];
+  const [chartOrder, setChartOrder] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("analytics-chart-order");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length === DEFAULT_CHART_ORDER.length) return parsed;
+      }
+    } catch {}
+    return DEFAULT_CHART_ORDER;
+  });
+  const [draggedChart, setDraggedChart] = useState<string | null>(null);
+  const [dragOverChart, setDragOverChart] = useState<string | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, chartId: string) => {
+    setDraggedChart(chartId);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", chartId);
+  };
+  const handleDragOver = (e: React.DragEvent, chartId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (chartId !== draggedChart) setDragOverChart(chartId);
+  };
+  const handleDragLeave = () => setDragOverChart(null);
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    setDragOverChart(null);
+    if (!draggedChart || draggedChart === targetId) return;
+    const newOrder = [...chartOrder];
+    const fromIdx = newOrder.indexOf(draggedChart);
+    const toIdx = newOrder.indexOf(targetId);
+    newOrder.splice(fromIdx, 1);
+    newOrder.splice(toIdx, 0, draggedChart);
+    setChartOrder(newOrder);
+    localStorage.setItem("analytics-chart-order", JSON.stringify(newOrder));
+    setDraggedChart(null);
+  };
+  const handleDragEnd = () => { setDraggedChart(null); setDragOverChart(null); };
+  const resetChartOrder = () => {
+    setChartOrder(DEFAULT_CHART_ORDER);
+    localStorage.removeItem("analytics-chart-order");
+  };
+  const isCustomOrder = JSON.stringify(chartOrder) !== JSON.stringify(DEFAULT_CHART_ORDER);
+
   useEffect(() => {
     async function load() {
       setLoading(true);

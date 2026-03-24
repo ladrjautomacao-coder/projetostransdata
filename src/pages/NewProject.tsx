@@ -217,7 +217,7 @@ export default function NewProject() {
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
-          <Calendar mode="single" selected={date} onSelect={onSelect} initialFocus className="p-3 pointer-events-auto" />
+          <Calendar mode="single" selected={date} onSelect={onSelect} initialFocus className="p-3 pointer-events-auto" captionLayout="dropdown-buttons" fromYear={2015} toYear={2035} />
         </PopoverContent>
       </Popover>
     </div>

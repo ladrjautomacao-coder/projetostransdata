@@ -383,7 +383,7 @@ export default function NewProject() {
             </div>
             <div className="space-y-2">
               <Label>Gerente de Projetos</Label>
-              <Select value={managerId} onValueChange={setManagerId}>
+              <Select value={managerId || undefined} onValueChange={setManagerId}>
                 <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                 <SelectContent>
                   {managers.map(m => <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>)}

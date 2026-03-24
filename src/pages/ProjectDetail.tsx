@@ -269,7 +269,7 @@ export default function ProjectDetail() {
         const path = `${id}/${Date.now()}_${file.name}`;
         const { error: upErr } = await supabase.storage.from("project-attachments").upload(path, file);
         if (upErr) { toast({ title: "Erro no upload", description: upErr.message, variant: "destructive" }); continue; }
-        await supabase.from("project_attachments").insert({
+        const { error: insertErr } = await supabase.from("project_attachments").insert({
           project_id: id,
           file_name: `${category.prefix} ${file.name}`,
           file_path: path,
@@ -277,9 +277,11 @@ export default function ProjectDetail() {
           content_type: file.type,
           uploaded_by: user?.id || null,
         });
+        if (insertErr) { toast({ title: "Erro ao registrar anexo", description: insertErr.message, variant: "destructive" }); continue; }
       }
       toast({ title: "Arquivo(s) anexado(s)!" });
-      supabase.from("project_attachments").select("*").eq("project_id", id).order("created_at", { ascending: false }).then(({ data }) => setAttachments(data || []));
+      const { data: refreshed } = await supabase.from("project_attachments").select("*").eq("project_id", id).order("created_at", { ascending: false });
+      setAttachments(refreshed || []);
     } finally {
       setUploading(false);
       e.target.value = "";

@@ -11,7 +11,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Search, ArrowUpDown, Trash2, Eye } from "lucide-react";
+import { ArrowLeft, Search, ArrowUpDown, Trash2, Eye, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";

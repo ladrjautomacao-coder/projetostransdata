@@ -185,6 +185,7 @@ export default function ProjectAnalytics() {
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [selectedStatus, setSelectedStatus] = useState<ProjectStatus | null>(null);
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {

@@ -209,17 +209,24 @@ export default function NewProject() {
   const DatePicker = ({ label, date, onSelect, required }: { label: string; date?: Date; onSelect: (d?: Date) => void; required?: boolean }) => (
     <div className="space-y-2">
       <Label>{label} {required && <span className="text-destructive">*</span>}</Label>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}>
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {date ? format(date, "dd/MM/yyyy") : "Selecione..."}
+      <div className="flex gap-2">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}>
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {date ? format(date, "dd/MM/yyyy") : "Selecione..."}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={date} onSelect={onSelect} initialFocus className="p-3 pointer-events-auto" captionLayout="dropdown-buttons" fromYear={2015} toYear={2035} />
+          </PopoverContent>
+        </Popover>
+        {date && (
+          <Button type="button" variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-destructive" onClick={() => onSelect(undefined)} title="Limpar data">
+            <X className="h-4 w-4" />
           </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar mode="single" selected={date} onSelect={onSelect} initialFocus className="p-3 pointer-events-auto" captionLayout="dropdown-buttons" fromYear={2015} toYear={2035} />
-        </PopoverContent>
-      </Popover>
+        )}
+      </div>
     </div>
   );
 

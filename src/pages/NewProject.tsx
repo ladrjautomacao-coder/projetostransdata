@@ -254,9 +254,9 @@ export default function NewProject() {
             </div>
             <div className="space-y-2">
               <Label>Estado <span className="text-destructive">*</span></Label>
-              <Select value={state} onValueChange={v => setState(v as BrazilianState)}>
+              <Select value={state || undefined} onValueChange={v => setState(v as BrazilianState)}>
                 <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-60 overflow-y-auto">
                   {Constants.public.Enums.brazilian_state.map(s => (
                     <SelectItem key={s} value={s}>{s}</SelectItem>
                   ))}

@@ -265,7 +265,7 @@ export default function NewProject() {
             </div>
             <div className="space-y-2">
               <Label>Tipo do Projeto <span className="text-destructive">*</span></Label>
-              <Select value={projectTypeId} onValueChange={setProjectTypeId}>
+              <Select value={projectTypeId || undefined} onValueChange={setProjectTypeId}>
                 <SelectTrigger><SelectValue placeholder="Selecione o tipo..." /></SelectTrigger>
                 <SelectContent>
                   {projectTypes.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}

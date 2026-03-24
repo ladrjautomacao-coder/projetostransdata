@@ -115,7 +115,7 @@ function GlowCard({ children, className = "", glow = false, delay = 0 }: { child
   );
 }
 
-function KpiCard({ icon: Icon, label, value, accent = "primary", index = 0 }: { icon: any; label: string; value: number; accent?: string; index?: number }) {
+function KpiCard({ icon: Icon, label, value, accent = "primary", index = 0, active = false, onClick }: { icon: any; label: string; value: number; accent?: string; index?: number; active?: boolean; onClick?: () => void }) {
   const accentMap: Record<string, { bg: string; icon: string; border: string; glow: string }> = {
     primary: { bg: "from-primary/15 to-primary/5", icon: "text-primary", border: "border-primary/20", glow: "shadow-primary/10" },
     amber: { bg: "from-amber-500/15 to-amber-500/5", icon: "text-amber-500", border: "border-amber-500/20", glow: "shadow-amber-500/10" },
@@ -130,7 +130,8 @@ function KpiCard({ icon: Icon, label, value, accent = "primary", index = 0 }: { 
       initial={{ opacity: 0, scale: 0.95, y: 16 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className={`relative rounded-2xl border ${colors.border} bg-card/90 backdrop-blur-md overflow-hidden shadow-lg ${colors.glow}`}
+      onClick={onClick}
+      className={`relative rounded-2xl border ${colors.border} bg-card/90 backdrop-blur-md overflow-hidden shadow-lg ${colors.glow} cursor-pointer transition-all hover:shadow-xl ${active ? "ring-2 ring-primary/50 ring-offset-1" : ""}`}
     >
       <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg} pointer-events-none`} />
       <div className="relative p-5 flex items-center gap-4">
@@ -184,6 +185,7 @@ export default function ProjectAnalytics() {
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [selectedStatus, setSelectedStatus] = useState<ProjectStatus | null>(null);
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -360,7 +362,93 @@ export default function ProjectAnalytics() {
   );
   const genericConfig: ChartConfig = { value: { label: "Projetos" }, count: { label: "Projetos" } };
 
-  if (loading) {
+  const toggleSection = (section: string) => {
+    setExpandedSection(prev => prev === section ? null : section);
+  };
+
+  function ExpandableProjectTable({ sectionKey, title, projectList }: { sectionKey: string; title: string; projectList: ProjectRow[] }) {
+    return (
+      <AnimatePresence>
+        {expandedSection === sectionKey && (
+          <motion.div
+            key={sectionKey}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.35, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <GlowCard delay={0}>
+              <div className="p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                    <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{title}</h3>
+                    <Badge variant="secondary" className="text-xs ml-1">{projectList.length}</Badge>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setExpandedSection(null)} className="h-7 text-xs gap-1">
+                    <X className="h-3 w-3" /> Fechar
+                  </Button>
+                </div>
+                {projectList.length === 0 ? (
+                  <p className="text-center text-muted-foreground text-xs py-6">Nenhum projeto encontrado</p>
+                ) : (
+                  <div className="overflow-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-border/50">
+                          <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Empresa</th>
+                          <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Localização</th>
+                          <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Status</th>
+                          <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Gerente</th>
+                          <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Frota</th>
+                          <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Soluções</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {projectList.map((p, i) => (
+                          <motion.tr
+                            key={p.id}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.03 }}
+                            className="border-b border-border/30 hover:bg-muted/30 transition-colors cursor-pointer"
+                            onClick={() => navigate(`/projetos/${p.id}`)}
+                          >
+                            <td className="py-2.5 px-3 font-medium text-foreground">{p.company_name}</td>
+                            <td className="py-2.5 px-3 text-muted-foreground">{p.city}/{p.state}</td>
+                            <td className="py-2.5 px-3">
+                              <Badge variant="secondary" className="text-[10px]">{statusLabels[p.status]}</Badge>
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <span className="inline-flex items-center gap-1.5">
+                                <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                                {p.manager?.full_name || <span className="text-muted-foreground italic">Sem gerente</span>}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3 font-semibold tabular-nums" style={{ fontFamily: "'Rajdhani', sans-serif" }}>{p.fleet_size || "—"}</td>
+                            <td className="py-2.5 px-3">
+                              <div className="flex flex-wrap gap-1">
+                                {p.project_solutions?.map((ps, j) => (
+                                  <Badge key={j} variant="secondary" className="text-[10px] px-1.5 py-0">{ps.solution?.name}</Badge>
+                                ))}
+                                {(!p.project_solutions || p.project_solutions.length === 0) && <span className="text-xs text-muted-foreground">—</span>}
+                              </div>
+                            </td>
+                          </motion.tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </GlowCard>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  }
+
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-4">
@@ -490,12 +578,17 @@ export default function ProjectAnalytics() {
         </GlowCard>
       </motion.div>
 
-      {/* KPI Strip - Main metrics */}
+      {/* KPI Strip - Main metrics (clickable) */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        <KpiCard icon={Layers} label="Total Projetos" value={totalProjects} accent="primary" index={0} />
-        <KpiCard icon={MapPin} label="Estados" value={totalStates} accent="emerald" index={1} />
-        <KpiCard icon={TrendingUp} label="Frota Média" value={Math.round(avgFleet)} accent="cyan" index={2} />
+        <KpiCard icon={Layers} label="Total Projetos" value={totalProjects} accent="primary" index={0} active={expandedSection === "total"} onClick={() => toggleSection("total")} />
+        <KpiCard icon={MapPin} label="Estados" value={totalStates} accent="emerald" index={1} active={expandedSection === "estados-kpi"} onClick={() => toggleSection("estados-kpi")} />
+        <KpiCard icon={TrendingUp} label="Frota Média" value={Math.round(avgFleet)} accent="cyan" index={2} active={expandedSection === "frota-kpi"} onClick={() => toggleSection("frota-kpi")} />
       </div>
+
+      {/* Expandable lists for KPI cards */}
+      <ExpandableProjectTable sectionKey="total" title="Todos os Projetos" projectList={filteredProjects} />
+      <ExpandableProjectTable sectionKey="estados-kpi" title="Projetos por Estado" projectList={filteredProjects} />
+      <ExpandableProjectTable sectionKey="frota-kpi" title="Projetos com Frota" projectList={filteredProjects.filter(p => p.fleet_size && p.fleet_size > 0)} />
 
       {/* Status breakdown strip - ALL statuses (clickable) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -601,8 +694,8 @@ export default function ProjectAnalytics() {
 
       {/* Row 1: Status Donut + Solutions Donut */}
       <div className="grid lg:grid-cols-2 gap-6">
-        <GlowCard delay={0.15}>
-          <div className="p-5">
+        <GlowCard delay={0.15} className={`cursor-pointer transition-all ${expandedSection === "status-chart" ? "ring-2 ring-primary/50" : ""}`}>
+          <div className="p-5" onClick={() => toggleSection("status-chart")}>
             <div className="flex items-center gap-2 mb-4">
               <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Status dos Projetos</h3>
@@ -651,8 +744,8 @@ export default function ProjectAnalytics() {
           </div>
         </GlowCard>
 
-        <GlowCard delay={0.2}>
-          <div className="p-5">
+        <GlowCard delay={0.2} className={`cursor-pointer transition-all ${expandedSection === "solucoes-chart" ? "ring-2 ring-primary/50" : ""}`}>
+          <div className="p-5" onClick={() => toggleSection("solucoes-chart")}>
             <div className="flex items-center gap-2 mb-4">
               <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Soluções</h3>
@@ -699,11 +792,13 @@ export default function ProjectAnalytics() {
           </div>
         </GlowCard>
       </div>
+      <ExpandableProjectTable sectionKey="status-chart" title="Projetos por Status" projectList={filteredProjects} />
+      <ExpandableProjectTable sectionKey="solucoes-chart" title="Projetos por Solução" projectList={filteredProjects} />
 
       {/* Row 2: Fleet Timeline + Solution Timeline */}
       <div className="grid lg:grid-cols-2 gap-6">
-        <GlowCard glow delay={0.25}>
-          <div className="p-5">
+        <GlowCard glow delay={0.25} className={`cursor-pointer transition-all ${expandedSection === "frota-chart" ? "ring-2 ring-primary/50" : ""}`}>
+          <div className="p-5" onClick={() => toggleSection("frota-chart")}>
             <div className="flex items-center gap-2 mb-4">
               <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Evolução da Frota</h3>
@@ -726,8 +821,8 @@ export default function ProjectAnalytics() {
           </div>
         </GlowCard>
 
-        <GlowCard glow delay={0.3}>
-          <div className="p-5">
+        <GlowCard glow delay={0.3} className={`cursor-pointer transition-all ${expandedSection === "solucao-timeline" ? "ring-2 ring-primary/50" : ""}`}>
+          <div className="p-5" onClick={() => toggleSection("solucao-timeline")}>
             <div className="flex items-center gap-2 mb-4">
               <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Evolução por Solução</h3>
@@ -762,11 +857,13 @@ export default function ProjectAnalytics() {
           </div>
         </GlowCard>
       </div>
+      <ExpandableProjectTable sectionKey="frota-chart" title="Projetos com Frota" projectList={filteredProjects.filter(p => p.fleet_size && p.fleet_size > 0)} />
+      <ExpandableProjectTable sectionKey="solucao-timeline" title="Projetos por Solução" projectList={filteredProjects.filter(p => p.project_solutions && p.project_solutions.length > 0)} />
 
       {/* Row 3: State */}
       <div className="grid gap-6">
-        <GlowCard delay={0.4}>
-          <div className="p-5">
+        <GlowCard delay={0.4} className={`cursor-pointer transition-all ${expandedSection === "estado-chart" ? "ring-2 ring-primary/50" : ""}`}>
+          <div className="p-5" onClick={() => toggleSection("estado-chart")}>
             <div className="flex items-center gap-2 mb-4">
               <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Projetos por Estado</h3>
@@ -789,10 +886,11 @@ export default function ProjectAnalytics() {
           </div>
         </GlowCard>
       </div>
+      <ExpandableProjectTable sectionKey="estado-chart" title="Projetos por Estado" projectList={filteredProjects} />
 
       {/* Row 4: Manager */}
-      <GlowCard delay={0.45}>
-        <div className="p-5">
+      <GlowCard delay={0.45} className={`cursor-pointer transition-all ${expandedSection === "gerente-chart" ? "ring-2 ring-primary/50" : ""}`}>
+        <div className="p-5" onClick={() => toggleSection("gerente-chart")}>
           <div className="flex items-center gap-2 mb-4">
             <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
             <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Projetos por Gerente</h3>
@@ -812,6 +910,7 @@ export default function ProjectAnalytics() {
           </ChartContainer>
         </div>
       </GlowCard>
+      <ExpandableProjectTable sectionKey="gerente-chart" title="Projetos por Gerente" projectList={filteredProjects} />
 
       {/* Detail card for single project */}
       <AnimatePresence>

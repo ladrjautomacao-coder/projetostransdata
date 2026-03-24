@@ -186,6 +186,8 @@ export default function ProjectAnalytics() {
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [selectedStatus, setSelectedStatus] = useState<ProjectStatus | null>(null);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [selectedBarState, setSelectedBarState] = useState<string | null>(null);
+  const [selectedBarManager, setSelectedBarManager] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -867,13 +869,23 @@ export default function ProjectAnalytics() {
       {/* Row 3: Estado + Gerente side by side */}
       <div className="grid lg:grid-cols-2 gap-6">
         <GlowCard delay={0.35} className={`cursor-pointer transition-all ${expandedSection === "estado-chart" ? "ring-2 ring-primary/50" : ""}`}>
-          <div className="p-6" onClick={() => toggleSection("estado-chart")}>
+          <div className="p-6">
             <div className="flex items-center gap-2 mb-5">
               <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Projetos por Estado</h3>
+              {selectedBarState && (
+                <Badge variant="secondary" className="text-xs ml-2">{selectedBarState}</Badge>
+              )}
             </div>
             <ChartContainer config={genericConfig} className="h-[320px]">
-              <BarChart data={stateData} barCategoryGap="25%">
+              <BarChart data={stateData} barCategoryGap="25%" onClick={(data) => {
+                if (data?.activePayload?.[0]?.payload?.state) {
+                  const clickedState = data.activePayload[0].payload.state;
+                  const newState = selectedBarState === clickedState ? null : clickedState;
+                  setSelectedBarState(newState);
+                  setExpandedSection(newState ? "estado-chart" : null);
+                }
+              }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} vertical={false} />
                 <XAxis dataKey="state" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
@@ -883,28 +895,46 @@ export default function ProjectAnalytics() {
                     <stop offset="0%" stopColor="hsl(28 90% 52%)" stopOpacity={1} />
                     <stop offset="100%" stopColor="hsl(28 90% 52%)" stopOpacity={0.5} />
                   </linearGradient>
+                  <linearGradient id="barGradMuted" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(28 90% 52%)" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="hsl(28 90% 52%)" stopOpacity={0.15} />
+                  </linearGradient>
                 </defs>
-                <Bar dataKey="count" fill="url(#barGrad)" radius={[6, 6, 0, 0]} animationDuration={1200} />
+                <Bar dataKey="count" radius={[6, 6, 0, 0]} animationDuration={1200} cursor="pointer">
+                  {stateData.map((entry, i) => (
+                    <Cell key={i} fill={!selectedBarState || selectedBarState === entry.state ? "url(#barGrad)" : "url(#barGradMuted)"} />
+                  ))}
+                </Bar>
               </BarChart>
             </ChartContainer>
           </div>
         </GlowCard>
 
         <GlowCard delay={0.4} className={`cursor-pointer transition-all ${expandedSection === "gerente-chart" ? "ring-2 ring-primary/50" : ""}`}>
-          <div className="p-6" onClick={() => toggleSection("gerente-chart")}>
+          <div className="p-6">
             <div className="flex items-center gap-2 mb-5">
               <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Projetos por Gerente</h3>
+              {selectedBarManager && (
+                <Badge variant="secondary" className="text-xs ml-2">{selectedBarManager}</Badge>
+              )}
             </div>
             <ChartContainer config={genericConfig} className="h-[320px]">
-              <BarChart data={managerData} barCategoryGap="30%">
+              <BarChart data={managerData} barCategoryGap="30%" onClick={(data) => {
+                if (data?.activePayload?.[0]?.payload?.name) {
+                  const clickedManager = data.activePayload[0].payload.name;
+                  const newManager = selectedBarManager === clickedManager ? null : clickedManager;
+                  setSelectedBarManager(newManager);
+                  setExpandedSection(newManager ? "gerente-chart" : null);
+                }
+              }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} vertical={false} />
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="value" radius={[6, 6, 0, 0]} animationDuration={1200}>
-                  {managerData.map((_, i) => (
-                    <Cell key={i} fill={PRODUCT_COLORS[i % PRODUCT_COLORS.length]} />
+                <Bar dataKey="value" radius={[6, 6, 0, 0]} animationDuration={1200} cursor="pointer">
+                  {managerData.map((entry, i) => (
+                    <Cell key={i} fill={!selectedBarManager || selectedBarManager === entry.name ? PRODUCT_COLORS[i % PRODUCT_COLORS.length] : `${PRODUCT_COLORS[i % PRODUCT_COLORS.length]}40`} />
                   ))}
                 </Bar>
               </BarChart>
@@ -912,8 +942,16 @@ export default function ProjectAnalytics() {
           </div>
         </GlowCard>
       </div>
-      <ExpandableProjectTable sectionKey="estado-chart" title="Projetos por Estado" projectList={filteredProjects} />
-      <ExpandableProjectTable sectionKey="gerente-chart" title="Projetos por Gerente" projectList={filteredProjects} />
+      <ExpandableProjectTable
+        sectionKey="estado-chart"
+        title={selectedBarState ? `Projetos em ${selectedBarState}` : "Projetos por Estado"}
+        projectList={selectedBarState ? filteredProjects.filter(p => p.state === selectedBarState) : filteredProjects}
+      />
+      <ExpandableProjectTable
+        sectionKey="gerente-chart"
+        title={selectedBarManager ? `Projetos de ${selectedBarManager}` : "Projetos por Gerente"}
+        projectList={selectedBarManager ? filteredProjects.filter(p => (p.manager?.full_name || "Sem gerente") === selectedBarManager) : filteredProjects}
+      />
 
       {/* Detail card for single project */}
       <AnimatePresence>

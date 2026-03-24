@@ -271,7 +271,10 @@ export default function ProjectDetail() {
           toast({ title: `Arquivo "${file.name}" excede 20MB`, variant: "destructive" });
           continue;
         }
-        const path = `${id}/${Date.now()}_${file.name}`;
+        const sanitizedName = file.name
+          .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-zA-Z0-9._-]/g, "_");
+        const path = `${id}/${Date.now()}_${sanitizedName}`;
         const { error: upErr } = await supabase.storage.from("project-attachments").upload(path, file);
         if (upErr) { toast({ title: "Erro no upload", description: upErr.message, variant: "destructive" }); continue; }
         const { error: insertErr } = await supabase.from("project_attachments").insert({

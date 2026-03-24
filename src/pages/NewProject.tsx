@@ -374,7 +374,7 @@ export default function NewProject() {
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Gerente Comercial</Label>
-              <Select value={executiveId} onValueChange={setExecutiveId}>
+              <Select value={executiveId || undefined} onValueChange={setExecutiveId}>
                 <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                 <SelectContent>
                   {executives.map(e => <SelectItem key={e.id} value={e.id}>{e.full_name}</SelectItem>)}

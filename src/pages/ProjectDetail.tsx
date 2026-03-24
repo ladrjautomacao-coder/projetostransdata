@@ -288,6 +288,7 @@ export default function ProjectDetail() {
       setAttachments(refreshed || []);
     } finally {
       setUploading(false);
+      setUploadProgress(null);
       e.target.value = "";
     }
   };

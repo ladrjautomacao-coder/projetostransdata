@@ -576,6 +576,21 @@ export default function ProjectDetail() {
           <CardDescription className="text-xs">Anexe documentos relacionados ao projeto (máx. 20MB cada)</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
+          {uploading && uploadProgress && (
+            <div className="space-y-2 p-3 rounded-lg border bg-muted/30">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  Enviando arquivo {uploadProgress.current} de {uploadProgress.total}
+                </span>
+                <span className="text-xs text-muted-foreground font-medium">
+                  {Math.round((uploadProgress.current / uploadProgress.total) * 100)}%
+                </span>
+              </div>
+              <Progress value={(uploadProgress.current / uploadProgress.total) * 100} className="h-2" />
+              <p className="text-xs text-muted-foreground truncate">{uploadProgress.fileName}</p>
+            </div>
+          )}
           {ATTACHMENT_CATEGORIES.map(cat => {
             const catFiles = getAttachmentsForCategory(cat.prefix);
             return (

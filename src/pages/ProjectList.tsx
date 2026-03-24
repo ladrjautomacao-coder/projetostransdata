@@ -11,7 +11,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Search, ArrowUpDown, Trash2, Eye } from "lucide-react";
+import { ArrowLeft, Search, ArrowUpDown, Trash2, Eye, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
@@ -169,7 +169,12 @@ export default function ProjectList() {
       <Button variant="ghost" onClick={() => navigate("/projetos")} className="mb-4">
         <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
       </Button>
-      <h1 className="text-2xl font-bold mb-6">Projetos Existentes</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Projetos Existentes</h1>
+        <Button onClick={() => navigate("/projetos/novo")}>
+          <Plus className="mr-2 h-4 w-4" /> Adicionar Projeto
+        </Button>
+      </div>
 
       <div className="flex flex-wrap gap-3 mb-6">
         <div className="relative flex-1 min-w-[200px]">

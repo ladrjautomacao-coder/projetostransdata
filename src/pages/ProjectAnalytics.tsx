@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Activity, Clock, Package, TrendingUp, Users, MapPin, CalendarDays, Layers, Zap, Signal, Filter, X, Calendar as CalendarIcon, BarChart3, CheckCircle2, PauseCircle, PlayCircle, FileText } from "lucide-react";
+import { ArrowLeft, Activity, Clock, Package, TrendingUp, Users, MapPin, CalendarDays, Layers, Zap, Signal, Filter, X, Calendar as CalendarIcon, BarChart3, CheckCircle2, PauseCircle, PlayCircle, FileText, GripVertical, RotateCcw } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import {

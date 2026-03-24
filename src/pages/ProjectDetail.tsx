@@ -16,6 +16,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { format, addDays } from "date-fns";
 import { ArrowLeft, Edit2, Save, X, CalendarIcon, Upload, FileText, Trash2, Info, Download, Eye, PlusCircle, RefreshCw, User } from "lucide-react";
@@ -236,6 +237,7 @@ export default function ProjectDetail() {
   };
 
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number; fileName: string } | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewName, setPreviewName] = useState("");
 
@@ -260,8 +262,11 @@ export default function ProjectDetail() {
     if (!files || !id) return;
 
     setUploading(true);
+    const fileList = Array.from(files);
     try {
-      for (const file of Array.from(files)) {
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        setUploadProgress({ current: i + 1, total: fileList.length, fileName: file.name });
         if (file.size > 20 * 1024 * 1024) {
           toast({ title: `Arquivo "${file.name}" excede 20MB`, variant: "destructive" });
           continue;
@@ -284,6 +289,7 @@ export default function ProjectDetail() {
       setAttachments(refreshed || []);
     } finally {
       setUploading(false);
+      setUploadProgress(null);
       e.target.value = "";
     }
   };
@@ -570,6 +576,21 @@ export default function ProjectDetail() {
           <CardDescription className="text-xs">Anexe documentos relacionados ao projeto (máx. 20MB cada)</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
+          {uploading && uploadProgress && (
+            <div className="space-y-2 p-3 rounded-lg border bg-muted/30">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  Enviando arquivo {uploadProgress.current} de {uploadProgress.total}
+                </span>
+                <span className="text-xs text-muted-foreground font-medium">
+                  {Math.round((uploadProgress.current / uploadProgress.total) * 100)}%
+                </span>
+              </div>
+              <Progress value={(uploadProgress.current / uploadProgress.total) * 100} className="h-2" />
+              <p className="text-xs text-muted-foreground truncate">{uploadProgress.fileName}</p>
+            </div>
+          )}
           {ATTACHMENT_CATEGORIES.map(cat => {
             const catFiles = getAttachmentsForCategory(cat.prefix);
             return (

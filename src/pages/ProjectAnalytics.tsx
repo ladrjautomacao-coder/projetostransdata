@@ -352,6 +352,7 @@ export default function ProjectAnalytics() {
 
   const totalProjects = filteredProjects.length;
   const avgFleet = filteredProjects.filter(p => p.fleet_size).reduce((a, p) => a + (p.fleet_size || 0), 0) / (filteredProjects.filter(p => p.fleet_size).length || 1);
+  const totalFleet = filteredProjects.reduce((a, p) => a + (p.fleet_size || 0), 0);
   const totalStates = new Set(filteredProjects.map(p => p.state)).size;
 
   const fleetConfig: ChartConfig = {
@@ -580,16 +581,18 @@ export default function ProjectAnalytics() {
       </motion.div>
 
       {/* KPI Strip - Main metrics (clickable) */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard icon={Layers} label="Total Projetos" value={totalProjects} accent="primary" index={0} active={expandedSection === "total"} onClick={() => toggleSection("total")} />
         <KpiCard icon={MapPin} label="Estados" value={totalStates} accent="emerald" index={1} active={expandedSection === "estados-kpi"} onClick={() => toggleSection("estados-kpi")} />
         <KpiCard icon={TrendingUp} label="Frota Média" value={Math.round(avgFleet)} accent="cyan" index={2} active={expandedSection === "frota-kpi"} onClick={() => toggleSection("frota-kpi")} />
+        <KpiCard icon={Activity} label="Frota Total" value={totalFleet} accent="amber" index={3} active={expandedSection === "frota-total"} onClick={() => toggleSection("frota-total")} />
       </div>
 
       {/* Expandable lists for KPI cards */}
       <ExpandableProjectTable sectionKey="total" title="Todos os Projetos" projectList={filteredProjects} />
       <ExpandableProjectTable sectionKey="estados-kpi" title="Projetos por Estado" projectList={filteredProjects} />
       <ExpandableProjectTable sectionKey="frota-kpi" title="Projetos com Frota" projectList={filteredProjects.filter(p => p.fleet_size && p.fleet_size > 0)} />
+      <ExpandableProjectTable sectionKey="frota-total" title="Frota Total por Projeto" projectList={filteredProjects.filter(p => p.fleet_size && p.fleet_size > 0)} />
 
       {/* Status breakdown strip - ALL statuses (clickable) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

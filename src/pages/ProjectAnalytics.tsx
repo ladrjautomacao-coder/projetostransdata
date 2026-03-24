@@ -699,20 +699,20 @@ export default function ProjectAnalytics() {
       {/* Row 1: Status Donut + Solutions Donut */}
       <div className="grid lg:grid-cols-2 gap-6">
         <GlowCard delay={0.15} className={`cursor-pointer transition-all ${expandedSection === "status-chart" ? "ring-2 ring-primary/50" : ""}`}>
-          <div className="p-5" onClick={() => toggleSection("status-chart")}>
-            <div className="flex items-center gap-2 mb-4">
+          <div className="p-6" onClick={() => toggleSection("status-chart")}>
+            <div className="flex items-center gap-2 mb-5">
               <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Status dos Projetos</h3>
             </div>
-            <div className="flex items-center gap-6">
-              <ChartContainer config={genericConfig} className="h-[220px] flex-1">
+            <div className="flex items-center gap-8">
+              <ChartContainer config={genericConfig} className="h-[260px] flex-1">
                 <PieChart>
                   <Pie
                     data={statusData.filter(d => d.value > 0)}
                     cx="50%"
                     cy="50%"
-                    innerRadius={55}
-                    outerRadius={90}
+                    innerRadius={65}
+                    outerRadius={110}
                     paddingAngle={5}
                     dataKey="value"
                     nameKey="name"
@@ -727,7 +727,7 @@ export default function ProjectAnalytics() {
                   <ChartTooltip content={<ChartTooltipContent />} />
                 </PieChart>
               </ChartContainer>
-              <div className="flex flex-col gap-2.5 min-w-[140px]">
+              <div className="flex flex-col gap-3 min-w-[140px]">
                 {statusData.filter(d => d.value > 0).map((d, i) => (
                   <motion.div
                     key={i}
@@ -749,20 +749,20 @@ export default function ProjectAnalytics() {
         </GlowCard>
 
         <GlowCard delay={0.2} className={`cursor-pointer transition-all ${expandedSection === "solucoes-chart" ? "ring-2 ring-primary/50" : ""}`}>
-          <div className="p-5" onClick={() => toggleSection("solucoes-chart")}>
-            <div className="flex items-center gap-2 mb-4">
+          <div className="p-6" onClick={() => toggleSection("solucoes-chart")}>
+            <div className="flex items-center gap-2 mb-5">
               <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Soluções</h3>
             </div>
-            <div className="flex items-center gap-6">
-              <ChartContainer config={genericConfig} className="h-[220px] flex-1">
+            <div className="flex items-center gap-8">
+              <ChartContainer config={genericConfig} className="h-[260px] flex-1">
                 <PieChart>
                   <Pie
                     data={solutionData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={45}
-                    outerRadius={90}
+                    innerRadius={55}
+                    outerRadius={110}
                     paddingAngle={3}
                     dataKey="value"
                     nameKey="name"
@@ -777,7 +777,7 @@ export default function ProjectAnalytics() {
                   <ChartTooltip content={<ChartTooltipContent />} />
                 </PieChart>
               </ChartContainer>
-              <div className="flex flex-col gap-2 min-w-[120px] max-h-[220px] overflow-auto">
+              <div className="flex flex-col gap-2.5 min-w-[120px] max-h-[260px] overflow-auto">
                 {solutionData.map((d, i) => (
                   <motion.div
                     key={i}
@@ -802,12 +802,12 @@ export default function ProjectAnalytics() {
       {/* Row 2: Fleet Timeline + Solution Timeline */}
       <div className="grid lg:grid-cols-2 gap-6">
         <GlowCard glow delay={0.25} className={`cursor-pointer transition-all ${expandedSection === "frota-chart" ? "ring-2 ring-primary/50" : ""}`}>
-          <div className="p-5" onClick={() => toggleSection("frota-chart")}>
-            <div className="flex items-center gap-2 mb-4">
+          <div className="p-6" onClick={() => toggleSection("frota-chart")}>
+            <div className="flex items-center gap-2 mb-5">
               <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Evolução da Frota</h3>
             </div>
-            <ChartContainer config={fleetConfig} className="h-[280px]">
+            <ChartContainer config={fleetConfig} className="h-[320px]">
               <AreaChart data={fleetTimelineData}>
                 <defs>
                   <linearGradient id="gFleet" x1="0" y1="0" x2="0" y2="1">
@@ -816,8 +816,8 @@ export default function ProjectAnalytics() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} vertical={false} />
-                <XAxis dataKey="month" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Area type="monotone" dataKey="frota" stroke="hsl(28 90% 52%)" fill="url(#gFleet)" strokeWidth={2.5} dot={{ r: 4, fill: "hsl(28 90% 52%)", strokeWidth: 0 }} animationDuration={1500} />
               </AreaChart>
@@ -826,8 +826,8 @@ export default function ProjectAnalytics() {
         </GlowCard>
 
         <GlowCard glow delay={0.3} className={`cursor-pointer transition-all ${expandedSection === "solucao-timeline" ? "ring-2 ring-primary/50" : ""}`}>
-          <div className="p-5" onClick={() => toggleSection("solucao-timeline")}>
-            <div className="flex items-center gap-2 mb-4">
+          <div className="p-6" onClick={() => toggleSection("solucao-timeline")}>
+            <div className="flex items-center gap-2 mb-5">
               <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Evolução por Solução</h3>
               <div className="flex gap-3 ml-auto flex-wrap justify-end">
@@ -839,7 +839,7 @@ export default function ProjectAnalytics() {
                 ))}
               </div>
             </div>
-            <ChartContainer config={solutionTimelineConfig} className="h-[280px]">
+            <ChartContainer config={solutionTimelineConfig} className="h-[320px]">
               <AreaChart data={solutionTimelineData}>
                 <defs>
                   {solutionNamesForChart.map((name, i) => (
@@ -850,8 +850,8 @@ export default function ProjectAnalytics() {
                   ))}
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} vertical={false} />
-                <XAxis dataKey="month" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 {solutionNamesForChart.map((name, i) => (
                   <Area key={name} type="monotone" dataKey={name} stroke={PRODUCT_COLORS[i % PRODUCT_COLORS.length]} fill={`url(#gSol${i})`} strokeWidth={2} dot={{ r: 3, fill: PRODUCT_COLORS[i % PRODUCT_COLORS.length], strokeWidth: 0 }} animationDuration={1500} animationBegin={300 + i * 200} />
@@ -864,19 +864,19 @@ export default function ProjectAnalytics() {
       <ExpandableProjectTable sectionKey="frota-chart" title="Projetos com Frota" projectList={filteredProjects.filter(p => p.fleet_size && p.fleet_size > 0)} />
       <ExpandableProjectTable sectionKey="solucao-timeline" title="Projetos por Solução" projectList={filteredProjects.filter(p => p.project_solutions && p.project_solutions.length > 0)} />
 
-      {/* Row 3: State */}
-      <div className="grid gap-6">
-        <GlowCard delay={0.4} className={`cursor-pointer transition-all ${expandedSection === "estado-chart" ? "ring-2 ring-primary/50" : ""}`}>
-          <div className="p-5" onClick={() => toggleSection("estado-chart")}>
-            <div className="flex items-center gap-2 mb-4">
+      {/* Row 3: Estado + Gerente side by side */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        <GlowCard delay={0.35} className={`cursor-pointer transition-all ${expandedSection === "estado-chart" ? "ring-2 ring-primary/50" : ""}`}>
+          <div className="p-6" onClick={() => toggleSection("estado-chart")}>
+            <div className="flex items-center gap-2 mb-5">
               <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Projetos por Estado</h3>
             </div>
-            <ChartContainer config={genericConfig} className="h-[280px]">
+            <ChartContainer config={genericConfig} className="h-[320px]">
               <BarChart data={stateData} barCategoryGap="25%">
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} vertical={false} />
-                <XAxis dataKey="state" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="state" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <defs>
                   <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
@@ -889,31 +889,30 @@ export default function ProjectAnalytics() {
             </ChartContainer>
           </div>
         </GlowCard>
+
+        <GlowCard delay={0.4} className={`cursor-pointer transition-all ${expandedSection === "gerente-chart" ? "ring-2 ring-primary/50" : ""}`}>
+          <div className="p-6" onClick={() => toggleSection("gerente-chart")}>
+            <div className="flex items-center gap-2 mb-5">
+              <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Projetos por Gerente</h3>
+            </div>
+            <ChartContainer config={genericConfig} className="h-[320px]">
+              <BarChart data={managerData} barCategoryGap="30%">
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="value" radius={[6, 6, 0, 0]} animationDuration={1200}>
+                  {managerData.map((_, i) => (
+                    <Cell key={i} fill={PRODUCT_COLORS[i % PRODUCT_COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ChartContainer>
+          </div>
+        </GlowCard>
       </div>
       <ExpandableProjectTable sectionKey="estado-chart" title="Projetos por Estado" projectList={filteredProjects} />
-
-      {/* Row 4: Manager */}
-      <GlowCard delay={0.45} className={`cursor-pointer transition-all ${expandedSection === "gerente-chart" ? "ring-2 ring-primary/50" : ""}`}>
-        <div className="p-5" onClick={() => toggleSection("gerente-chart")}>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Projetos por Gerente</h3>
-          </div>
-          <ChartContainer config={genericConfig} className="h-[250px]">
-            <BarChart data={managerData} barCategoryGap="30%">
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="value" radius={[6, 6, 0, 0]} animationDuration={1200}>
-                {managerData.map((_, i) => (
-                  <Cell key={i} fill={PRODUCT_COLORS[i % PRODUCT_COLORS.length]} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ChartContainer>
-        </div>
-      </GlowCard>
       <ExpandableProjectTable sectionKey="gerente-chart" title="Projetos por Gerente" projectList={filteredProjects} />
 
       {/* Detail card for single project */}

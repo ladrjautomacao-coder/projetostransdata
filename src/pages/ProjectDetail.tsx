@@ -280,7 +280,8 @@ export default function ProjectDetail() {
         if (insertErr) { toast({ title: "Erro ao registrar anexo", description: insertErr.message, variant: "destructive" }); continue; }
       }
       toast({ title: "Arquivo(s) anexado(s)!" });
-      supabase.from("project_attachments").select("*").eq("project_id", id).order("created_at", { ascending: false }).then(({ data }) => setAttachments(data || []));
+      const { data: refreshed } = await supabase.from("project_attachments").select("*").eq("project_id", id).order("created_at", { ascending: false });
+      setAttachments(refreshed || []);
     } finally {
       setUploading(false);
       e.target.value = "";

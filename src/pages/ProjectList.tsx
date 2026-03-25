@@ -12,7 +12,9 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Search, ArrowUpDown, Trash2, Eye, Plus } from "lucide-react";
+import { ArrowLeft, Search, ArrowUpDown, Trash2, Eye, Plus, CalendarClock } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ProjectTimeline } from "@/components/ProjectTimeline";
 import { format } from "date-fns";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
@@ -230,6 +232,7 @@ export default function ProjectList() {
                 <SortHeader label="Handover" field="handover_date" />
                 <SortHeader label="Status" field="status" />
                 <TableHead className="whitespace-nowrap">Soluções</TableHead>
+                <TableHead className="whitespace-nowrap">Cronograma</TableHead>
                 <TableHead className="whitespace-nowrap w-[80px]"></TableHead>
               </TableRow>
             </TableHeader>
@@ -251,6 +254,19 @@ export default function ProjectList() {
                         <Badge key={i} variant="secondary" className="text-xs">{ps.solution?.name}</Badge>
                       ))}
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+                          <CalendarClock className="h-3.5 w-3.5" />
+                          Cronograma
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-4" align="end">
+                        <ProjectTimeline status={p.status} companyName={p.company_name} />
+                      </PopoverContent>
+                    </Popover>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">

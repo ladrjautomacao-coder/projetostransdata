@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { EmptyState } from "@/components/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -165,11 +166,7 @@ export default function UserManagement() {
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
       ) : filtered.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            Nenhum usuário encontrado.
-          </CardContent>
-        </Card>
+        <EmptyState type="search" title="Nenhum usuário encontrado" description="Tente ajustar a busca para encontrar resultados." />
       ) : (
         <div className="space-y-3">
           {filtered.map(user => (

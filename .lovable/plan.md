@@ -1,32 +1,30 @@
 
 
-# Drag and Drop para Quadrantes de Gráficos
+# Mover Análise de Dados para o Dashboard
 
-## Objetivo
-Permitir reordenar os 6 blocos de gráficos (Status, Soluções, Evolução da Frota, Evolução por Solução, Estado, Gerente) via drag and drop, persistindo a ordem no `localStorage`.
+## Resumo
+Substituir o conteúdo atual do Dashboard (cards de módulos) pelo conteúdo completo da página de Análise de Dados (ProjectAnalytics), e remover a rota/card de "Análise de Dados" do módulo de Projetos.
 
-## Abordagem
+## Alterações
 
-Usar **HTML5 nativo drag and drop** (sem biblioteca externa) para manter o projeto leve.
+### 1. `src/pages/Dashboard.tsx`
+- Substituir todo o conteúdo atual (hero + cards de módulos) pelo conteúdo de `ProjectAnalytics.tsx` (todos os gráficos, filtros, drag-and-drop, tabelas expandíveis).
+- Copiar integralmente o código de `ProjectAnalytics.tsx` para `Dashboard.tsx`, removendo apenas o botão "Voltar" (ArrowLeft / navigate back) que faz sentido apenas como sub-página.
 
-### Alterações em `src/pages/ProjectAnalytics.tsx`
+### 2. `src/pages/Projects.tsx`
+- Remover o card "Análise de Dados" do array `cards` (o que referencia `/projetos/analitico`).
+- Remover import do ícone `BarChart3` que não será mais usado.
 
-1. **Criar um mapa de painéis**: Cada bloco de gráfico + sua tabela expandível será registrado em um objeto/mapa com IDs: `status`, `solucoes`, `frota`, `solucao-timeline`, `estado`, `gerente`.
+### 3. `src/App.tsx`
+- Remover a rota `/projetos/analitico` e o import de `ProjectAnalytics`.
 
-2. **Estado `chartOrder`**: Array de IDs controlando a ordem de renderização. Valor padrão: `["status", "solucoes", "frota", "solucao-timeline", "estado", "gerente"]`. Ao montar, carregar do `localStorage` (key: `analytics-chart-order`).
+### 4. `src/components/AppSidebar.tsx`
+- Nenhuma alteração necessária — o sidebar já aponta para `/` (Dashboard) e `/projetos`.
 
-3. **Renderização dinâmica**: Em vez de 3 rows fixas com pares hardcoded, mapear `chartOrder` em pares de 2 e renderizar cada gráfico + tabela expandível na ordem definida pelo usuário, mantendo o grid `lg:grid-cols-2`.
+### 5. Limpeza (opcional)
+- O arquivo `src/pages/ProjectAnalytics.tsx` pode ser mantido ou removido. Como não terá mais rota apontando para ele, será código morto.
 
-4. **Drag and Drop nativo**:
-   - Cada `GlowCard` terá `draggable` e um ícone de "grip" (6 pontos) no header para indicar que é arrastável.
-   - Handlers: `onDragStart` (salvar índice), `onDragOver` (permitir drop), `onDrop` (reordenar array e salvar no `localStorage`).
-   - Feedback visual: highlight/borda durante o drag.
-
-5. **Botão "Resetar ordem"**: Um pequeno botão para restaurar a ordem padrão.
-
-### Detalhes técnicos
-- Sem dependências externas novas — apenas HTML5 drag API
-- Persistência via `localStorage` key `analytics-chart-order`
-- Cada bloco será extraído para uma função de renderização indexada pelo ID, evitando duplicação de código
-- As tabelas expandíveis continuam renderizando imediatamente abaixo do grid de cada par
+## O que NÃO muda
+- Toda a lógica de gráficos, filtros, drag-and-drop e persistência no localStorage permanece idêntica.
+- As demais rotas e funcionalidades do sistema não são afetadas.
 

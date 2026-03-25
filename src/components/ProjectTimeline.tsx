@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Check, Zap } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
@@ -30,7 +30,18 @@ export function ProjectTimeline({ status, companyName, compact = false }: Projec
   return (
     <div className={compact ? "" : "py-2"}>
       {!compact && (
-        <p className="text-xs font-semibold text-foreground mb-3 truncate">{companyName}</p>
+        <div className="flex items-center gap-2 mb-4">
+          <p className="text-xs font-semibold text-foreground truncate">{companyName}</p>
+          <motion.span
+            className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
+            style={{ backgroundColor: `${PHASE_COLORS[status]}20`, color: PHASE_COLORS[status] }}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            {PHASES[currentIndex]?.label}
+          </motion.span>
+        </div>
       )}
       <div className="flex items-center gap-0">
         {PHASES.map((phase, i) => {
@@ -43,39 +54,40 @@ export function ProjectTimeline({ status, companyName, compact = false }: Projec
             <div key={phase.key} className="flex items-center">
               {/* Phase box */}
               <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
+                initial={{ scale: 0.6, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: i * 0.1, duration: 0.3 }}
+                transition={{ delay: i * 0.12, duration: 0.4, type: "spring", stiffness: 300 }}
                 className="relative flex flex-col items-center"
               >
                 <div
                   className={`
-                    relative flex items-center justify-center rounded-md border-2 transition-all
-                    ${compact ? "h-7 min-w-[52px] px-1.5" : "h-9 min-w-[72px] px-2"}
+                    relative flex items-center justify-center rounded-lg border-2 transition-all
+                    ${compact ? "h-7 min-w-[52px] px-1.5" : "h-10 min-w-[80px] px-2.5"}
                     ${isCompleted
                       ? "border-transparent"
                       : isCurrent
-                        ? "border-transparent shadow-lg"
-                        : "border-border/40 bg-muted/30"
+                        ? "border-transparent"
+                        : "border-border/30 bg-muted/20"
                     }
                   `}
                   style={
                     isCompleted
-                      ? { backgroundColor: `${color}25`, borderColor: `${color}50` }
+                      ? { backgroundColor: `${color}20`, borderColor: `${color}40` }
                       : isCurrent
-                        ? { backgroundColor: color, borderColor: color }
+                        ? { backgroundColor: color, borderColor: color, boxShadow: `0 4px 20px ${color}50, 0 0 40px ${color}25` }
                         : undefined
                   }
                 >
-                  {/* Pulse ring animation on current */}
+                  {/* Animated glow rings on current */}
                   {isCurrent && (
                     <>
+                      {/* Outer expanding ring */}
                       <motion.div
-                        className="absolute inset-0 rounded-md"
+                        className="absolute inset-[-4px] rounded-xl"
                         style={{ border: `2px solid ${color}` }}
                         animate={{
-                          scale: [1, 1.15, 1],
-                          opacity: [0.7, 0, 0.7],
+                          scale: [1, 1.12, 1],
+                          opacity: [0.6, 0, 0.6],
                         }}
                         transition={{
                           duration: 2,
@@ -83,36 +95,84 @@ export function ProjectTimeline({ status, companyName, compact = false }: Projec
                           ease: "easeInOut",
                         }}
                       />
+                      {/* Second ring offset */}
                       <motion.div
-                        className="absolute inset-0 rounded-md"
-                        style={{ backgroundColor: color }}
+                        className="absolute inset-[-2px] rounded-lg"
+                        style={{ border: `1.5px solid ${color}` }}
                         animate={{
-                          opacity: [0.8, 1, 0.8],
+                          scale: [1, 1.08, 1],
+                          opacity: [0.4, 0, 0.4],
                         }}
                         transition={{
-                          duration: 1.5,
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                          delay: 0.5,
+                        }}
+                      />
+                      {/* Inner glow pulse */}
+                      <motion.div
+                        className="absolute inset-0 rounded-lg"
+                        style={{ backgroundColor: color }}
+                        animate={{
+                          opacity: [0.85, 1, 0.85],
+                        }}
+                        transition={{
+                          duration: 1.2,
                           repeat: Infinity,
                           ease: "easeInOut",
                         }}
                       />
+                      {/* Shimmer sweep */}
+                      <motion.div
+                        className="absolute inset-0 rounded-lg overflow-hidden"
+                      >
+                        <motion.div
+                          className="absolute inset-0"
+                          style={{
+                            background: `linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.25) 50%, transparent 60%)`,
+                          }}
+                          animate={{ x: ["-100%", "200%"] }}
+                          transition={{
+                            duration: 2.5,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                            repeatDelay: 1.5,
+                          }}
+                        />
+                      </motion.div>
                     </>
                   )}
 
                   {/* Content */}
                   <div className="relative z-10 flex items-center gap-1">
                     {isCompleted && (
-                      <Check
-                        className={compact ? "h-3 w-3" : "h-3.5 w-3.5"}
-                        style={{ color }}
-                      />
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: i * 0.12 + 0.2, type: "spring", stiffness: 400 }}
+                      >
+                        <Check
+                          className={compact ? "h-3 w-3" : "h-3.5 w-3.5"}
+                          style={{ color }}
+                          strokeWidth={3}
+                        />
+                      </motion.div>
+                    )}
+                    {isCurrent && !compact && (
+                      <motion.div
+                        animate={{ rotate: [0, 10, -10, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                      >
+                        <Zap className="h-3 w-3 text-primary-foreground" strokeWidth={2.5} />
+                      </motion.div>
                     )}
                     <span
                       className={`
-                        font-semibold leading-none whitespace-nowrap
-                        ${compact ? "text-[9px]" : "text-[10px]"}
-                        ${isCurrent ? "text-primary-foreground" : ""}
-                        ${isCompleted ? "" : ""}
-                        ${isFuture ? "text-muted-foreground/60" : ""}
+                        font-bold leading-none whitespace-nowrap
+                        ${compact ? "text-[9px]" : "text-[11px]"}
+                        ${isCurrent ? "text-primary-foreground drop-shadow-sm" : ""}
+                        ${isFuture ? "text-muted-foreground/40" : ""}
                       `}
                       style={isCompleted ? { color } : undefined}
                     >
@@ -120,19 +180,50 @@ export function ProjectTimeline({ status, companyName, compact = false }: Projec
                     </span>
                   </div>
                 </div>
+
+                {/* "Atual" indicator below current */}
+                {isCurrent && !compact && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5, duration: 0.3 }}
+                    className="mt-1.5 flex items-center gap-0.5"
+                  >
+                    <motion.div
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{ backgroundColor: color }}
+                      animate={{ scale: [1, 1.4, 1], opacity: [1, 0.6, 1] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    />
+                    <span className="text-[8px] font-bold uppercase tracking-widest" style={{ color }}>
+                      Atual
+                    </span>
+                  </motion.div>
+                )}
               </motion.div>
 
               {/* Connector line */}
               {i < PHASES.length - 1 && (
-                <div
-                  className={`${compact ? "w-3 h-[2px]" : "w-5 h-[2px]"} shrink-0`}
-                  style={{
-                    backgroundColor: i < currentIndex
-                      ? PHASE_COLORS[PHASES[i + 1].key]
-                      : "hsl(var(--border))",
-                    opacity: i < currentIndex ? 0.6 : 0.4,
-                  }}
-                />
+                <div className="relative">
+                  <div
+                    className={`${compact ? "w-4 h-[2px]" : "w-6 h-[2px]"} shrink-0`}
+                    style={{
+                      backgroundColor: i < currentIndex
+                        ? PHASE_COLORS[PHASES[i + 1].key]
+                        : "hsl(var(--border))",
+                      opacity: i < currentIndex ? 0.5 : 0.25,
+                    }}
+                  />
+                  {/* Animated dot traveling on completed connectors */}
+                  {i < currentIndex && (
+                    <motion.div
+                      className="absolute top-[-1.5px] h-[5px] w-[5px] rounded-full"
+                      style={{ backgroundColor: PHASE_COLORS[PHASES[i + 1].key] }}
+                      animate={{ left: ["0%", "100%", "0%"] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: i * 0.5 }}
+                    />
+                  )}
+                </div>
               )}
             </div>
           );

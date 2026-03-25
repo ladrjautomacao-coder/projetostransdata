@@ -764,7 +764,7 @@ export default function ProjectAnalytics() {
             onDrop: (e: React.DragEvent) => handleDrop(e, chartId),
             onDragEnd: handleDragEnd,
           };
-          const dragStyle = `${isDragging ? "opacity-40 scale-95" : ""} ${isDragOver ? "ring-2 ring-primary/60 ring-offset-2" : ""}`;
+          const dragStyle = `${isDragging ? "opacity-40 scale-95" : ""} ${isDragOver ? "ring-2 ring-primary/60 ring-offset-2 ring-offset-background" : ""}`;
 
           const gripHandle = (
             <div className="cursor-grab active:cursor-grabbing p-1 -ml-1 text-muted-foreground/50 hover:text-muted-foreground transition-colors" onMouseDown={(e) => e.stopPropagation()}>
@@ -773,16 +773,16 @@ export default function ProjectAnalytics() {
           );
 
           if (chartId === "status") return (
-            <div key={chartId} {...dragProps} className={`transition-all duration-200 ${dragStyle}`}>
-              <GlowCard delay={0.15} className={`cursor-pointer transition-all ${expandedSection === "status-chart" ? "ring-2 ring-primary/50" : ""}`}>
-                <div className="p-6" onClick={() => toggleSection("status-chart")}>
+            <div key={chartId} {...dragProps} className={`transition-all duration-200 h-[420px] ${dragStyle}`}>
+              <GlowCard delay={0.15} className={`cursor-pointer transition-all h-full ${expandedSection === "status-chart" ? "ring-2 ring-primary/50" : ""}`}>
+                <div className="p-6 h-full flex flex-col" onClick={() => toggleSection("status-chart")}>
                   <div className="flex items-center gap-2 mb-5">
                     {gripHandle}
                     <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                     <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Status dos Projetos</h3>
                   </div>
-                  <div className="flex items-center gap-8">
-                    <ChartContainer config={genericConfig} className="h-[260px] flex-1">
+                  <div className="flex items-center gap-8 flex-1 min-h-0">
+                    <ChartContainer config={genericConfig} className="h-full flex-1">
                       <PieChart>
                         <Pie data={statusData.filter(d => d.value > 0)} cx="50%" cy="50%" innerRadius={65} outerRadius={110} paddingAngle={5} dataKey="value" nameKey="name" strokeWidth={0} animationBegin={200} animationDuration={1000}>
                           {statusData.filter(d => d.value > 0).map((entry, i) => (<Cell key={i} fill={entry.fill} />))}
@@ -808,16 +808,16 @@ export default function ProjectAnalytics() {
           );
 
           if (chartId === "solucoes") return (
-            <div key={chartId} {...dragProps} className={`transition-all duration-200 ${dragStyle}`}>
-              <GlowCard delay={0.2} className={`cursor-pointer transition-all ${expandedSection === "solucoes-chart" ? "ring-2 ring-primary/50" : ""}`}>
-                <div className="p-6" onClick={() => toggleSection("solucoes-chart")}>
+            <div key={chartId} {...dragProps} className={`transition-all duration-200 h-[420px] ${dragStyle}`}>
+              <GlowCard delay={0.2} className={`cursor-pointer transition-all h-full ${expandedSection === "solucoes-chart" ? "ring-2 ring-primary/50" : ""}`}>
+                <div className="p-6 h-full flex flex-col" onClick={() => toggleSection("solucoes-chart")}>
                   <div className="flex items-center gap-2 mb-5">
                     {gripHandle}
                     <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                     <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Soluções</h3>
                   </div>
-                  <div className="flex items-center gap-8">
-                    <ChartContainer config={genericConfig} className="h-[260px] flex-1">
+                  <div className="flex items-center gap-8 flex-1 min-h-0">
+                    <ChartContainer config={genericConfig} className="h-full flex-1">
                       <PieChart>
                         <Pie data={solutionData} cx="50%" cy="50%" innerRadius={55} outerRadius={110} paddingAngle={3} dataKey="value" nameKey="name" strokeWidth={0} animationBegin={400} animationDuration={1000}>
                           {solutionData.map((entry, i) => (<Cell key={i} fill={entry.fill} />))}
@@ -825,7 +825,7 @@ export default function ProjectAnalytics() {
                         <ChartTooltip content={<ChartTooltipContent />} />
                       </PieChart>
                     </ChartContainer>
-                    <div className="flex flex-col gap-2.5 min-w-[120px] max-h-[260px] overflow-auto">
+                    <div className="flex flex-col gap-2.5 min-w-[120px] max-h-full overflow-auto">
                       {solutionData.map((d, i) => (
                         <motion.div key={i} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6 + i * 0.1 }} className="flex items-center gap-2">
                           <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: d.fill }} />
@@ -841,15 +841,15 @@ export default function ProjectAnalytics() {
           );
 
           if (chartId === "frota") return (
-            <div key={chartId} {...dragProps} className={`transition-all duration-200 ${dragStyle}`}>
-              <GlowCard glow delay={0.25} className={`cursor-pointer transition-all ${expandedSection === "frota-chart" ? "ring-2 ring-primary/50" : ""}`}>
-                <div className="p-6" onClick={() => toggleSection("frota-chart")}>
+            <div key={chartId} {...dragProps} className={`transition-all duration-200 h-[420px] ${dragStyle}`}>
+              <GlowCard glow delay={0.25} className={`cursor-pointer transition-all h-full ${expandedSection === "frota-chart" ? "ring-2 ring-primary/50" : ""}`}>
+                <div className="p-6 h-full flex flex-col" onClick={() => toggleSection("frota-chart")}>
                   <div className="flex items-center gap-2 mb-5">
                     {gripHandle}
                     <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                     <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Evolução da Frota</h3>
                   </div>
-                  <ChartContainer config={fleetConfig} className="h-[320px]">
+                  <ChartContainer config={fleetConfig} className="flex-1 min-h-0">
                     <AreaChart data={fleetTimelineData}>
                       <defs>
                         <linearGradient id="gFleet" x1="0" y1="0" x2="0" y2="1">
@@ -870,9 +870,9 @@ export default function ProjectAnalytics() {
           );
 
           if (chartId === "solucao-timeline") return (
-            <div key={chartId} {...dragProps} className={`transition-all duration-200 ${dragStyle}`}>
-              <GlowCard glow delay={0.3} className={`cursor-pointer transition-all ${expandedSection === "solucao-timeline" ? "ring-2 ring-primary/50" : ""}`}>
-                <div className="p-6" onClick={() => toggleSection("solucao-timeline")}>
+            <div key={chartId} {...dragProps} className={`transition-all duration-200 h-[420px] ${dragStyle}`}>
+              <GlowCard glow delay={0.3} className={`cursor-pointer transition-all h-full ${expandedSection === "solucao-timeline" ? "ring-2 ring-primary/50" : ""}`}>
+                <div className="p-6 h-full flex flex-col" onClick={() => toggleSection("solucao-timeline")}>
                   <div className="flex items-center gap-2 mb-5">
                     {gripHandle}
                     <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
@@ -886,7 +886,7 @@ export default function ProjectAnalytics() {
                       ))}
                     </div>
                   </div>
-                  <ChartContainer config={solutionTimelineConfig} className="h-[320px]">
+                  <ChartContainer config={solutionTimelineConfig} className="flex-1 min-h-0">
                     <AreaChart data={solutionTimelineData}>
                       <defs>
                         {solutionNamesForChart.map((name, i) => (
@@ -911,16 +911,16 @@ export default function ProjectAnalytics() {
           );
 
           if (chartId === "estado") return (
-            <div key={chartId} {...dragProps} className={`transition-all duration-200 ${dragStyle}`}>
-              <GlowCard delay={0.35} className={`cursor-pointer transition-all ${expandedSection === "estado-chart" ? "ring-2 ring-primary/50" : ""}`}>
-                <div className="p-6">
+            <div key={chartId} {...dragProps} className={`transition-all duration-200 h-[420px] ${dragStyle}`}>
+              <GlowCard delay={0.35} className={`cursor-pointer transition-all h-full ${expandedSection === "estado-chart" ? "ring-2 ring-primary/50" : ""}`}>
+                <div className="p-6 h-full flex flex-col">
                   <div className="flex items-center gap-2 mb-5">
                     {gripHandle}
                     <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                     <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Projetos por Estado</h3>
                     {selectedBarState && <Badge variant="secondary" className="text-xs ml-2">{selectedBarState}</Badge>}
                   </div>
-                  <ChartContainer config={genericConfig} className="h-[320px]">
+                  <ChartContainer config={genericConfig} className="flex-1 min-h-0">
                     <BarChart data={stateData} barCategoryGap="25%" onClick={(data) => {
                       if (data?.activePayload?.[0]?.payload?.state) {
                         const clickedState = data.activePayload[0].payload.state;
@@ -956,16 +956,16 @@ export default function ProjectAnalytics() {
           );
 
           if (chartId === "gerente") return (
-            <div key={chartId} {...dragProps} className={`transition-all duration-200 ${dragStyle}`}>
-              <GlowCard delay={0.4} className={`cursor-pointer transition-all ${expandedSection === "gerente-chart" ? "ring-2 ring-primary/50" : ""}`}>
-                <div className="p-6">
+            <div key={chartId} {...dragProps} className={`transition-all duration-200 h-[420px] ${dragStyle}`}>
+              <GlowCard delay={0.4} className={`cursor-pointer transition-all h-full ${expandedSection === "gerente-chart" ? "ring-2 ring-primary/50" : ""}`}>
+                <div className="p-6 h-full flex flex-col">
                   <div className="flex items-center gap-2 mb-5">
                     {gripHandle}
                     <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                     <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Projetos por Gerente</h3>
                     {selectedBarManager && <Badge variant="secondary" className="text-xs ml-2">{selectedBarManager}</Badge>}
                   </div>
-                  <ChartContainer config={genericConfig} className="h-[320px]">
+                  <ChartContainer config={genericConfig} className="flex-1 min-h-0">
                     <BarChart data={managerData} barCategoryGap="30%" onClick={(data) => {
                       if (data?.activePayload?.[0]?.payload?.name) {
                         const clickedManager = data.activePayload[0].payload.name;

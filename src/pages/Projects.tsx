@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, List, Signal } from "lucide-react";
+import { Plus, List, Signal, Kanban } from "lucide-react";
 
 export default function Projects() {
   const navigate = useNavigate();
@@ -14,6 +14,12 @@ export default function Projects() {
       icon: Plus,
       onClick: () => navigate("/projetos/novo"),
     }] : []),
+    {
+      title: "Gestão de Projetos",
+      description: "Kanban para gerentes de projetos",
+      icon: Kanban,
+      onClick: () => navigate("/projetos/gestao"),
+    },
     {
       title: "Visualizar Projetos",
       description: "Veja e gerencie os projetos existentes",

@@ -2,9 +2,11 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Outlet } from "react-router-dom";
 import { Signal } from "lucide-react";
+import { ProjectFiltersProvider } from "@/contexts/ProjectFiltersContext";
 
 export function AppLayout() {
   return (
+    <ProjectFiltersProvider>
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         <AppSidebar />
@@ -23,5 +25,6 @@ export function AppLayout() {
         </main>
       </div>
     </SidebarProvider>
+    </ProjectFiltersProvider>
   );
 }

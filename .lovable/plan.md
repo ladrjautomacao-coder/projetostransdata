@@ -1,30 +1,64 @@
 
 
-# Mover Análise de Dados para o Dashboard
+# Gestão de Projetos — Kanban com Filtros Laterais
 
-## Resumo
-Substituir o conteúdo atual do Dashboard (cards de módulos) pelo conteúdo completo da página de Análise de Dados (ProjectAnalytics), e remover a rota/card de "Análise de Dados" do módulo de Projetos.
+## Objetivo
+Criar uma nova página "Gestão de Projetos" acessível via card no módulo de Projetos, com visualização Kanban (colunas por status) e painel de filtros lateral. Os filtros aplicados nesta tela devem ser compartilhados com o restante do sistema via contexto React.
 
-## Alterações
+## Arquitetura
 
-### 1. `src/pages/Dashboard.tsx`
-- Substituir todo o conteúdo atual (hero + cards de módulos) pelo conteúdo de `ProjectAnalytics.tsx` (todos os gráficos, filtros, drag-and-drop, tabelas expandíveis).
-- Copiar integralmente o código de `ProjectAnalytics.tsx` para `Dashboard.tsx`, removendo apenas o botão "Voltar" (ArrowLeft / navigate back) que faz sentido apenas como sub-página.
+### 1. Contexto global de filtros — `src/contexts/ProjectFiltersContext.tsx` (novo)
+- Estado compartilhado: `managerId`, `companyName`, `state`, `city`, `status`
+- Provider no `AppLayout` para que qualquer página consuma os filtros
+- Funções `setFilter()` e `clearFilters()`
+- A página `ProjectList` e outras que listam projetos passam a consumir este contexto
 
-### 2. `src/pages/Projects.tsx`
-- Remover o card "Análise de Dados" do array `cards` (o que referencia `/projetos/analitico`).
-- Remover import do ícone `BarChart3` que não será mais usado.
+### 2. Página Kanban — `src/pages/ProjectManagement.tsx` (novo)
+Layout dividido em duas áreas:
 
-### 3. `src/App.tsx`
-- Remover a rota `/projetos/analitico` e o import de `ProjectAnalytics`.
+```text
+┌──────────────┬──────────────────────────────────────────┐
+│  FILTROS     │  KANBAN BOARD                            │
+│  (sidebar)   │                                          │
+│              │  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐    │
+│  GP          │  │Plan. │ │Impl. │ │Encer.│ │Susp. │    │
+│  Empresa     │  │      │ │      │ │      │ │      │    │
+│  Estado      │  │ Card │ │ Card │ │ Card │ │ Card │    │
+│  Cidade      │  │ Card │ │ Card │ │      │ │      │    │
+│  Status      │  │      │ │      │ │      │ │      │    │
+│              │  └──────┘ └──────┘ └──────┘ └──────┘    │
+│  [Limpar]    │                                          │
+└──────────────┴──────────────────────────────────────────┘
+```
 
-### 4. `src/components/AppSidebar.tsx`
-- Nenhuma alteração necessária — o sidebar já aponta para `/` (Dashboard) e `/projetos`.
+- **Painel de filtros (esquerda, ~250px):** Inputs/selects para GP, empresa (busca), estado, cidade, status. Botão "Limpar filtros". Filtros atualizam o contexto global.
+- **Board Kanban (direita):** 4 colunas correspondendo aos status do enum `project_status`: Planejamento, Implantação, Encerrado, Suspenso.
+- **Cards:** Exibem empresa, cidade/estado, GP, executivo, soluções (badges), data D-zero. Click no card navega para `/projetos/:id`.
+- Cada coluna mostra contador de projetos.
+- Sem drag-and-drop entre colunas (alteração de status via detalhe do projeto).
 
-### 5. Limpeza (opcional)
-- O arquivo `src/pages/ProjectAnalytics.tsx` pode ser mantido ou removido. Como não terá mais rota apontando para ele, será código morto.
+### 3. Rota e navegação
+- **`src/App.tsx`**: Adicionar rota `/projetos/gestao` → `ProjectManagement`
+- **`src/pages/Projects.tsx`**: Adicionar card "Gestão de Projetos" com ícone `Kanban` (lucide) para todos os usuários
+
+### 4. Integração dos filtros no `ProjectList`
+- `ProjectList.tsx` passa a ler os filtros do contexto global como valores iniciais dos seus filtros locais, garantindo que filtros aplicados na gestão reflitam na listagem e vice-versa.
+
+### 5. Wrapper do contexto
+- **`src/components/AppLayout.tsx`**: Envolver o conteúdo com `ProjectFiltersProvider`
+
+## Arquivos alterados/criados
+| Arquivo | Ação |
+|---|---|
+| `src/contexts/ProjectFiltersContext.tsx` | Criar |
+| `src/pages/ProjectManagement.tsx` | Criar |
+| `src/pages/Projects.tsx` | Adicionar card |
+| `src/App.tsx` | Adicionar rota |
+| `src/components/AppLayout.tsx` | Adicionar Provider |
+| `src/pages/ProjectList.tsx` | Consumir contexto de filtros |
 
 ## O que NÃO muda
-- Toda a lógica de gráficos, filtros, drag-and-drop e persistência no localStorage permanece idêntica.
-- As demais rotas e funcionalidades do sistema não são afetadas.
+- Banco de dados, RLS, edge functions — sem alterações
+- Funcionalidades existentes permanecem intactas
+- Dashboard e demais rotas não são afetadas
 

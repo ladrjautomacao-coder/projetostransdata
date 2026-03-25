@@ -764,7 +764,7 @@ export default function ProjectAnalytics() {
             onDrop: (e: React.DragEvent) => handleDrop(e, chartId),
             onDragEnd: handleDragEnd,
           };
-          const dragStyle = `${isDragging ? "opacity-40 scale-95" : ""} ${isDragOver ? "ring-2 ring-primary/60 ring-offset-2" : ""}`;
+          const dragStyle = `${isDragging ? "opacity-40 scale-95" : ""} ${isDragOver ? "ring-2 ring-primary/60 ring-offset-2 ring-offset-background" : ""}`;
 
           const gripHandle = (
             <div className="cursor-grab active:cursor-grabbing p-1 -ml-1 text-muted-foreground/50 hover:text-muted-foreground transition-colors" onMouseDown={(e) => e.stopPropagation()}>

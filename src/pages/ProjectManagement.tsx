@@ -12,6 +12,8 @@ import { ArrowLeft, Filter, X, Signal, Building2, MapPin, Calendar, Users } from
 import { format } from "date-fns";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
+import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
+import { toast } from "sonner";
 
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 

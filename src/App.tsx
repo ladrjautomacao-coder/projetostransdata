@@ -19,7 +19,7 @@ import TeamMembers from "./pages/TeamMembers";
 import Products from "./pages/Products";
 import Implantacao from "./pages/Implantacao";
 import AcervoTecnico from "./pages/AcervoTecnico";
-import ProjectAnalytics from "./pages/ProjectAnalytics";
+
 import UserManagement from "./pages/UserManagement";
 import NotFound from "./pages/NotFound";
 
@@ -41,7 +41,7 @@ const App = () => (
               <Route path="/projetos" element={<Projects />} />
               <Route path="/projetos/novo" element={<AdminRoute><NewProject /></AdminRoute>} />
               <Route path="/projetos/lista" element={<ProjectList />} />
-              <Route path="/projetos/analitico" element={<ProjectAnalytics />} />
+              
               <Route path="/projetos/:id" element={<ProjectDetail />} />
               <Route path="/implantacao" element={<Implantacao />} />
               <Route path="/acervo" element={<AcervoTecnico />} />

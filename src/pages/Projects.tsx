@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, List, BarChart3, Signal } from "lucide-react";
+import { Plus, List, Signal } from "lucide-react";
 
 export default function Projects() {
   const navigate = useNavigate();
@@ -19,12 +19,6 @@ export default function Projects() {
       description: "Veja e gerencie os projetos existentes",
       icon: List,
       onClick: () => navigate("/projetos/lista"),
-    },
-    {
-      title: "Análise de Dados",
-      description: "Dashboard com gráficos e métricas dos projetos",
-      icon: BarChart3,
-      onClick: () => navigate("/projetos/analitico"),
     },
   ];
 

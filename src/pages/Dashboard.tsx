@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Activity, Clock, Package, TrendingUp, Users, MapPin, CalendarDays, Layers, Zap, Signal, Filter, X, Calendar as CalendarIcon, BarChart3, CheckCircle2, PauseCircle, PlayCircle, FileText, GripVertical, RotateCcw } from "lucide-react";
+import { Activity, Clock, Package, TrendingUp, Users, MapPin, CalendarDays, Layers, Zap, Signal, Filter, X, Calendar as CalendarIcon, BarChart3, CheckCircle2, PauseCircle, PlayCircle, FileText, GripVertical, RotateCcw, CalendarClock } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -23,7 +23,7 @@ import { format, differenceInDays, parseISO } from "date-fns";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { motion, AnimatePresence } from "framer-motion";
-
+import { ProjectTimeline } from "@/components/ProjectTimeline";
 
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 
@@ -447,6 +447,7 @@ export default function Dashboard() {
                           <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Gerente</th>
                           <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Frota</th>
                           <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Soluções</th>
+                          <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Cronograma</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -478,6 +479,19 @@ export default function Dashboard() {
                                 ))}
                                 {(!p.project_solutions || p.project_solutions.length === 0) && <span className="text-xs text-muted-foreground">—</span>}
                               </div>
+                            </td>
+                            <td className="py-2.5 px-3" onClick={(e) => e.stopPropagation()}>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button variant="outline" size="sm" className="h-7 gap-1.5 text-[10px]">
+                                    <CalendarClock className="h-3 w-3" />
+                                    Cronograma
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-4" align="end">
+                                  <ProjectTimeline status={p.status} companyName={p.company_name} />
+                                </PopoverContent>
+                              </Popover>
                             </td>
                           </motion.tr>
                         ))}

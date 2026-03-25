@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { EmptyState } from "@/components/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -63,7 +64,7 @@ export default function Products() {
       {loading ? (
         <div className="flex justify-center py-12"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>
       ) : products.length === 0 ? (
-        <Card><CardContent className="py-12 text-center text-muted-foreground">Nenhum produto cadastrado.</CardContent></Card>
+        <EmptyState type="products" title="Nenhum produto cadastrado" description="Cadastre produtos para associá-los aos projetos." />
       ) : (
         <div className="rounded-lg border overflow-auto">
           <Table>

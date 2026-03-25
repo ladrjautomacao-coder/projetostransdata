@@ -24,6 +24,7 @@ import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { ProjectTimeline } from "@/components/ProjectTimeline";
+import { EmptyState } from "@/components/EmptyState";
 
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 
@@ -435,7 +436,7 @@ export default function Dashboard() {
                   </Button>
                 </div>
                 {projectList.length === 0 ? (
-                  <p className="text-center text-muted-foreground text-xs py-6">Nenhum projeto encontrado</p>
+                  <EmptyState type="projects" title="Nenhum projeto encontrado" description="Ajuste os filtros para ver resultados." />
                 ) : (
                   <div className="overflow-auto">
                     <table className="w-full text-sm">

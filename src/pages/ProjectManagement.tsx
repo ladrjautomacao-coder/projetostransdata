@@ -104,6 +104,25 @@ export default function ProjectManagement() {
 
   const hasActiveFilters = Object.values(filters).some(v => v !== "");
 
+  const onDragEnd = useCallback(async (result: DropResult) => {
+    const { draggableId, destination } = result;
+    if (!destination) return;
+    const newStatus = destination.droppableId as ProjectStatus;
+    const project = projects.find(p => p.id === draggableId);
+    if (!project || project.status === newStatus) return;
+
+    // Optimistic update
+    setProjects(prev => prev.map(p => p.id === draggableId ? { ...p, status: newStatus } : p));
+
+    const { error } = await supabase.from("projects").update({ status: newStatus }).eq("id", draggableId);
+    if (error) {
+      toast.error("Erro ao atualizar status do projeto");
+      setProjects(prev => prev.map(p => p.id === draggableId ? { ...p, status: project.status } : p));
+    } else {
+      toast.success(`Projeto movido para ${statusLabels[newStatus]}`);
+    }
+  }, [projects]);
+
   return (
     <div className="flex flex-col h-[calc(100vh-7rem)]">
       {/* Header */}

@@ -23,6 +23,7 @@ import { format, differenceInDays, parseISO } from "date-fns";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { motion, AnimatePresence } from "framer-motion";
+import { ProjectTimeline } from "@/components/ProjectTimeline";
 
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 

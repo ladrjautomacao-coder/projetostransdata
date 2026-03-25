@@ -217,6 +217,7 @@ export default function ProjectManagement() {
 
         {/* Kanban Board */}
         <div className="flex-1 flex gap-3 min-h-0 overflow-x-auto">
+        <DragDropContext onDragEnd={onDragEnd}>
           {loading ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -235,59 +236,76 @@ export default function ProjectManagement() {
                   </div>
 
                   {/* Column cards */}
-                  <ScrollArea className="flex-1 p-2">
-                    <div className="space-y-2">
-                      {items.length === 0 ? (
-                        <p className="text-xs text-muted-foreground text-center py-8">Nenhum projeto</p>
-                      ) : (
-                        items.map(p => (
-                          <Card
-                            key={p.id}
-                            className="cursor-pointer hover:shadow-md transition-shadow border-border/40 bg-card"
-                            onClick={() => navigate(`/projetos/${p.id}`)}
-                          >
-                            <CardContent className="p-3 space-y-2">
-                              <div className="flex items-start gap-2">
-                                <Building2 className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
-                                <span className="text-sm font-semibold leading-tight">{p.company_name}</span>
-                              </div>
-
-                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                <MapPin className="h-3 w-3" />
-                                {p.city}/{p.state}
-                              </div>
-
-                              {p.manager?.full_name && (
-                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                  <Users className="h-3 w-3" />
-                                  {p.manager.full_name}
-                                </div>
-                              )}
-
-                              {p.d_zero_date && (
-                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                  <Calendar className="h-3 w-3" />
-                                  D-zero: {fmtDate(p.d_zero_date)}
-                                </div>
-                              )}
-
-                              {p.project_solutions?.length > 0 && (
-                                <div className="flex flex-wrap gap-1 pt-1">
-                                  {p.project_solutions.map((ps, i) => (
-                                    <Badge key={i} variant="secondary" className="text-[10px] h-4 px-1.5">{ps.solution?.name}</Badge>
-                                  ))}
-                                </div>
-                              )}
-                            </CardContent>
-                          </Card>
-                        ))
-                      )}
-                    </div>
-                  </ScrollArea>
+                  <Droppable droppableId={status}>
+                    {(provided, snapshot) => (
+                      <ScrollArea className="flex-1">
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.droppableProps}
+                          className={`p-2 min-h-[100px] transition-colors ${snapshot.isDraggingOver ? "bg-primary/5" : ""}`}
+                        >
+                          <div className="space-y-2">
+                            {items.length === 0 && !snapshot.isDraggingOver ? (
+                              <p className="text-xs text-muted-foreground text-center py-8">Nenhum projeto</p>
+                            ) : (
+                              items.map((p, index) => (
+                                <Draggable key={p.id} draggableId={p.id} index={index}>
+                                  {(dragProvided, dragSnapshot) => (
+                                    <div
+                                      ref={dragProvided.innerRef}
+                                      {...dragProvided.draggableProps}
+                                      {...dragProvided.dragHandleProps}
+                                    >
+                                      <Card
+                                        className={`cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow border-border/40 bg-card ${dragSnapshot.isDragging ? "shadow-lg ring-2 ring-primary/20" : ""}`}
+                                        onClick={() => !dragSnapshot.isDragging && navigate(`/projetos/${p.id}`)}
+                                      >
+                                        <CardContent className="p-3 space-y-2">
+                                          <div className="flex items-start gap-2">
+                                            <Building2 className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                                            <span className="text-sm font-semibold leading-tight">{p.company_name}</span>
+                                          </div>
+                                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                            <MapPin className="h-3 w-3" />
+                                            {p.city}/{p.state}
+                                          </div>
+                                          {p.manager?.full_name && (
+                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                              <Users className="h-3 w-3" />
+                                              {p.manager.full_name}
+                                            </div>
+                                          )}
+                                          {p.d_zero_date && (
+                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                              <Calendar className="h-3 w-3" />
+                                              D-zero: {fmtDate(p.d_zero_date)}
+                                            </div>
+                                          )}
+                                          {p.project_solutions?.length > 0 && (
+                                            <div className="flex flex-wrap gap-1 pt-1">
+                                              {p.project_solutions.map((ps, i) => (
+                                                <Badge key={i} variant="secondary" className="text-[10px] h-4 px-1.5">{ps.solution?.name}</Badge>
+                                              ))}
+                                            </div>
+                                          )}
+                                        </CardContent>
+                                      </Card>
+                                    </div>
+                                  )}
+                                </Draggable>
+                              ))
+                            )}
+                          </div>
+                          {provided.placeholder}
+                        </div>
+                      </ScrollArea>
+                    )}
+                  </Droppable>
                 </div>
               );
             })
           )}
+        </DragDropContext>
         </div>
       </div>
     </div>

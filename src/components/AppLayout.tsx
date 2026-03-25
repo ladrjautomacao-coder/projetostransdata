@@ -3,6 +3,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Outlet } from "react-router-dom";
 import { Signal } from "lucide-react";
 import { ProjectFiltersProvider } from "@/contexts/ProjectFiltersContext";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function AppLayout() {
   return (

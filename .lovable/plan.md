@@ -1,64 +1,43 @@
 
 
-# Gestão de Projetos — Kanban com Filtros Laterais
+# Botão "Cronograma" na Tabela de Projetos
 
 ## Objetivo
-Criar uma nova página "Gestão de Projetos" acessível via card no módulo de Projetos, com visualização Kanban (colunas por status) e painel de filtros lateral. Os filtros aplicados nesta tela devem ser compartilhados com o restante do sistema via contexto React.
+Mover a visualização do cronograma do Dashboard para um botão na tabela de listagem de projetos (`ProjectList`). Cada linha terá um botão "Cronograma" ao lado da coluna "Soluções" que, ao ser clicado, abre um popover/dialog mostrando a timeline de fases daquele projeto específico.
 
-## Arquitetura
+## Mudanças
 
-### 1. Contexto global de filtros — `src/contexts/ProjectFiltersContext.tsx` (novo)
-- Estado compartilhado: `managerId`, `companyName`, `state`, `city`, `status`
-- Provider no `AppLayout` para que qualquer página consuma os filtros
-- Funções `setFilter()` e `clearFilters()`
-- A página `ProjectList` e outras que listam projetos passam a consumir este contexto
+### 1. `src/pages/ProjectList.tsx`
+- Adicionar nova coluna **"Cronograma"** no `TableHeader`, após "Soluções"
+- Em cada `TableRow`, adicionar um botão com ícone `CalendarClock` (lucide) e texto "Cronograma"
+- Ao clicar, abre um **Popover** inline mostrando o componente `ProjectTimeline` com o status e nome da empresa daquele projeto
+- Importar `ProjectTimeline`, `Popover`, `PopoverTrigger`, `PopoverContent` e o ícone
 
-### 2. Página Kanban — `src/pages/ProjectManagement.tsx` (novo)
-Layout dividido em duas áreas:
+### 2. `src/pages/Dashboard.tsx`
+- Remover a seção "Cronograma dos Projetos" que foi adicionada anteriormente, já que agora a visualização será feita individualmente na listagem
+
+### 3. `src/components/ProjectTimeline.tsx`
+- Sem alterações — o componente já suporta o modo necessário
+
+## Resultado visual
 
 ```text
-┌──────────────┬──────────────────────────────────────────┐
-│  FILTROS     │  KANBAN BOARD                            │
-│  (sidebar)   │                                          │
-│              │  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐    │
-│  GP          │  │Plan. │ │Impl. │ │Encer.│ │Susp. │    │
-│  Empresa     │  │      │ │      │ │      │ │      │    │
-│  Estado      │  │ Card │ │ Card │ │ Card │ │ Card │    │
-│  Cidade      │  │ Card │ │ Card │ │      │ │      │    │
-│  Status      │  │      │ │      │ │      │ │      │    │
-│              │  └──────┘ └──────┘ └──────┘ └──────┘    │
-│  [Limpar]    │                                          │
-└──────────────┴──────────────────────────────────────────┘
+EMPRESA | LOCALIZAÇÃO | STATUS | GERENTE | FROTA | SOLUÇÕES | CRONOGRAMA |  
+--------|-------------|--------|---------|-------|----------|------------|--
+Empresa | Itajaí/SC   | Plan.  | Ana     | 45    | Telem.   | [📅 Crono] | 👁 🗑
+                                                               ↓ (click)
+                                                    ┌──────────────────────┐
+                                                    │ Empresa ABC          │
+                                                    │ [Plan]─[Impl]─[Enc]─[Susp] │
+                                                    │   ●◌                 │
+                                                    └──────────────────────┘
 ```
 
-- **Painel de filtros (esquerda, ~250px):** Inputs/selects para GP, empresa (busca), estado, cidade, status. Botão "Limpar filtros". Filtros atualizam o contexto global.
-- **Board Kanban (direita):** 4 colunas correspondendo aos status do enum `project_status`: Planejamento, Implantação, Encerrado, Suspenso.
-- **Cards:** Exibem empresa, cidade/estado, GP, executivo, soluções (badges), data D-zero. Click no card navega para `/projetos/:id`.
-- Cada coluna mostra contador de projetos.
-- Sem drag-and-drop entre colunas (alteração de status via detalhe do projeto).
-
-### 3. Rota e navegação
-- **`src/App.tsx`**: Adicionar rota `/projetos/gestao` → `ProjectManagement`
-- **`src/pages/Projects.tsx`**: Adicionar card "Gestão de Projetos" com ícone `Kanban` (lucide) para todos os usuários
-
-### 4. Integração dos filtros no `ProjectList`
-- `ProjectList.tsx` passa a ler os filtros do contexto global como valores iniciais dos seus filtros locais, garantindo que filtros aplicados na gestão reflitam na listagem e vice-versa.
-
-### 5. Wrapper do contexto
-- **`src/components/AppLayout.tsx`**: Envolver o conteúdo com `ProjectFiltersProvider`
-
-## Arquivos alterados/criados
+## Arquivos alterados
 | Arquivo | Ação |
 |---|---|
-| `src/contexts/ProjectFiltersContext.tsx` | Criar |
-| `src/pages/ProjectManagement.tsx` | Criar |
-| `src/pages/Projects.tsx` | Adicionar card |
-| `src/App.tsx` | Adicionar rota |
-| `src/components/AppLayout.tsx` | Adicionar Provider |
-| `src/pages/ProjectList.tsx` | Consumir contexto de filtros |
+| `src/pages/ProjectList.tsx` | Adicionar coluna + botão com Popover |
+| `src/pages/Dashboard.tsx` | Remover seção de cronograma |
 
-## O que NÃO muda
-- Banco de dados, RLS, edge functions — sem alterações
-- Funcionalidades existentes permanecem intactas
-- Dashboard e demais rotas não são afetadas
+Sem alterações no banco de dados.
 

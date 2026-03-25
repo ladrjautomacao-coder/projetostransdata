@@ -15,6 +15,7 @@ import {
 import { ArrowLeft, Search, ArrowUpDown, Trash2, Eye, Plus, CalendarClock } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ProjectTimeline } from "@/components/ProjectTimeline";
+import { EmptyState } from "@/components/EmptyState";
 import { format } from "date-fns";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
@@ -218,7 +219,7 @@ export default function ProjectList() {
       {loading ? (
         <div className="flex justify-center py-12"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>
       ) : filtered.length === 0 ? (
-        <p className="text-center text-muted-foreground py-12">Nenhum projeto encontrado.</p>
+        <EmptyState type="search" title="Nenhum projeto encontrado" description="Tente ajustar os filtros ou a busca para encontrar resultados." />
       ) : (
         <div className="rounded-lg border overflow-auto">
           <Table>

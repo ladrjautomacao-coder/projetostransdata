@@ -999,6 +999,35 @@ export default function Dashboard() {
         projectList={selectedBarManager ? filteredProjects.filter(p => (p.manager?.full_name || "Sem gerente") === selectedBarManager) : filteredProjects}
       />
 
+      {/* Cronograma dos Projetos */}
+      <GlowCard delay={0.5}>
+        <div className="p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Cronograma dos Projetos</h3>
+            <Badge variant="secondary" className="text-xs ml-1">{filteredProjects.length}</Badge>
+          </div>
+          {filteredProjects.length === 0 ? (
+            <p className="text-center text-muted-foreground text-xs py-6">Nenhum projeto encontrado</p>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredProjects.map((p, i) => (
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                  className="rounded-xl border border-border/40 bg-card/70 backdrop-blur-sm p-3 hover:shadow-md transition-all cursor-pointer"
+                  onClick={() => navigate(`/projetos/${p.id}`)}
+                >
+                  <ProjectTimeline status={p.status} companyName={p.company_name} />
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+      </GlowCard>
+
       {/* Detail card for single project */}
       <AnimatePresence>
         {filterProject !== "all" && filteredProjects.length === 1 && (() => {

@@ -956,16 +956,16 @@ export default function ProjectAnalytics() {
           );
 
           if (chartId === "gerente") return (
-            <div key={chartId} {...dragProps} className={`transition-all duration-200 ${dragStyle}`}>
-              <GlowCard delay={0.4} className={`cursor-pointer transition-all ${expandedSection === "gerente-chart" ? "ring-2 ring-primary/50" : ""}`}>
-                <div className="p-6">
+            <div key={chartId} {...dragProps} className={`transition-all duration-200 h-[420px] ${dragStyle}`}>
+              <GlowCard delay={0.4} className={`cursor-pointer transition-all h-full ${expandedSection === "gerente-chart" ? "ring-2 ring-primary/50" : ""}`}>
+                <div className="p-6 h-full flex flex-col">
                   <div className="flex items-center gap-2 mb-5">
                     {gripHandle}
                     <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                     <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Projetos por Gerente</h3>
                     {selectedBarManager && <Badge variant="secondary" className="text-xs ml-2">{selectedBarManager}</Badge>}
                   </div>
-                  <ChartContainer config={genericConfig} className="h-[320px]">
+                  <ChartContainer config={genericConfig} className="flex-1 min-h-0">
                     <BarChart data={managerData} barCategoryGap="30%" onClick={(data) => {
                       if (data?.activePayload?.[0]?.payload?.name) {
                         const clickedManager = data.activePayload[0].payload.name;

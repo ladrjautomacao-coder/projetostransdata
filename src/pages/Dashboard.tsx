@@ -705,6 +705,7 @@ export default function Dashboard() {
                             <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Frota</th>
                             <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Contrato</th>
                             <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Soluções</th>
+                            <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Cronograma</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -734,6 +735,19 @@ export default function Dashboard() {
                                   ))}
                                   {(!p.project_solutions || p.project_solutions.length === 0) && <span className="text-xs text-muted-foreground">—</span>}
                                 </div>
+                              </td>
+                              <td className="py-2.5 px-3" onClick={(e) => e.stopPropagation()}>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button variant="outline" size="sm" className="h-7 gap-1.5 text-[10px]">
+                                      <CalendarClock className="h-3 w-3" />
+                                      Cronograma
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-auto p-4" align="end">
+                                    <ProjectTimeline status={p.status} companyName={p.company_name} />
+                                  </PopoverContent>
+                                </Popover>
                               </td>
                             </motion.tr>
                           ))}

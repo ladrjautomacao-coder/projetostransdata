@@ -867,7 +867,7 @@ export default function Dashboard() {
                     <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                     <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Evolução da Frota</h3>
                   </div>
-                  <ChartContainer config={fleetConfig} className="flex-1 min-h-0">
+                  <ChartContainer config={fleetConfig} className="flex-1 min-h-0 !aspect-auto">
                     <AreaChart data={fleetTimelineData}>
                       <defs>
                         <linearGradient id="gFleet" x1="0" y1="0" x2="0" y2="1">
@@ -904,7 +904,7 @@ export default function Dashboard() {
                       ))}
                     </div>
                   </div>
-                  <ChartContainer config={solutionTimelineConfig} className="flex-1 min-h-0">
+                  <ChartContainer config={solutionTimelineConfig} className="flex-1 min-h-0 !aspect-auto">
                     <AreaChart data={solutionTimelineData}>
                       <defs>
                         {solutionNamesForChart.map((name, i) => (

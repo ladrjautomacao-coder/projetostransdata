@@ -799,8 +799,8 @@ export default function Dashboard() {
                     <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                     <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Status dos Projetos</h3>
                   </div>
-                  <div className="flex items-center gap-8 flex-1 min-h-0">
-                    <ChartContainer config={genericConfig} className="h-full flex-1 !aspect-auto">
+                  <div className="flex items-center gap-8 flex-1 min-h-0 min-w-0">
+                    <ChartContainer config={genericConfig} className="h-full min-h-[280px] w-full flex-1 min-w-0 !aspect-auto">
                       <PieChart>
                         <Pie data={statusData.filter(d => d.value > 0)} cx="50%" cy="50%" innerRadius={55} outerRadius={95} paddingAngle={5} dataKey="value" nameKey="name" strokeWidth={0} animationBegin={200} animationDuration={1000}>
                           {statusData.filter(d => d.value > 0).map((entry, i) => (<Cell key={i} fill={entry.fill} />))}
@@ -808,7 +808,7 @@ export default function Dashboard() {
                         <ChartTooltip content={<ChartTooltipContent />} />
                       </PieChart>
                     </ChartContainer>
-                    <div className="flex flex-col gap-3 min-w-[140px]">
+                    <div className="flex flex-col gap-3 min-w-[140px] shrink-0">
                       {statusData.filter(d => d.value > 0).map((d, i) => (
                         <motion.div key={i} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + i * 0.1 }} className="flex items-center gap-2.5">
                           <div className="h-3 w-3 rounded-sm shrink-0" style={{ backgroundColor: d.fill }} />
@@ -834,8 +834,8 @@ export default function Dashboard() {
                     <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                     <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Soluções</h3>
                   </div>
-                  <div className="flex items-center gap-8 flex-1 min-h-0">
-                    <ChartContainer config={genericConfig} className="h-full flex-1 !aspect-auto">
+                  <div className="flex items-center gap-8 flex-1 min-h-0 min-w-0">
+                    <ChartContainer config={genericConfig} className="h-full min-h-[280px] w-full flex-1 min-w-0 !aspect-auto">
                       <PieChart>
                         <Pie data={solutionData} cx="50%" cy="50%" innerRadius={45} outerRadius={90} paddingAngle={3} dataKey="value" nameKey="name" strokeWidth={0} animationBegin={400} animationDuration={1000}>
                           {solutionData.map((entry, i) => (<Cell key={i} fill={entry.fill} />))}
@@ -843,7 +843,7 @@ export default function Dashboard() {
                         <ChartTooltip content={<ChartTooltipContent />} />
                       </PieChart>
                     </ChartContainer>
-                    <div className="flex flex-col gap-2.5 min-w-[120px] max-h-full overflow-auto">
+                    <div className="flex flex-col gap-2.5 min-w-[120px] max-h-full shrink-0 overflow-auto">
                       {solutionData.map((d, i) => (
                         <motion.div key={i} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6 + i * 0.1 }} className="flex items-center gap-2">
                           <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: d.fill }} />
@@ -867,7 +867,7 @@ export default function Dashboard() {
                     <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                     <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Evolução da Frota</h3>
                   </div>
-                  <ChartContainer config={fleetConfig} className="flex-1 min-h-0 !aspect-auto">
+                  <ChartContainer config={fleetConfig} className="flex-1 min-h-[280px] w-full min-w-0 !aspect-auto">
                     <AreaChart data={fleetTimelineData}>
                       <defs>
                         <linearGradient id="gFleet" x1="0" y1="0" x2="0" y2="1">
@@ -904,7 +904,7 @@ export default function Dashboard() {
                       ))}
                     </div>
                   </div>
-                  <ChartContainer config={solutionTimelineConfig} className="flex-1 min-h-0 !aspect-auto">
+                  <ChartContainer config={solutionTimelineConfig} className="flex-1 min-h-[280px] w-full min-w-0 !aspect-auto">
                     <AreaChart data={solutionTimelineData}>
                       <defs>
                         {solutionNamesForChart.map((name, i) => (
@@ -938,7 +938,7 @@ export default function Dashboard() {
                     <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Projetos por Estado</h3>
                     {selectedBarState && <Badge variant="secondary" className="text-xs ml-2">{selectedBarState}</Badge>}
                   </div>
-                  <ChartContainer config={genericConfig} className="flex-1 min-h-0 !aspect-auto">
+                  <ChartContainer config={genericConfig} className="flex-1 min-h-[280px] w-full min-w-0 !aspect-auto">
                     <BarChart data={stateData} barCategoryGap="25%" onClick={(data) => {
                       if (data?.activePayload?.[0]?.payload?.state) {
                         const clickedState = data.activePayload[0].payload.state;
@@ -983,7 +983,7 @@ export default function Dashboard() {
                     <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Projetos por Gerente</h3>
                     {selectedBarManager && <Badge variant="secondary" className="text-xs ml-2">{selectedBarManager}</Badge>}
                   </div>
-                  <ChartContainer config={genericConfig} className="flex-1 min-h-0 !aspect-auto">
+                  <ChartContainer config={genericConfig} className="flex-1 min-h-[280px] w-full min-w-0 !aspect-auto">
                     <BarChart data={managerData} barCategoryGap="30%" onClick={(data) => {
                       if (data?.activePayload?.[0]?.payload?.name) {
                         const clickedManager = data.activePayload[0].payload.name;

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -22,34 +22,62 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<{ full_name: string; avatar_url: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const requestIdRef = useRef(0);
 
-  const loadUserData = (userId: string) => {
-    supabase.from("profiles").select("full_name, avatar_url").eq("user_id", userId).single()
-      .then(({ data }) => { if (data) setProfile(data); });
-    supabase.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle()
-      .then(({ data }) => { setIsAdmin(!!data); });
+  const resetUserData = () => {
+    setProfile(null);
+    setIsAdmin(false);
+  };
+
+  const loadUserData = async (userId: string) => {
+    const requestId = ++requestIdRef.current;
+    resetUserData();
+
+    const [{ data: profileData }, { data: roleData }] = await Promise.all([
+      supabase.from("profiles").select("full_name, avatar_url").eq("user_id", userId).maybeSingle(),
+      supabase.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle(),
+    ]);
+
+    if (requestId !== requestIdRef.current) return;
+
+    setProfile(profileData ?? null);
+    setIsAdmin(!!roleData);
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    let isMounted = true;
+    let initialized = false;
+
+    const applySession = (session: Session | null) => {
+      if (!isMounted) return;
+
       setSession(session);
       setUser(session?.user ?? null);
+
       if (session?.user) {
-        setTimeout(() => loadUserData(session.user.id), 0);
+        void loadUserData(session.user.id);
       } else {
-        setProfile(null);
-        setIsAdmin(false);
+        requestIdRef.current += 1;
+        resetUserData();
       }
-    });
+    };
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) loadUserData(session.user.id);
-      setLoading(false);
+      initialized = true;
+      applySession(session);
+      if (isMounted) setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!initialized) return;
+      applySession(session);
+      if (isMounted) setLoading(false);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {

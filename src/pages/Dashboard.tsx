@@ -25,6 +25,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { ProjectTimeline } from "@/components/ProjectTimeline";
 import { EmptyState } from "@/components/EmptyState";
+import { useAuth } from "@/contexts/AuthContext";
 
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 
@@ -175,6 +176,7 @@ function StatusKpiCard({ status, count, color, icon: Icon, index, active, onClic
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -235,9 +237,19 @@ export default function Dashboard() {
   const isCustomOrder = JSON.stringify(chartOrder) !== JSON.stringify(DEFAULT_CHART_ORDER);
 
   useEffect(() => {
+    if (authLoading) return;
+
+    if (!user) {
+      setProjects([]);
+      setLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+
     async function load() {
       setLoading(true);
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("projects")
         .select(`
           id, company_name, city, state, contract_date, d_zero_date, handover_date,
@@ -248,11 +260,24 @@ export default function Dashboard() {
           project_solutions(solution:solutions(name))
         `)
         .order("company_name");
-      setProjects((data as unknown as ProjectRow[]) || []);
+
+      if (!isMounted) return;
+
+      if (error) {
+        setProjects([]);
+      } else {
+        setProjects((data as unknown as ProjectRow[]) || []);
+      }
+
       setLoading(false);
     }
-    load();
-  }, []);
+
+    void load();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [authLoading, user?.id]);
 
   const hasActiveFilters = filterStatus !== "all" || filterProject !== "all" || filterState !== "all" || filterCity !== "all" || filterSolution !== "all" || !!dateFrom || !!dateTo;
 

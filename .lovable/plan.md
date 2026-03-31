@@ -1,43 +1,41 @@
 
 
-# Botão "Cronograma" na Tabela de Projetos
+## Plano: Adicionar seção "Instalação Embarcada" no cadastro de projeto
 
-## Objetivo
-Mover a visualização do cronograma do Dashboard para um botão na tabela de listagem de projetos (`ProjectList`). Cada linha terá um botão "Cronograma" ao lado da coluna "Soluções" que, ao ser clicado, abre um popover/dialog mostrando a timeline de fases daquele projeto específico.
+### Contexto
+Adicionar um novo card/seção logo abaixo do card "Piloto" na página de novo projeto. O objetivo é registrar quantas instalações foram feitas pela Transmobile e quantas pelo Cliente, permitindo controle de cobrança.
 
-## Mudanças
+### O que será feito
 
-### 1. `src/pages/ProjectList.tsx`
-- Adicionar nova coluna **"Cronograma"** no `TableHeader`, após "Soluções"
-- Em cada `TableRow`, adicionar um botão com ícone `CalendarClock` (lucide) e texto "Cronograma"
-- Ao clicar, abre um **Popover** inline mostrando o componente `ProjectTimeline` com o status e nome da empresa daquele projeto
-- Importar `ProjectTimeline`, `Popover`, `PopoverTrigger`, `PopoverContent` e o ícone
+**1. Migração de banco de dados**
+Adicionar 2 novas colunas na tabela `projects`:
+- `installation_transmobile` (integer, default 0) — quantidade de instalações feitas pela Transmobile
+- `installation_client` (integer, default 0) — quantidade de instalações feitas pelo Cliente
 
-### 2. `src/pages/Dashboard.tsx`
-- Remover a seção "Cronograma dos Projetos" que foi adicionada anteriormente, já que agora a visualização será feita individualmente na listagem
+**2. Atualizar formulário `src/pages/NewProject.tsx`**
+Adicionar um novo card "Instalação Embarcada" logo abaixo do card "Piloto" com:
+- Duas linhas, cada uma com um label e um campo numérico editável:
+  - **Transmobile** — input numérico (min 0)
+  - **Cliente** — input numérico (min 0)
+- Texto auxiliar explicando que os valores representam a quantidade de instalações realizadas por cada parte
 
-### 3. `src/components/ProjectTimeline.tsx`
-- Sem alterações — o componente já suporta o modo necessário
+**3. Atualizar `src/pages/ProjectDetail.tsx`**
+Exibir os campos de instalação embarcada na visualização/edição do projeto, mantendo o mesmo layout.
 
-## Resultado visual
+### Layout visual
 
 ```text
-EMPRESA | LOCALIZAÇÃO | STATUS | GERENTE | FROTA | SOLUÇÕES | CRONOGRAMA |  
---------|-------------|--------|---------|-------|----------|------------|--
-Empresa | Itajaí/SC   | Plan.  | Ana     | 45    | Telem.   | [📅 Crono] | 👁 🗑
-                                                               ↓ (click)
-                                                    ┌──────────────────────┐
-                                                    │ Empresa ABC          │
-                                                    │ [Plan]─[Impl]─[Enc]─[Susp] │
-                                                    │   ●◌                 │
-                                                    └──────────────────────┘
+┌─────────────────────────────────────────┐
+│ Instalação Embarcada                    │
+│ Quantidade de instalações por responsável│
+│                                         │
+│  Transmobile   [ 0        ]             │
+│  Cliente       [ 0        ]             │
+└─────────────────────────────────────────┘
 ```
 
-## Arquivos alterados
-| Arquivo | Ação |
-|---|---|
-| `src/pages/ProjectList.tsx` | Adicionar coluna + botão com Popover |
-| `src/pages/Dashboard.tsx` | Remover seção de cronograma |
-
-Sem alterações no banco de dados.
+### Arquivos alterados
+- **Migração SQL** — adicionar colunas `installation_transmobile` e `installation_client`
+- `src/pages/NewProject.tsx` — novo card + estados + inclusão no insert
+- `src/pages/ProjectDetail.tsx` — exibir/editar os novos campos
 

@@ -107,6 +107,8 @@ export default function ProjectDetail() {
       setContractualDeadlineDays(data.contractual_deadline_days?.toString() || "");
       setIsPilot(data.is_pilot || false);
       setPilotInfo(data.pilot_info || "");
+      setInstallationTransmobile(data.installation_transmobile?.toString() || "0");
+      setInstallationClient(data.installation_client?.toString() || "0");
     }
     setLoading(false);
   };

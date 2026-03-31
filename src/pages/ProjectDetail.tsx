@@ -580,6 +580,33 @@ export default function ProjectDetail() {
         </Card>
       </div>
 
+      {/* Instalação Embarcada */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-lg">Instalação Embarcada</CardTitle>
+          <CardDescription>Quantidade de instalações realizadas por cada responsável</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {editing ? (
+            <>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Transmobile</Label>
+                <Input type="number" min={0} step={1} value={installationTransmobile} onChange={e => setInstallationTransmobile(e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Cliente</Label>
+                <Input type="number" min={0} step={1} value={installationClient} onChange={e => setInstallationClient(e.target.value)} />
+              </div>
+            </>
+          ) : (
+            <>
+              <div><span className="text-xs text-muted-foreground">Transmobile</span><p>{project.installation_transmobile ?? 0}</p></div>
+              <div><span className="text-xs text-muted-foreground">Cliente</span><p>{project.installation_client ?? 0}</p></div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Attachments - Categorized */}
       <Card className="mb-6">
         <CardHeader>

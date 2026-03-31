@@ -160,6 +160,8 @@ export default function NewProject() {
         is_pilot: isPilot,
         pilot_info: isPilot ? pilotInfo : null,
         filled_by: user?.id || null,
+        installation_transmobile: parseInt(installationTransmobile) || 0,
+        installation_client: parseInt(installationClient) || 0,
       }).select("id").single();
       if (error) throw error;
 

@@ -178,6 +178,8 @@ export default function ProjectDetail() {
     add("Soluções", oldSols, newSols);
 
     if (isPilot) add("Info Piloto", project.pilot_info || "—", pilotInfo || "—");
+    add("Instalação Transmobile", project.installation_transmobile ?? 0, parseInt(installationTransmobile) || 0);
+    add("Instalação Cliente", project.installation_client ?? 0, parseInt(installationClient) || 0);
 
     return changes;
   };

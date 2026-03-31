@@ -62,6 +62,8 @@ export default function ProjectDetail() {
   const [contractualDeadlineDays, setContractualDeadlineDays] = useState<string>("");
   const [isPilot, setIsPilot] = useState(false);
   const [pilotInfo, setPilotInfo] = useState("");
+  const [installationTransmobile, setInstallationTransmobile] = useState<string>("0");
+  const [installationClient, setInstallationClient] = useState<string>("0");
 
   // Lookups
   const [executives, setExecutives] = useState<{ id: string; full_name: string }[]>([]);

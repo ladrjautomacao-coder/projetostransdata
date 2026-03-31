@@ -27,7 +27,7 @@ type BrazilianState = Database["public"]["Enums"]["brazilian_state"];
 const statusLabels: Record<ProjectStatus, string> = {
   planejamento: "Planejamento",
   implantacao: "Implantação",
-  encerrado: "Encerrado",
+  encerrado: "Implementado",
   suspenso: "Suspenso",
 };
 

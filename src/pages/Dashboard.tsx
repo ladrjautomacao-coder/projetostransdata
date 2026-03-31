@@ -32,7 +32,7 @@ type ProjectStatus = Database["public"]["Enums"]["project_status"];
 const statusLabels: Record<ProjectStatus, string> = {
   planejamento: "Planejamento",
   implantacao: "Implantação",
-  encerrado: "Encerrado",
+  encerrado: "Implementado",
   suspenso: "Suspenso",
 };
 

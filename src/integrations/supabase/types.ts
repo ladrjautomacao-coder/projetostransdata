@@ -249,6 +249,8 @@ export type Database = {
           handover_date: string | null
           id: string
           implementation_deadline_days: number | null
+          installation_client: number
+          installation_transmobile: number
           is_pilot: boolean
           manager_id: string | null
           pilot_info: string | null
@@ -271,6 +273,8 @@ export type Database = {
           handover_date?: string | null
           id?: string
           implementation_deadline_days?: number | null
+          installation_client?: number
+          installation_transmobile?: number
           is_pilot?: boolean
           manager_id?: string | null
           pilot_info?: string | null
@@ -293,6 +297,8 @@ export type Database = {
           handover_date?: string | null
           id?: string
           implementation_deadline_days?: number | null
+          installation_client?: number
+          installation_transmobile?: number
           is_pilot?: boolean
           manager_id?: string | null
           pilot_info?: string | null

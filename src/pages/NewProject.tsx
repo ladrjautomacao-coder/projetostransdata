@@ -430,6 +430,38 @@ export default function NewProject() {
           </CardContent>
         </Card>
 
+        {/* === SEÇÃO: INSTALAÇÃO EMBARCADA === */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Instalação Embarcada</CardTitle>
+            <CardDescription>Quantidade de instalações realizadas por cada responsável</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Transmobile</Label>
+              <Input
+                type="number"
+                min={0}
+                step={1}
+                value={installationTransmobile}
+                onChange={e => setInstallationTransmobile(e.target.value)}
+                placeholder="0"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Cliente</Label>
+              <Input
+                type="number"
+                min={0}
+                step={1}
+                value={installationClient}
+                onChange={e => setInstallationClient(e.target.value)}
+                placeholder="0"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
         {/* === SEÇÃO: STATUS === */}
         <Card>
           <CardHeader><CardTitle className="text-lg">Status</CardTitle></CardHeader>

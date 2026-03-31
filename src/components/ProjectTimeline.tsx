@@ -7,7 +7,7 @@ type ProjectStatus = Database["public"]["Enums"]["project_status"];
 const PHASES: { key: ProjectStatus; label: string; short: string }[] = [
   { key: "planejamento", label: "Planejamento", short: "Plan" },
   { key: "implantacao", label: "Implantação", short: "Impl" },
-  { key: "encerrado", label: "Encerrado", short: "Enc" },
+  { key: "encerrado", label: "Implementado", short: "Impl" },
   { key: "suspenso", label: "Suspenso", short: "Susp" },
 ];
 

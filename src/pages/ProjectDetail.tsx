@@ -62,6 +62,8 @@ export default function ProjectDetail() {
   const [contractualDeadlineDays, setContractualDeadlineDays] = useState<string>("");
   const [isPilot, setIsPilot] = useState(false);
   const [pilotInfo, setPilotInfo] = useState("");
+  const [installationTransmobile, setInstallationTransmobile] = useState<string>("0");
+  const [installationClient, setInstallationClient] = useState<string>("0");
 
   // Lookups
   const [executives, setExecutives] = useState<{ id: string; full_name: string }[]>([]);
@@ -105,6 +107,8 @@ export default function ProjectDetail() {
       setContractualDeadlineDays(data.contractual_deadline_days?.toString() || "");
       setIsPilot(data.is_pilot || false);
       setPilotInfo(data.pilot_info || "");
+      setInstallationTransmobile(data.installation_transmobile?.toString() || "0");
+      setInstallationClient(data.installation_client?.toString() || "0");
     }
     setLoading(false);
   };
@@ -174,6 +178,8 @@ export default function ProjectDetail() {
     add("Soluções", oldSols, newSols);
 
     if (isPilot) add("Info Piloto", project.pilot_info || "—", pilotInfo || "—");
+    add("Instalação Transmobile", project.installation_transmobile ?? 0, parseInt(installationTransmobile) || 0);
+    add("Instalação Cliente", project.installation_client ?? 0, parseInt(installationClient) || 0);
 
     return changes;
   };
@@ -206,6 +212,8 @@ export default function ProjectDetail() {
         contractual_deadline_days: contrDays,
         is_pilot: isPilot,
         pilot_info: isPilot ? pilotInfo : null,
+        installation_transmobile: parseInt(installationTransmobile) || 0,
+        installation_client: parseInt(installationClient) || 0,
       }).eq("id", id);
       if (error) throw error;
 
@@ -571,6 +579,33 @@ export default function ProjectDetail() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Instalação Embarcada */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-lg">Instalação Embarcada</CardTitle>
+          <CardDescription>Quantidade de instalações realizadas por cada responsável</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {editing ? (
+            <>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Transmobile</Label>
+                <Input type="number" min={0} step={1} value={installationTransmobile} onChange={e => setInstallationTransmobile(e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Cliente</Label>
+                <Input type="number" min={0} step={1} value={installationClient} onChange={e => setInstallationClient(e.target.value)} />
+              </div>
+            </>
+          ) : (
+            <>
+              <div><span className="text-xs text-muted-foreground">Transmobile</span><p>{project.installation_transmobile ?? 0}</p></div>
+              <div><span className="text-xs text-muted-foreground">Cliente</span><p>{project.installation_client ?? 0}</p></div>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Attachments - Categorized */}
       <Card className="mb-6">

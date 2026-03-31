@@ -56,6 +56,8 @@ export default function NewProject() {
   const [contractualDeadlineDays, setContractualDeadlineDays] = useState<string>("");
   const [isPilot, setIsPilot] = useState(false);
   const [pilotInfo, setPilotInfo] = useState("");
+  const [installationTransmobile, setInstallationTransmobile] = useState<string>("0");
+  const [installationClient, setInstallationClient] = useState<string>("0");
 
   // Anexos por categoria
   const ATTACHMENT_CATEGORIES = [
@@ -158,6 +160,8 @@ export default function NewProject() {
         is_pilot: isPilot,
         pilot_info: isPilot ? pilotInfo : null,
         filled_by: user?.id || null,
+        installation_transmobile: parseInt(installationTransmobile) || 0,
+        installation_client: parseInt(installationClient) || 0,
       }).select("id").single();
       if (error) throw error;
 
@@ -423,6 +427,38 @@ export default function NewProject() {
                 />
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* === SEÇÃO: INSTALAÇÃO EMBARCADA === */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Instalação Embarcada</CardTitle>
+            <CardDescription>Quantidade de instalações realizadas por cada responsável</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Transmobile</Label>
+              <Input
+                type="number"
+                min={0}
+                step={1}
+                value={installationTransmobile}
+                onChange={e => setInstallationTransmobile(e.target.value)}
+                placeholder="0"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Cliente</Label>
+              <Input
+                type="number"
+                min={0}
+                step={1}
+                value={installationClient}
+                onChange={e => setInstallationClient(e.target.value)}
+                placeholder="0"
+              />
+            </div>
           </CardContent>
         </Card>
 

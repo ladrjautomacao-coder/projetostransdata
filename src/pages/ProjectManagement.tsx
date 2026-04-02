@@ -40,12 +40,12 @@ export interface SubPhaseConfig {
 
 export const subPhasesByStatus: Partial<Record<ProjectStatus, SubPhaseConfig[]>> = {
   planejamento: [
-    { id: "reuniao_handover", label: "1° - Reunião de Handover" },
-    { id: "reuniao_kickoff", label: "2° - Reunião de Kick-off" },
-    { id: "reuniao_proj_executivo", label: "3° - Reunião Projeto Executivo" },
-    { id: "levantamento_materiais", label: "4° - Levantamento de Materiais" },
-    { id: "aquisicao_materiais", label: "5° - Aquisição de Materiais" },
-    { id: "cronograma_visita", label: "6° - Cronograma de Visita Técnica" },
+    { id: "reuniao_handover", label: "Reunião de Handover" },
+    { id: "reuniao_kickoff", label: "Reunião de Kick-off" },
+    { id: "reuniao_proj_executivo", label: "Reunião Projeto Executivo" },
+    { id: "levantamento_materiais", label: "Levantamento de Materiais" },
+    { id: "aquisicao_materiais", label: "Aquisição de Materiais" },
+    { id: "cronograma_visita", label: "Cronograma de Visita Técnica" },
   ],
 };
 

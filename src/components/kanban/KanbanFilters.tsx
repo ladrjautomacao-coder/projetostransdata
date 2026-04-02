@@ -5,9 +5,11 @@ import { Filter, X } from "lucide-react";
 import { Constants } from "@/integrations/supabase/types";
 import { statusLabels } from "@/pages/ProjectManagement";
 
+import type { ProjectFilters } from "@/contexts/ProjectFiltersContext";
+
 interface Props {
-  filters: Record<string, string>;
-  setFilter: (key: string, value: string) => void;
+  filters: ProjectFilters;
+  setFilter: <K extends keyof ProjectFilters>(key: K, value: ProjectFilters[K]) => void;
   clearFilters: () => void;
   hasActiveFilters: boolean;
   managers: { id: string; full_name: string }[];

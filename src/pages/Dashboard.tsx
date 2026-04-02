@@ -813,7 +813,7 @@ export default function Dashboard() {
       </div>
 
       {/* Status breakdown strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {Constants.public.Enums.project_status.map((s, i) => (
           <StatusKpiCard
             key={s}

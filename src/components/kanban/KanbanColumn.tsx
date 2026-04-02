@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Droppable } from "@hello-pangea/dnd";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { statusLabels, statusColors, type SubPhaseConfig, type ProjectRow } from "@/pages/ProjectManagement";
 import type { Database } from "@/integrations/supabase/types";
 import KanbanCard from "./KanbanCard";

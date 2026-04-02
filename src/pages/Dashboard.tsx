@@ -45,7 +45,8 @@ const STATUS_COLORS = [
   "hsl(0 62% 50%)",
 ];
 
-const STATUS_ICONS = {
+const STATUS_ICONS: Record<string, any> = {
+  comercial: Briefcase,
   planejamento: FileText,
   implantacao: PlayCircle,
   encerrado: CheckCircle2,

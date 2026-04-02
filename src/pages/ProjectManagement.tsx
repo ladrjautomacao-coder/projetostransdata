@@ -123,7 +123,7 @@ export default function ProjectManagement() {
 
   const grouped = useMemo(() => {
     const map: Record<ProjectStatus, ProjectRow[]> = {
-      planejamento: [], implantacao: [], encerrado: [], suspenso: [],
+      comercial: [], planejamento: [], implantacao: [], encerrado: [], suspenso: [],
     };
     filtered.forEach(p => map[p.status]?.push(p));
     return map;

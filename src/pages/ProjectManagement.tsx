@@ -258,13 +258,16 @@ export default function ProjectManagement() {
                                       {...dragProvided.dragHandleProps}
                                     >
                                       <Card
-                                        className={`cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow border-border/40 bg-card ${dragSnapshot.isDragging ? "shadow-lg ring-2 ring-primary/20" : ""}`}
+                                        className={`cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow border-border/40 bg-card ${dragSnapshot.isDragging ? "shadow-lg ring-2 ring-primary/20" : ""} ${p.is_pilot ? "border-l-4 border-l-amber-500 bg-amber-50/30 dark:bg-amber-950/10" : ""}`}
                                         onClick={() => !dragSnapshot.isDragging && navigate(`/projetos/${p.id}`)}
                                       >
                                         <CardContent className="p-3 space-y-2">
                                           <div className="flex items-start gap-2">
                                             <Building2 className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
-                                            <span className="text-sm font-semibold leading-tight">{p.company_name}</span>
+                                            <span className="text-sm font-semibold leading-tight flex-1">{p.company_name}</span>
+                                            {p.is_pilot && (
+                                              <Badge className="bg-amber-500 text-white hover:bg-amber-600 text-[10px] h-4 px-1.5 shrink-0">Piloto</Badge>
+                                            )}
                                           </div>
                                           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                             <MapPin className="h-3 w-3" />

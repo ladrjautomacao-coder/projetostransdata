@@ -14,24 +14,42 @@ import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import { toast } from "sonner";
+import KanbanFilters from "@/components/kanban/KanbanFilters";
+import KanbanColumn from "@/components/kanban/KanbanColumn";
 
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 
-const statusLabels: Record<ProjectStatus, string> = {
+export const statusLabels: Record<ProjectStatus, string> = {
   planejamento: "Planejamento",
   implantacao: "Implantação",
   encerrado: "Implementado",
   suspenso: "Suspenso",
 };
 
-const statusColors: Record<ProjectStatus, { bg: string; border: string; text: string; accent: string }> = {
+export const statusColors: Record<ProjectStatus, { bg: string; border: string; text: string; accent: string }> = {
   planejamento: { bg: "bg-primary/5", border: "border-primary/20", text: "text-primary", accent: "bg-primary" },
   implantacao: { bg: "bg-amber-500/5", border: "border-amber-500/20", text: "text-amber-600", accent: "bg-amber-500" },
   encerrado: { bg: "bg-emerald-500/5", border: "border-emerald-500/20", text: "text-emerald-600", accent: "bg-emerald-500" },
   suspenso: { bg: "bg-red-500/5", border: "border-red-500/20", text: "text-red-600", accent: "bg-red-500" },
 };
 
-interface ProjectRow {
+export interface SubPhaseConfig {
+  id: string;
+  label: string;
+}
+
+export const subPhasesByStatus: Partial<Record<ProjectStatus, SubPhaseConfig[]>> = {
+  planejamento: [
+    { id: "reuniao_handover", label: "1° - Reunião de Handover" },
+    { id: "reuniao_kickoff", label: "2° - Reunião de Kick-off" },
+    { id: "reuniao_proj_executivo", label: "3° - Reunião Projeto Executivo" },
+    { id: "levantamento_materiais", label: "4° - Levantamento de Materiais" },
+    { id: "aquisicao_materiais", label: "5° - Aquisição de Materiais" },
+    { id: "cronograma_visita", label: "6° - Cronograma de Visita Técnica" },
+  ],
+};
+
+export interface ProjectRow {
   id: string;
   company_name: string;
   city: string;
@@ -40,6 +58,7 @@ interface ProjectRow {
   d_zero_date: string | null;
   handover_date: string | null;
   status: ProjectStatus;
+  sub_phase: string | null;
   is_pilot: boolean;
   executive: { full_name: string } | null;
   manager: { full_name: string } | null;
@@ -62,7 +81,7 @@ export default function ProjectManagement() {
     setLoading(true);
     const { data } = await supabase
       .from("projects")
-      .select("id, company_name, city, state, contract_date, d_zero_date, handover_date, status, is_pilot, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name))")
+      .select("id, company_name, city, state, contract_date, d_zero_date, handover_date, status, sub_phase, is_pilot, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name))")
       .order("company_name");
     setProjects((data as unknown as ProjectRow[]) || []);
     setLoading(false);
@@ -101,26 +120,34 @@ export default function ProjectManagement() {
     return map;
   }, [filtered]);
 
-  const fmtDate = (d: string | null) => d ? format(new Date(d + "T00:00:00"), "dd/MM/yyyy") : "—";
-
   const hasActiveFilters = Object.values(filters).some(v => v !== "");
 
   const onDragEnd = useCallback(async (result: DropResult) => {
     const { draggableId, destination } = result;
     if (!destination) return;
-    const newStatus = destination.droppableId as ProjectStatus;
+
+    // Parse composite droppable ID: "status::sub_phase" or just "status"
+    const parts = destination.droppableId.split("::");
+    const newStatus = parts[0] as ProjectStatus;
+    const newSubPhase = parts[1] || null;
+
     const project = projects.find(p => p.id === draggableId);
-    if (!project || project.status === newStatus) return;
+    if (!project) return;
+    if (project.status === newStatus && project.sub_phase === newSubPhase) return;
 
     // Optimistic update
-    setProjects(prev => prev.map(p => p.id === draggableId ? { ...p, status: newStatus } : p));
+    setProjects(prev => prev.map(p => p.id === draggableId ? { ...p, status: newStatus, sub_phase: newSubPhase } : p));
 
-    const { error } = await supabase.from("projects").update({ status: newStatus }).eq("id", draggableId);
+    const updateData: Record<string, unknown> = { status: newStatus, sub_phase: newSubPhase };
+    const { error } = await supabase.from("projects").update(updateData).eq("id", draggableId);
     if (error) {
       toast.error("Erro ao atualizar status do projeto");
-      setProjects(prev => prev.map(p => p.id === draggableId ? { ...p, status: project.status } : p));
+      setProjects(prev => prev.map(p => p.id === draggableId ? { ...p, status: project.status, sub_phase: project.sub_phase } : p));
     } else {
-      toast.success(`Projeto movido para ${statusLabels[newStatus]}`);
+      const label = newSubPhase
+        ? subPhasesByStatus[newStatus]?.find(sp => sp.id === newSubPhase)?.label || statusLabels[newStatus]
+        : statusLabels[newStatus];
+      toast.success(`Projeto movido para ${label}`);
     }
   }, [projects]);
 
@@ -145,171 +172,34 @@ export default function ProjectManagement() {
 
       {/* Body: Filters + Board */}
       <div className="flex flex-1 gap-4 min-h-0">
-        {/* Sidebar Filters */}
-        <div className="w-[260px] shrink-0 rounded-lg border border-border/50 bg-card p-4 flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              <Filter className="h-4 w-4 text-primary" />
-              Filtros
-            </div>
-            {hasActiveFilters && (
-              <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={clearFilters}>
-                <X className="h-3 w-3 mr-1" /> Limpar
-              </Button>
-            )}
-          </div>
-
-          <div className="space-y-3">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Gerente de Projetos</label>
-              <Select value={filters.managerId || undefined} onValueChange={v => setFilter("managerId", v === "all" ? "" : v)}>
-                <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Todos" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {managers.map(m => <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Nome do Projeto</label>
-              <Input
-                placeholder="Buscar empresa..."
-                value={filters.companyName}
-                onChange={e => setFilter("companyName", e.target.value)}
-                className="h-9 text-xs"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Estado</label>
-              <Select value={filters.state || undefined} onValueChange={v => setFilter("state", v === "all" ? "" : v)}>
-                <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Todos" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {Constants.public.Enums.brazilian_state.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Cidade</label>
-              <Select value={filters.city || undefined} onValueChange={v => setFilter("city", v === "all" ? "" : v)}>
-                <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Todas" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
-                  {cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Status</label>
-              <Select value={filters.status || undefined} onValueChange={v => setFilter("status", v === "all" ? "" : v)}>
-                <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Todos" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {columns.map(s => <SelectItem key={s} value={s}>{statusLabels[s]}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
+        <KanbanFilters
+          filters={filters}
+          setFilter={setFilter}
+          clearFilters={clearFilters}
+          hasActiveFilters={hasActiveFilters}
+          managers={managers}
+          cities={cities}
+          columns={columns}
+        />
 
         {/* Kanban Board */}
         <div className="flex-1 flex gap-3 min-h-0 overflow-x-auto">
-        <DragDropContext onDragEnd={onDragEnd}>
-          {loading ? (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-            </div>
-          ) : (
-            columns.map(status => {
-              const items = grouped[status];
-              const colors = statusColors[status];
-              return (
-                <div key={status} className={`flex-1 min-w-[260px] max-w-[340px] flex flex-col rounded-lg border ${colors.border} ${colors.bg}`}>
-                  {/* Column header */}
-                  <div className="flex items-center gap-2 p-3 border-b border-border/30">
-                    <div className={`h-2.5 w-2.5 rounded-full ${colors.accent}`} />
-                    <span className={`text-sm font-semibold ${colors.text}`}>{statusLabels[status]}</span>
-                    <Badge variant="secondary" className="ml-auto text-xs h-5 px-1.5">{items.length}</Badge>
-                  </div>
-
-                  {/* Column cards */}
-                  <Droppable droppableId={status}>
-                    {(provided, snapshot) => (
-                      <ScrollArea className="flex-1">
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.droppableProps}
-                          className={`p-2 min-h-[100px] transition-colors ${snapshot.isDraggingOver ? "bg-primary/5" : ""}`}
-                        >
-                          <div className="space-y-2">
-                            {items.length === 0 && !snapshot.isDraggingOver ? (
-                              <p className="text-xs text-muted-foreground text-center py-8">Nenhum projeto</p>
-                            ) : (
-                              items.map((p, index) => (
-                                <Draggable key={p.id} draggableId={p.id} index={index}>
-                                  {(dragProvided, dragSnapshot) => (
-                                    <div
-                                      ref={dragProvided.innerRef}
-                                      {...dragProvided.draggableProps}
-                                      {...dragProvided.dragHandleProps}
-                                    >
-                                      <Card
-                                        className={`cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow border-border/40 bg-card ${dragSnapshot.isDragging ? "shadow-lg ring-2 ring-primary/20" : ""} ${p.is_pilot ? "border-l-4 border-l-amber-500 bg-amber-50/30 dark:bg-amber-950/10" : ""}`}
-                                        onClick={() => !dragSnapshot.isDragging && navigate(`/projetos/${p.id}`)}
-                                      >
-                                        <CardContent className="p-3 space-y-2">
-                                          <div className="flex items-start gap-2">
-                                            <Building2 className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
-                                            <span className="text-sm font-semibold leading-tight flex-1">{p.company_name}</span>
-                                            {p.is_pilot && (
-                                              <Badge className="bg-amber-500 text-white hover:bg-amber-600 text-[10px] h-4 px-1.5 shrink-0">Piloto</Badge>
-                                            )}
-                                          </div>
-                                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                            <MapPin className="h-3 w-3" />
-                                            {p.city}/{p.state}
-                                          </div>
-                                          {p.manager?.full_name && (
-                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                              <Users className="h-3 w-3" />
-                                              {p.manager.full_name}
-                                            </div>
-                                          )}
-                                          {p.d_zero_date && (
-                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                              <Calendar className="h-3 w-3" />
-                                              D-zero: {fmtDate(p.d_zero_date)}
-                                            </div>
-                                          )}
-                                          {p.project_solutions?.length > 0 && (
-                                            <div className="flex flex-wrap gap-1 pt-1">
-                                              {p.project_solutions.map((ps, i) => (
-                                                <Badge key={i} variant="secondary" className="text-[10px] h-4 px-1.5">{ps.solution?.name}</Badge>
-                                              ))}
-                                            </div>
-                                          )}
-                                        </CardContent>
-                                      </Card>
-                                    </div>
-                                  )}
-                                </Draggable>
-                              ))
-                            )}
-                          </div>
-                          {provided.placeholder}
-                        </div>
-                      </ScrollArea>
-                    )}
-                  </Droppable>
-                </div>
-              );
-            })
-          )}
-        </DragDropContext>
+          <DragDropContext onDragEnd={onDragEnd}>
+            {loading ? (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+              </div>
+            ) : (
+              columns.map(status => (
+                <KanbanColumn
+                  key={status}
+                  status={status}
+                  items={grouped[status]}
+                  subPhases={subPhasesByStatus[status] || null}
+                />
+              ))
+            )}
+          </DragDropContext>
         </div>
       </div>
     </div>

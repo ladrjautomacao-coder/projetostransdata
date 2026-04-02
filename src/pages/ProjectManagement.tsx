@@ -20,6 +20,7 @@ import KanbanColumn from "@/components/kanban/KanbanColumn";
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 
 export const statusLabels: Record<ProjectStatus, string> = {
+  comercial: "Comercial",
   planejamento: "Planejamento",
   implantacao: "Implantação",
   encerrado: "Implementado",

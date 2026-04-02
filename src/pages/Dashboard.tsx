@@ -30,6 +30,7 @@ import { useAuth } from "@/contexts/AuthContext";
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 
 const statusLabels: Record<ProjectStatus, string> = {
+  comercial: "Comercial",
   planejamento: "Planejamento",
   implantacao: "Implantação",
   encerrado: "Implementado",

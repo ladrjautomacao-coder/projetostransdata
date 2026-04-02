@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Activity, Clock, Package, TrendingUp, Users, MapPin, CalendarDays, Layers, Zap, Signal, Filter, X, Calendar as CalendarIcon, BarChart3, CheckCircle2, PauseCircle, PlayCircle, FileText, GripVertical, RotateCcw, CalendarClock, Truck } from "lucide-react";
+import { Activity, Clock, Package, TrendingUp, Users, MapPin, CalendarDays, Layers, Zap, Signal, Filter, X, Calendar as CalendarIcon, BarChart3, CheckCircle2, PauseCircle, PlayCircle, FileText, GripVertical, RotateCcw, CalendarClock, Truck, Briefcase } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -45,7 +45,8 @@ const STATUS_COLORS = [
   "hsl(0 62% 50%)",
 ];
 
-const STATUS_ICONS = {
+const STATUS_ICONS: Record<string, any> = {
+  comercial: Briefcase,
   planejamento: FileText,
   implantacao: PlayCircle,
   encerrado: CheckCircle2,
@@ -706,7 +707,7 @@ export default function Dashboard() {
                     <X className="h-3 w-3" /> Fechar
                   </Button>
                 </div>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
                   {Constants.public.Enums.project_status.map((s, i) => {
                     const Icon = STATUS_ICONS[s];
                     const isActive = selectedFleetStatus === s;
@@ -812,7 +813,7 @@ export default function Dashboard() {
       </div>
 
       {/* Status breakdown strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {Constants.public.Enums.project_status.map((s, i) => (
           <StatusKpiCard
             key={s}

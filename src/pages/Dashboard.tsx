@@ -424,6 +424,14 @@ export default function Dashboard() {
   const totalFleet = filteredProjects.reduce((a, p) => a + (p.fleet_size || 0), 0);
   const totalStates = new Set(filteredProjects.map(p => p.state)).size;
 
+  const fleetByStatus = useMemo(() => {
+    const map: Record<ProjectStatus, number> = {
+      planejamento: 0, implantacao: 0, encerrado: 0, suspenso: 0,
+    };
+    filteredProjects.forEach(p => { map[p.status] += (p.fleet_size || 0); });
+    return map;
+  }, [filteredProjects]);
+
   const fleetConfig: ChartConfig = {
     frota: { label: "Frota Acumulada", color: "hsl(28 90% 52%)" },
   };

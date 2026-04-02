@@ -25,6 +25,7 @@ type ProjectStatus = Database["public"]["Enums"]["project_status"];
 type BrazilianState = Database["public"]["Enums"]["brazilian_state"];
 
 const statusLabels: Record<ProjectStatus, string> = {
+  comercial: "Comercial",
   planejamento: "Planejamento",
   implantacao: "Implantação",
   encerrado: "Implementado",
@@ -32,6 +33,7 @@ const statusLabels: Record<ProjectStatus, string> = {
 };
 
 const statusColors: Record<ProjectStatus, string> = {
+  comercial: "bg-blue-100 text-blue-800 border-blue-300",
   planejamento: "bg-primary/15 text-primary border-primary/30",
   implantacao: "bg-amber-100 text-amber-800 border-amber-300",
   encerrado: "bg-emerald-100 text-emerald-800 border-emerald-300",

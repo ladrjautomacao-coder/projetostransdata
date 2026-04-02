@@ -30,6 +30,7 @@ import { useAuth } from "@/contexts/AuthContext";
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 
 const statusLabels: Record<ProjectStatus, string> = {
+  comercial: "Comercial",
   planejamento: "Planejamento",
   implantacao: "Implantação",
   encerrado: "Implementado",
@@ -37,6 +38,7 @@ const statusLabels: Record<ProjectStatus, string> = {
 };
 
 const STATUS_COLORS = [
+  "hsl(217 91% 60%)",
   "hsl(38 92% 50%)",
   "hsl(28 90% 52%)",
   "hsl(142 72% 42%)",
@@ -327,7 +329,7 @@ export default function Dashboard() {
 
   const statusCounts = useMemo(() => {
     const counts: Record<ProjectStatus, number> = {
-      planejamento: 0, implantacao: 0, encerrado: 0, suspenso: 0,
+      comercial: 0, planejamento: 0, implantacao: 0, encerrado: 0, suspenso: 0,
     };
     filteredProjects.forEach(p => { counts[p.status] = (counts[p.status] || 0) + 1; });
     return counts;
@@ -427,7 +429,7 @@ export default function Dashboard() {
 
   const fleetByStatus = useMemo(() => {
     const map: Record<ProjectStatus, number> = {
-      planejamento: 0, implantacao: 0, encerrado: 0, suspenso: 0,
+      comercial: 0, planejamento: 0, implantacao: 0, encerrado: 0, suspenso: 0,
     };
     filteredProjects.forEach(p => { map[p.status] += (p.fleet_size || 0); });
     return map;

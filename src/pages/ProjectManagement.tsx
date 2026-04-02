@@ -20,6 +20,7 @@ import KanbanColumn from "@/components/kanban/KanbanColumn";
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 
 export const statusLabels: Record<ProjectStatus, string> = {
+  comercial: "Comercial",
   planejamento: "Planejamento",
   implantacao: "Implantação",
   encerrado: "Implementado",
@@ -27,10 +28,15 @@ export const statusLabels: Record<ProjectStatus, string> = {
 };
 
 export const statusColors: Record<ProjectStatus, { bg: string; border: string; text: string; accent: string }> = {
+  comercial: { bg: "bg-blue-500/5", border: "border-blue-500/20", text: "text-blue-600", accent: "bg-blue-500" },
   planejamento: { bg: "bg-primary/5", border: "border-primary/20", text: "text-primary", accent: "bg-primary" },
   implantacao: { bg: "bg-amber-500/5", border: "border-amber-500/20", text: "text-amber-600", accent: "bg-amber-500" },
   encerrado: { bg: "bg-emerald-500/5", border: "border-emerald-500/20", text: "text-emerald-600", accent: "bg-emerald-500" },
   suspenso: { bg: "bg-red-500/5", border: "border-red-500/20", text: "text-red-600", accent: "bg-red-500" },
+};
+
+export const statusDescriptions: Partial<Record<ProjectStatus, string>> = {
+  comercial: "Projeto cadastrado, em análise dos pré-requisitos para se tornar um Projeto.",
 };
 
 export interface SubPhaseConfig {
@@ -40,6 +46,12 @@ export interface SubPhaseConfig {
 }
 
 export const subPhasesByStatus: Partial<Record<ProjectStatus, SubPhaseConfig[]>> = {
+  comercial: [
+    { id: "contrato_assinado", label: "Contrato Transdata assinado", description: "Contrato firmado entre as partes para início do projeto." },
+    { id: "cobranca_dzero", label: "Cobrança D-zero emitida", description: "Emissão da cobrança referente ao D-zero do projeto." },
+    { id: "pagamento_dzero", label: "Pagamento D-zero efetuado", description: "Confirmação do pagamento do D-zero pelo cliente." },
+    { id: "sem_pendencias", label: "Cliente sem pendências financeiras", description: "Verificação de que o cliente não possui pendências financeiras." },
+  ],
   planejamento: [
     { id: "reuniao_handover", label: "Reunião de Handover", description: "Marca o início do projeto e a transição das responsabilidades do time comercial para o time de projetos." },
     { id: "reuniao_kickoff", label: "Reunião de Kick-off", description: "Primeiro contato da equipe de projetos com o cliente, incluindo a apresentação do Gerente de Projetos responsável." },
@@ -115,7 +127,7 @@ export default function ProjectManagement() {
 
   const grouped = useMemo(() => {
     const map: Record<ProjectStatus, ProjectRow[]> = {
-      planejamento: [], implantacao: [], encerrado: [], suspenso: [],
+      comercial: [], planejamento: [], implantacao: [], encerrado: [], suspenso: [],
     };
     filtered.forEach(p => map[p.status]?.push(p));
     return map;

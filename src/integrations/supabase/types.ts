@@ -443,7 +443,12 @@ export type Database = {
         | "SP"
         | "SE"
         | "TO"
-      project_status: "planejamento" | "implantacao" | "encerrado" | "suspenso"
+      project_status:
+        | "comercial"
+        | "planejamento"
+        | "implantacao"
+        | "encerrado"
+        | "suspenso"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -601,7 +606,13 @@ export const Constants = {
         "SE",
         "TO",
       ],
-      project_status: ["planejamento", "implantacao", "encerrado", "suspenso"],
+      project_status: [
+        "comercial",
+        "planejamento",
+        "implantacao",
+        "encerrado",
+        "suspenso",
+      ],
     },
   },
 } as const

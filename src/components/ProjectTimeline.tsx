@@ -5,6 +5,7 @@ import type { Database } from "@/integrations/supabase/types";
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 
 const PHASES: { key: ProjectStatus; label: string; short: string }[] = [
+  { key: "comercial", label: "Comercial", short: "Com" },
   { key: "planejamento", label: "Planejamento", short: "Plan" },
   { key: "implantacao", label: "Implantação", short: "Impl" },
   { key: "encerrado", label: "Implementado", short: "Impl" },
@@ -12,6 +13,7 @@ const PHASES: { key: ProjectStatus; label: string; short: string }[] = [
 ];
 
 const PHASE_COLORS: Record<ProjectStatus, string> = {
+  comercial: "hsl(217 91% 60%)",
   planejamento: "hsl(38 92% 50%)",
   implantacao: "hsl(28 90% 52%)",
   encerrado: "hsl(142 72% 42%)",

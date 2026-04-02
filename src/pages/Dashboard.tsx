@@ -38,6 +38,7 @@ const statusLabels: Record<ProjectStatus, string> = {
 };
 
 const STATUS_COLORS = [
+  "hsl(217 91% 60%)",
   "hsl(38 92% 50%)",
   "hsl(28 90% 52%)",
   "hsl(142 72% 42%)",

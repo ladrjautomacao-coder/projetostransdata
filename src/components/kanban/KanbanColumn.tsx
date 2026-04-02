@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Droppable } from "@hello-pangea/dnd";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { statusLabels, statusColors, type SubPhaseConfig, type ProjectRow } from "@/pages/ProjectManagement";
 import type { Database } from "@/integrations/supabase/types";
 import KanbanCard from "./KanbanCard";
@@ -47,9 +48,20 @@ export default function KanbanColumn({ status, items, subPhases }: Props) {
                 <div key={sp.id}>
                   {/* Sub-phase header */}
                   <div className="px-3 pt-3 pb-1.5 flex items-center gap-2">
-                    <span className="text-xs font-bold text-foreground/70 tracking-wide truncate">
-                      {sp.label}
-                    </span>
+                    <TooltipProvider delayDuration={200}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-xs font-bold text-foreground/70 tracking-wide truncate cursor-help">
+                            {sp.label}
+                          </span>
+                        </TooltipTrigger>
+                        {sp.description && (
+                          <TooltipContent side="right" className="max-w-[260px] text-xs">
+                            {sp.description}
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
                     {spItems.length > 0 && (
                       <Badge variant="outline" className="text-[10px] h-4 px-1 ml-auto shrink-0">{spItems.length}</Badge>
                     )}

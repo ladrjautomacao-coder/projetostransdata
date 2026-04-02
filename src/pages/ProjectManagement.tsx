@@ -42,6 +42,12 @@ export interface SubPhaseConfig {
 }
 
 export const subPhasesByStatus: Partial<Record<ProjectStatus, SubPhaseConfig[]>> = {
+  comercial: [
+    { id: "contrato_assinado", label: "Contrato Transdata assinado", description: "Contrato firmado entre as partes para início do projeto." },
+    { id: "cobranca_dzero", label: "Cobrança D-zero emitida", description: "Emissão da cobrança referente ao D-zero do projeto." },
+    { id: "pagamento_dzero", label: "Pagamento D-zero efetuado", description: "Confirmação do pagamento do D-zero pelo cliente." },
+    { id: "sem_pendencias", label: "Cliente sem pendências financeiras", description: "Verificação de que o cliente não possui pendências financeiras." },
+  ],
   planejamento: [
     { id: "reuniao_handover", label: "Reunião de Handover", description: "Marca o início do projeto e a transição das responsabilidades do time comercial para o time de projetos." },
     { id: "reuniao_kickoff", label: "Reunião de Kick-off", description: "Primeiro contato da equipe de projetos com o cliente, incluindo a apresentação do Gerente de Projetos responsável." },

@@ -36,16 +36,17 @@ export const statusColors: Record<ProjectStatus, { bg: string; border: string; t
 export interface SubPhaseConfig {
   id: string;
   label: string;
+  description?: string;
 }
 
 export const subPhasesByStatus: Partial<Record<ProjectStatus, SubPhaseConfig[]>> = {
   planejamento: [
-    { id: "reuniao_handover", label: "Reunião de Handover" },
-    { id: "reuniao_kickoff", label: "Reunião de Kick-off" },
-    { id: "reuniao_proj_executivo", label: "Reunião Projeto Executivo" },
-    { id: "levantamento_materiais", label: "Levantamento de Materiais" },
-    { id: "aquisicao_materiais", label: "Aquisição de Materiais" },
-    { id: "cronograma_visita", label: "Cronograma de Visita Técnica" },
+    { id: "reuniao_handover", label: "Reunião de Handover", description: "Marca o início do projeto e a transição das responsabilidades do time comercial para o time de projetos." },
+    { id: "reuniao_kickoff", label: "Reunião de Kick-off", description: "Primeiro contato da equipe de projetos com o cliente, incluindo a apresentação do Gerente de Projetos responsável." },
+    { id: "reuniao_proj_executivo", label: "Reunião Projeto Executivo", description: "Etapa em que são apresentadas as fases do projeto e coletadas as informações necessárias para a elaboração do Projeto Executivo." },
+    { id: "levantamento_materiais", label: "Levantamento de Materiais", description: "Fase de coleta dos dados do veículo para definição dos materiais necessários." },
+    { id: "aquisicao_materiais", label: "Aquisição de Materiais", description: "Envio da lista de materiais ao cliente para que a compra seja realizada junto aos fornecedores homologados." },
+    { id: "cronograma_visita", label: "Cronograma de Visita Técnica", description: "Organização das visitas entre o cliente, o Gerente de Projetos e a equipe responsável pela implantação." },
   ],
 };
 

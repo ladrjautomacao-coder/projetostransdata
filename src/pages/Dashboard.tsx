@@ -190,6 +190,7 @@ export default function Dashboard() {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [selectedBarState, setSelectedBarState] = useState<string | null>(null);
   const [selectedBarManager, setSelectedBarManager] = useState<string | null>(null);
+  const [selectedFleetStatus, setSelectedFleetStatus] = useState<ProjectStatus | null>(null);
 
   const DEFAULT_CHART_ORDER = ["status", "solucoes", "frota", "solucao-timeline", "estado", "gerente"];
   const [chartOrder, setChartOrder] = useState<string[]>(() => {

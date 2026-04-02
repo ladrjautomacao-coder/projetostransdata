@@ -35,6 +35,10 @@ export const statusColors: Record<ProjectStatus, { bg: string; border: string; t
   suspenso: { bg: "bg-red-500/5", border: "border-red-500/20", text: "text-red-600", accent: "bg-red-500" },
 };
 
+export const statusDescriptions: Partial<Record<ProjectStatus, string>> = {
+  comercial: "Projeto cadastrado, em análise dos pré-requisitos para se tornar um Projeto.",
+};
+
 export interface SubPhaseConfig {
   id: string;
   label: string;

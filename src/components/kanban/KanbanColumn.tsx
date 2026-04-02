@@ -34,7 +34,18 @@ export default function KanbanColumn({ status, items, subPhases }: Props) {
       {/* Column header */}
       <div className="flex items-center gap-2 p-3 border-b border-border/30">
         <div className={`h-2.5 w-2.5 rounded-full ${colors.accent}`} />
-        <span className={`text-sm font-semibold ${colors.text}`}>{statusLabels[status]}</span>
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className={`text-sm font-semibold ${colors.text} ${statusDescriptions[status] ? "cursor-help" : ""}`}>{statusLabels[status]}</span>
+            </TooltipTrigger>
+            {statusDescriptions[status] && (
+              <TooltipContent side="bottom" className="max-w-[260px] text-xs">
+                {statusDescriptions[status]}
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
         <Badge variant="secondary" className="ml-auto text-xs h-5 px-1.5">{items.length}</Badge>
       </div>
 

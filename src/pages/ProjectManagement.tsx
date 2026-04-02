@@ -40,6 +40,7 @@ interface ProjectRow {
   d_zero_date: string | null;
   handover_date: string | null;
   status: ProjectStatus;
+  is_pilot: boolean;
   executive: { full_name: string } | null;
   manager: { full_name: string } | null;
   project_solutions: { solution: { name: string } | null }[];

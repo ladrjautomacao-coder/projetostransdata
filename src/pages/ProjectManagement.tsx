@@ -40,6 +40,7 @@ interface ProjectRow {
   d_zero_date: string | null;
   handover_date: string | null;
   status: ProjectStatus;
+  is_pilot: boolean;
   executive: { full_name: string } | null;
   manager: { full_name: string } | null;
   project_solutions: { solution: { name: string } | null }[];
@@ -61,7 +62,7 @@ export default function ProjectManagement() {
     setLoading(true);
     const { data } = await supabase
       .from("projects")
-      .select("id, company_name, city, state, contract_date, d_zero_date, handover_date, status, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name))")
+      .select("id, company_name, city, state, contract_date, d_zero_date, handover_date, status, is_pilot, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name))")
       .order("company_name");
     setProjects((data as unknown as ProjectRow[]) || []);
     setLoading(false);
@@ -257,13 +258,16 @@ export default function ProjectManagement() {
                                       {...dragProvided.dragHandleProps}
                                     >
                                       <Card
-                                        className={`cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow border-border/40 bg-card ${dragSnapshot.isDragging ? "shadow-lg ring-2 ring-primary/20" : ""}`}
+                                        className={`cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow border-border/40 bg-card ${dragSnapshot.isDragging ? "shadow-lg ring-2 ring-primary/20" : ""} ${p.is_pilot ? "border-l-4 border-l-amber-500 bg-amber-50/30 dark:bg-amber-950/10" : ""}`}
                                         onClick={() => !dragSnapshot.isDragging && navigate(`/projetos/${p.id}`)}
                                       >
                                         <CardContent className="p-3 space-y-2">
                                           <div className="flex items-start gap-2">
                                             <Building2 className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
-                                            <span className="text-sm font-semibold leading-tight">{p.company_name}</span>
+                                            <span className="text-sm font-semibold leading-tight flex-1">{p.company_name}</span>
+                                            {p.is_pilot && (
+                                              <Badge className="bg-amber-500 text-white hover:bg-amber-600 text-[10px] h-4 px-1.5 shrink-0">Piloto</Badge>
+                                            )}
                                           </div>
                                           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                             <MapPin className="h-3 w-3" />

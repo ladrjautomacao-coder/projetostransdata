@@ -190,6 +190,7 @@ export default function Dashboard() {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [selectedBarState, setSelectedBarState] = useState<string | null>(null);
   const [selectedBarManager, setSelectedBarManager] = useState<string | null>(null);
+  const [selectedFleetStatus, setSelectedFleetStatus] = useState<ProjectStatus | null>(null);
 
   const DEFAULT_CHART_ORDER = ["status", "solucoes", "frota", "solucao-timeline", "estado", "gerente"];
   const [chartOrder, setChartOrder] = useState<string[]>(() => {
@@ -706,8 +707,14 @@ export default function Dashboard() {
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                   {Constants.public.Enums.project_status.map((s, i) => {
                     const Icon = STATUS_ICONS[s];
+                    const isActive = selectedFleetStatus === s;
                     return (
-                      <div key={s} className="flex items-center gap-3 rounded-xl border border-border/40 bg-card/70 backdrop-blur-sm px-4 py-4">
+                      <div
+                        key={s}
+                        onClick={() => setSelectedFleetStatus(prev => prev === s ? null : s)}
+                        className={`flex items-center gap-3 rounded-xl border bg-card/70 backdrop-blur-sm px-4 py-4 cursor-pointer transition-all hover:shadow-md ${isActive ? "border-2 ring-1 ring-offset-1" : "border-border/40"}`}
+                        style={isActive ? { borderColor: STATUS_COLORS[i], boxShadow: `0 0 16px ${STATUS_COLORS[i]}25` } as any : undefined}
+                      >
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: `${STATUS_COLORS[i]}15` }}>
                           <Icon className="h-5 w-5" style={{ color: STATUS_COLORS[i] }} />
                         </div>
@@ -722,6 +729,73 @@ export default function Dashboard() {
                     );
                   })}
                 </div>
+
+                {/* Project list for selected fleet status */}
+                <AnimatePresence>
+                  {selectedFleetStatus && (() => {
+                    const statusProjects = filteredProjects.filter(p => p.status === selectedFleetStatus && (p.fleet_size || 0) > 0);
+                    const statusIndex = Constants.public.Enums.project_status.indexOf(selectedFleetStatus);
+                    const statusColor = STATUS_COLORS[statusIndex];
+                    return (
+                      <motion.div
+                        key={selectedFleetStatus}
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden mt-4"
+                      >
+                        <div className="rounded-xl border border-border/40 p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <div className="h-2 w-2 rounded-full" style={{ backgroundColor: statusColor }} />
+                              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                Projetos em {statusLabels[selectedFleetStatus]}
+                              </h4>
+                              <Badge variant="secondary" className="text-[10px]">{statusProjects.length}</Badge>
+                            </div>
+                            <Button variant="ghost" size="sm" onClick={() => setSelectedFleetStatus(null)} className="h-6 text-[10px] gap-1">
+                              <X className="h-3 w-3" /> Fechar
+                            </Button>
+                          </div>
+                          {statusProjects.length === 0 ? (
+                            <p className="text-xs text-muted-foreground text-center py-4">Nenhum projeto com frota neste status.</p>
+                          ) : (
+                            <div className="overflow-auto">
+                              <table className="w-full text-sm">
+                                <thead>
+                                  <tr className="border-b border-border/50">
+                                    <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Empresa</th>
+                                    <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Localização</th>
+                                    <th className="text-left text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Gerente</th>
+                                    <th className="text-right text-[10px] text-muted-foreground uppercase tracking-wider font-semibold py-2 px-3">Frota</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {statusProjects.map((p, idx) => (
+                                    <motion.tr
+                                      key={p.id}
+                                      initial={{ opacity: 0, x: -10 }}
+                                      animate={{ opacity: 1, x: 0 }}
+                                      transition={{ delay: idx * 0.03 }}
+                                      className="border-b border-border/30 hover:bg-muted/30 transition-colors cursor-pointer"
+                                      onClick={() => navigate(`/projetos/${p.id}`)}
+                                    >
+                                      <td className="py-2 px-3 font-medium text-foreground">{p.company_name}</td>
+                                      <td className="py-2 px-3 text-muted-foreground">{p.city}/{p.state}</td>
+                                      <td className="py-2 px-3 text-muted-foreground">{p.manager?.full_name || "—"}</td>
+                                      <td className="py-2 px-3 text-right font-semibold tabular-nums" style={{ fontFamily: "'Rajdhani', sans-serif", color: statusColor }}>{p.fleet_size || 0}</td>
+                                    </motion.tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })()}
+                </AnimatePresence>
               </div>
             </GlowCard>
           </motion.div>

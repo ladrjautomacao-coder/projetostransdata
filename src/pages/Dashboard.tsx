@@ -667,17 +667,66 @@ export default function Dashboard() {
       </motion.div>
 
       {/* KPI Strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <KpiCard icon={Layers} label="Total Projetos" value={totalProjects} accent="primary" index={0} active={expandedSection === "total"} onClick={() => toggleSection("total")} />
         <KpiCard icon={MapPin} label="Estados" value={totalStates} accent="emerald" index={1} active={expandedSection === "estados-kpi"} onClick={() => toggleSection("estados-kpi")} />
         <KpiCard icon={TrendingUp} label="Frota Média" value={Math.round(avgFleet)} accent="cyan" index={2} active={expandedSection === "frota-kpi"} onClick={() => toggleSection("frota-kpi")} />
         <KpiCard icon={Activity} label="Frota Total" value={totalFleet} accent="amber" index={3} active={expandedSection === "frota-total"} onClick={() => toggleSection("frota-total")} />
+        <KpiCard icon={Truck} label="Frota por Status" value={totalFleet} accent="red" index={4} active={expandedSection === "frota-status"} onClick={() => toggleSection("frota-status")} />
       </div>
 
       <ExpandableProjectTable sectionKey="total" title="Todos os Projetos" projectList={filteredProjects} />
       <ExpandableProjectTable sectionKey="estados-kpi" title="Projetos por Estado" projectList={filteredProjects} />
       <ExpandableProjectTable sectionKey="frota-kpi" title="Projetos com Frota" projectList={filteredProjects.filter(p => p.fleet_size && p.fleet_size > 0)} />
       <ExpandableProjectTable sectionKey="frota-total" title="Frota Total por Projeto" projectList={filteredProjects.filter(p => p.fleet_size && p.fleet_size > 0)} />
+
+      {/* Frota por Status expandable */}
+      <AnimatePresence>
+        {expandedSection === "frota-status" && (
+          <motion.div
+            key="frota-status"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.35, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <GlowCard delay={0}>
+              <div className="p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                    <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Frota por Status</h3>
+                    <Badge variant="secondary" className="text-xs ml-1">{totalFleet} veículos</Badge>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setExpandedSection(null)} className="h-7 text-xs gap-1">
+                    <X className="h-3 w-3" /> Fechar
+                  </Button>
+                </div>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  {Constants.public.Enums.project_status.map((s, i) => {
+                    const Icon = STATUS_ICONS[s];
+                    return (
+                      <div key={s} className="flex items-center gap-3 rounded-xl border border-border/40 bg-card/70 backdrop-blur-sm px-4 py-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: `${STATUS_COLORS[i]}15` }}>
+                          <Icon className="h-5 w-5" style={{ color: STATUS_COLORS[i] }} />
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] font-medium">{statusLabels[s]}</p>
+                          <p className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Rajdhani', sans-serif", color: STATUS_COLORS[i] }}>
+                            <AnimatedNumber value={fleetByStatus[s]} duration={800} />
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">veículos</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </GlowCard>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Status breakdown strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

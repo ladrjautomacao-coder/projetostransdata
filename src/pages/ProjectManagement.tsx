@@ -28,6 +28,7 @@ export const statusLabels: Record<ProjectStatus, string> = {
 };
 
 export const statusColors: Record<ProjectStatus, { bg: string; border: string; text: string; accent: string }> = {
+  comercial: { bg: "bg-blue-500/5", border: "border-blue-500/20", text: "text-blue-600", accent: "bg-blue-500" },
   planejamento: { bg: "bg-primary/5", border: "border-primary/20", text: "text-primary", accent: "bg-primary" },
   implantacao: { bg: "bg-amber-500/5", border: "border-amber-500/20", text: "text-amber-600", accent: "bg-amber-500" },
   encerrado: { bg: "bg-emerald-500/5", border: "border-emerald-500/20", text: "text-emerald-600", accent: "bg-emerald-500" },

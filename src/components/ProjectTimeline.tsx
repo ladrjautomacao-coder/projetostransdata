@@ -5,6 +5,7 @@ import type { Database } from "@/integrations/supabase/types";
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 
 const PHASES: { key: ProjectStatus; label: string; short: string }[] = [
+  { key: "comercial", label: "Comercial", short: "Com" },
   { key: "planejamento", label: "Planejamento", short: "Plan" },
   { key: "implantacao", label: "Implantação", short: "Impl" },
   { key: "encerrado", label: "Implementado", short: "Impl" },

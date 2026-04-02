@@ -46,8 +46,8 @@ export default function KanbanColumn({ status, items, subPhases }: Props) {
               return (
                 <div key={sp.id}>
                   {/* Sub-phase header */}
-                  <div className="px-3 pt-3 pb-1 flex items-center gap-2">
-                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide truncate">
+                  <div className="px-3 pt-3 pb-1.5 flex items-center gap-2">
+                    <span className="text-xs font-bold text-foreground/70 tracking-wide truncate">
                       {sp.label}
                     </span>
                     {spItems.length > 0 && (

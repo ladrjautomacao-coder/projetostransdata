@@ -130,10 +130,16 @@ export default function Login() {
           options: { data: { full_name: fullName, cargo }, emailRedirectTo: window.location.origin }
         });
         if (error) throw error;
-        toast({ title: "Conta criada!", description: "Verifique seu email para confirmar o cadastro." });
+        toast({ title: "Solicitação enviada!", description: "Seu cadastro foi recebido e será analisado por um administrador. Você receberá acesso assim que for aprovado." });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (error) {
+          if (error.message === "Email not confirmed") {
+            toast({ title: "Acesso pendente", description: "Seu cadastro ainda não foi aprovado por um administrador. Aguarde a liberação do acesso.", variant: "destructive" });
+            return;
+          }
+          throw error;
+        }
       }
     } catch (error: any) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });

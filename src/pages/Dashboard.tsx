@@ -728,6 +728,13 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
+      {/* Section label */}
+      <div className="flex items-center gap-2">
+        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Resumo Projetos</span>
+        <div className="flex-1 h-px bg-border/50" />
+      </div>
+
       {/* Status breakdown strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {Constants.public.Enums.project_status.map((s, i) => (

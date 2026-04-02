@@ -672,7 +672,7 @@ export default function Dashboard() {
         <KpiCard icon={Layers} label="Total Projetos" value={totalProjects} accent="primary" index={0} active={expandedSection === "total"} onClick={() => toggleSection("total")} />
         <KpiCard icon={MapPin} label="Estados" value={totalStates} accent="emerald" index={1} active={expandedSection === "estados-kpi"} onClick={() => toggleSection("estados-kpi")} />
         <KpiCard icon={TrendingUp} label="Frota Média" value={Math.round(avgFleet)} accent="cyan" index={2} active={expandedSection === "frota-kpi"} onClick={() => toggleSection("frota-kpi")} />
-        <KpiCard icon={Activity} label="Frota Total" value={totalFleet} accent="amber" index={3} active={expandedSection === "frota-total"} onClick={() => toggleSection("frota-total")} />
+        <KpiCard icon={Truck} label="Frota Total" value={totalFleet} accent="amber" index={3} active={expandedSection === "frota-total"} onClick={() => toggleSection("frota-total")} />
         <KpiCard icon={Truck} label="Frota por Status" value={totalFleet} accent="red" index={4} active={expandedSection === "frota-status"} onClick={() => toggleSection("frota-status")} />
       </div>
 

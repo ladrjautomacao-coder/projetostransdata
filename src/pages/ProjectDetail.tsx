@@ -64,6 +64,8 @@ export default function ProjectDetail() {
   const [pilotInfo, setPilotInfo] = useState("");
   const [installationTransmobile, setInstallationTransmobile] = useState<string>("0");
   const [installationClient, setInstallationClient] = useState<string>("0");
+  const [complementarySale, setComplementarySale] = useState(false);
+  const [complementaryFleet, setComplementaryFleet] = useState<string>("0");
 
   // Lookups
   const [executives, setExecutives] = useState<{ id: string; full_name: string }[]>([]);
@@ -109,6 +111,8 @@ export default function ProjectDetail() {
       setPilotInfo(data.pilot_info || "");
       setInstallationTransmobile(data.installation_transmobile?.toString() || "0");
       setInstallationClient(data.installation_client?.toString() || "0");
+      setComplementarySale(data.complementary_sale || false);
+      setComplementaryFleet(data.complementary_fleet?.toString() || "0");
     }
     setLoading(false);
   };
@@ -180,6 +184,8 @@ export default function ProjectDetail() {
     if (isPilot) add("Info Piloto", project.pilot_info || "—", pilotInfo || "—");
     add("Instalação Transmobile", project.installation_transmobile ?? 0, parseInt(installationTransmobile) || 0);
     add("Instalação Cliente", project.installation_client ?? 0, parseInt(installationClient) || 0);
+    add("Venda Complementar", project.complementary_sale ? "Sim" : "Não", complementarySale ? "Sim" : "Não");
+    if (complementarySale) add("Frota Complementar", project.complementary_fleet ?? 0, parseInt(complementaryFleet) || 0);
 
     return changes;
   };
@@ -214,6 +220,8 @@ export default function ProjectDetail() {
         pilot_info: isPilot ? pilotInfo : null,
         installation_transmobile: parseInt(installationTransmobile) || 0,
         installation_client: parseInt(installationClient) || 0,
+        complementary_sale: complementarySale,
+        complementary_fleet: complementarySale ? (parseInt(complementaryFleet) || 0) : 0,
       }).eq("id", id);
       if (error) throw error;
 
@@ -602,6 +610,36 @@ export default function ProjectDetail() {
             <>
               <div><span className="text-xs text-muted-foreground">Transmobile</span><p>{project.installation_transmobile ?? 0}</p></div>
               <div><span className="text-xs text-muted-foreground">Cliente</span><p>{project.installation_client ?? 0}</p></div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Venda Complementar */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-lg">Venda Complementar</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {editing ? (
+            <>
+              <div className="flex items-center gap-3">
+                <Switch checked={complementarySale} onCheckedChange={setComplementarySale} />
+                <Label>Possui venda complementar?</Label>
+              </div>
+              {complementarySale && (
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Frota Complementar</Label>
+                  <Input type="number" min={0} step={1} value={complementaryFleet} onChange={e => setComplementaryFleet(e.target.value)} />
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div><span className="text-xs text-muted-foreground">Venda Complementar</span><p>{project.complementary_sale ? "Sim" : "Não"}</p></div>
+              {project.complementary_sale && (
+                <div><span className="text-xs text-muted-foreground">Frota Complementar</span><p>{project.complementary_fleet ?? 0}</p></div>
+              )}
             </>
           )}
         </CardContent>

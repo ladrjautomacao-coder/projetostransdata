@@ -59,6 +59,8 @@ export default function NewProject() {
   const [pilotInfo, setPilotInfo] = useState("");
   const [installationTransmobile, setInstallationTransmobile] = useState<string>("0");
   const [installationClient, setInstallationClient] = useState<string>("0");
+  const [complementarySale, setComplementarySale] = useState(false);
+  const [complementaryFleet, setComplementaryFleet] = useState<string>("0");
 
   // Anexos por categoria
   const ATTACHMENT_CATEGORIES = [
@@ -163,6 +165,8 @@ export default function NewProject() {
         filled_by: user?.id || null,
         installation_transmobile: parseInt(installationTransmobile) || 0,
         installation_client: parseInt(installationClient) || 0,
+        complementary_sale: complementarySale,
+        complementary_fleet: complementarySale ? (parseInt(complementaryFleet) || 0) : 0,
       }).select("id").single();
       if (error) throw error;
 
@@ -460,6 +464,33 @@ export default function NewProject() {
                 placeholder="0"
               />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* === SEÇÃO: VENDA COMPLEMENTAR === */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Venda Complementar</CardTitle>
+            <CardDescription>Indica se o projeto possui venda complementar</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Switch checked={complementarySale} onCheckedChange={setComplementarySale} />
+              <Label>Possui venda complementar?</Label>
+            </div>
+            {complementarySale && (
+              <div className="space-y-2">
+                <Label>Frota Complementar</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={complementaryFleet}
+                  onChange={e => setComplementaryFleet(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+            )}
           </CardContent>
         </Card>
 

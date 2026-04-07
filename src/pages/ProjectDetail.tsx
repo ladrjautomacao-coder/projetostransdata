@@ -220,6 +220,8 @@ export default function ProjectDetail() {
         pilot_info: isPilot ? pilotInfo : null,
         installation_transmobile: parseInt(installationTransmobile) || 0,
         installation_client: parseInt(installationClient) || 0,
+        complementary_sale: complementarySale,
+        complementary_fleet: complementarySale ? (parseInt(complementaryFleet) || 0) : 0,
       }).eq("id", id);
       if (error) throw error;
 

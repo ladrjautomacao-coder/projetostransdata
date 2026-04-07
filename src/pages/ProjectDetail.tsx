@@ -111,6 +111,8 @@ export default function ProjectDetail() {
       setPilotInfo(data.pilot_info || "");
       setInstallationTransmobile(data.installation_transmobile?.toString() || "0");
       setInstallationClient(data.installation_client?.toString() || "0");
+      setComplementarySale(data.complementary_sale || false);
+      setComplementaryFleet(data.complementary_fleet?.toString() || "0");
     }
     setLoading(false);
   };

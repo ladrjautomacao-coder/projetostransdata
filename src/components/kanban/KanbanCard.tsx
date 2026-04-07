@@ -35,6 +35,11 @@ export default function KanbanCard({ project: p, index }: Props) {
                 {p.is_pilot && (
                   <Badge className="bg-amber-500 text-white hover:bg-amber-600 text-[10px] h-4 px-1.5 shrink-0">Piloto</Badge>
                 )}
+                {p.complementary_sale && (
+                  <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-emerald-200 text-[10px] h-4 px-1.5 shrink-0">
+                    V. Compl.{p.complementary_fleet > 0 ? ` (${p.complementary_fleet})` : ""}
+                  </Badge>
+                )}
               </div>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <MapPin className="h-3 w-3" />

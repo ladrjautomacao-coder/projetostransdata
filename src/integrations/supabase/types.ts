@@ -238,6 +238,8 @@ export type Database = {
         Row: {
           city: string
           company_name: string
+          complementary_fleet: number
+          complementary_sale: boolean
           contract_date: string
           contractual_deadline_days: number | null
           created_at: string
@@ -263,6 +265,8 @@ export type Database = {
         Insert: {
           city: string
           company_name: string
+          complementary_fleet?: number
+          complementary_sale?: boolean
           contract_date: string
           contractual_deadline_days?: number | null
           created_at?: string
@@ -288,6 +292,8 @@ export type Database = {
         Update: {
           city?: string
           company_name?: string
+          complementary_fleet?: number
+          complementary_sale?: boolean
           contract_date?: string
           contractual_deadline_days?: number | null
           created_at?: string

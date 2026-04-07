@@ -184,6 +184,8 @@ export default function ProjectDetail() {
     if (isPilot) add("Info Piloto", project.pilot_info || "—", pilotInfo || "—");
     add("Instalação Transmobile", project.installation_transmobile ?? 0, parseInt(installationTransmobile) || 0);
     add("Instalação Cliente", project.installation_client ?? 0, parseInt(installationClient) || 0);
+    add("Venda Complementar", project.complementary_sale ? "Sim" : "Não", complementarySale ? "Sim" : "Não");
+    if (complementarySale) add("Frota Complementar", project.complementary_fleet ?? 0, parseInt(complementaryFleet) || 0);
 
     return changes;
   };

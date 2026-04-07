@@ -73,6 +73,8 @@ export interface ProjectRow {
   status: ProjectStatus;
   sub_phase: string | null;
   is_pilot: boolean;
+  complementary_sale: boolean;
+  complementary_fleet: number;
   executive: { full_name: string } | null;
   manager: { full_name: string } | null;
   project_solutions: { solution: { name: string } | null }[];
@@ -94,7 +96,7 @@ export default function ProjectManagement() {
     setLoading(true);
     const { data } = await supabase
       .from("projects")
-      .select("id, company_name, city, state, contract_date, d_zero_date, handover_date, status, sub_phase, is_pilot, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name))")
+      .select("id, company_name, city, state, contract_date, d_zero_date, handover_date, status, sub_phase, is_pilot, complementary_sale, complementary_fleet, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name))")
       .order("company_name");
     setProjects((data as unknown as ProjectRow[]) || []);
     setLoading(false);

@@ -615,6 +615,36 @@ export default function ProjectDetail() {
         </CardContent>
       </Card>
 
+      {/* Venda Complementar */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-lg">Venda Complementar</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {editing ? (
+            <>
+              <div className="flex items-center gap-3">
+                <Switch checked={complementarySale} onCheckedChange={setComplementarySale} />
+                <Label>Possui venda complementar?</Label>
+              </div>
+              {complementarySale && (
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Frota Complementar</Label>
+                  <Input type="number" min={0} step={1} value={complementaryFleet} onChange={e => setComplementaryFleet(e.target.value)} />
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div><span className="text-xs text-muted-foreground">Venda Complementar</span><p>{project.complementary_sale ? "Sim" : "Não"}</p></div>
+              {project.complementary_sale && (
+                <div><span className="text-xs text-muted-foreground">Frota Complementar</span><p>{project.complementary_fleet ?? 0}</p></div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Attachments - Categorized */}
       <Card className="mb-6">
         <CardHeader>

@@ -467,6 +467,33 @@ export default function NewProject() {
           </CardContent>
         </Card>
 
+        {/* === SEÇÃO: VENDA COMPLEMENTAR === */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Venda Complementar</CardTitle>
+            <CardDescription>Indica se o projeto possui venda complementar</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Switch checked={complementarySale} onCheckedChange={setComplementarySale} />
+              <Label>Possui venda complementar?</Label>
+            </div>
+            {complementarySale && (
+              <div className="space-y-2">
+                <Label>Frota Complementar</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={complementaryFleet}
+                  onChange={e => setComplementaryFleet(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* === SEÇÃO: STATUS === */}
         <Card>
           <CardHeader><CardTitle className="text-lg">Status</CardTitle></CardHeader>

@@ -1,51 +1,35 @@
 
 
-## Plano: Flag "Venda Complementar" + Frota Complementar
+## Plano: Badge "V. Complementar" no Card do Kanban
 
 ### O que sera feito
 
-Adicionar dois novos campos logo abaixo da secao "Instalacao Embarcada":
-1. **Flag "Venda Complementar"** - Switch (ligado/desligado)
-2. **Frota Complementar** - Campo numerico para informar a quantidade de veiculos da venda complementar (visivel somente quando a flag estiver ativada)
+Exibir uma badge verde "V. Complementar" na mesma linha do nome da empresa e do badge "Piloto", ao lado direito do card. Se houver frota complementar > 0, exibir o numero entre parenteses.
 
 ### Alteracoes
 
-**1. Migracao de banco de dados**
-- Adicionar coluna `complementary_sale` (boolean, default false) na tabela `projects`
-- Adicionar coluna `complementary_fleet` (integer, default 0) na tabela `projects`
+**1. `src/pages/ProjectManagement.tsx`**
+- Adicionar `complementary_sale` (boolean) e `complementary_fleet` (number) ao tipo `ProjectRow`
+- Adicionar esses campos na string do `.select()`
 
-**2. NewProject.tsx**
-- Adicionar estados `complementarySale` e `complementaryFleet`
-- Renderizar novo Card abaixo de "Instalacao Embarcada" com Switch + campo numerico condicional
-- Incluir ambos os campos no payload de insert
-
-**3. ProjectDetail.tsx**
-- Carregar os dois novos campos do projeto
-- Modo edicao: Switch + Input numerico condicional
-- Modo visualizacao: exibir badge Sim/Nao + valor da frota quando aplicavel
-- Incluir no payload de update
-
-### Layout visual
+**2. `src/components/kanban/KanbanCard.tsx`**
+- Adicionar badge condicional ao lado do badge "Piloto" na linha do header:
 
 ```text
-┌─ Instalação Embarcada ──────────────┐
-│  Transmobile: [0]                    │
-│  Cliente: [0]                        │
-└──────────────────────────────────────┘
+┌──────────────────────────────────┐
+│ 🏢 Empresa ABC  [Piloto] [VC]   │
+│ 📍 Cidade/UF                    │
+│ 👤 Gerente                      │
+│ 📅 D-zero: 01/01/2026           │
+│ [Solução A] [Solução B]         │
+└──────────────────────────────────┘
 
-┌─ Venda Complementar ────────────────┐
-│  Indica se o projeto possui          │
-│  venda complementar                  │
-│                                      │
-│  [●====] Sim                         │
-│                                      │
-│  Frota Complementar                  │
-│  [15]                                │
-└──────────────────────────────────────┘
+VC = Badge verde "V. Complementar (15)"
 ```
 
+- Badge com estilo verde (emerald) para diferenciar do Piloto (amber)
+
 ### Arquivos alterados
-- Nova migracao SQL (2 colunas)
-- `src/pages/NewProject.tsx`
-- `src/pages/ProjectDetail.tsx`
+- `src/pages/ProjectManagement.tsx` (tipo + query)
+- `src/components/kanban/KanbanCard.tsx` (badge condicional)
 

@@ -165,6 +165,8 @@ export default function NewProject() {
         filled_by: user?.id || null,
         installation_transmobile: parseInt(installationTransmobile) || 0,
         installation_client: parseInt(installationClient) || 0,
+        complementary_sale: complementarySale,
+        complementary_fleet: complementarySale ? (parseInt(complementaryFleet) || 0) : 0,
       }).select("id").single();
       if (error) throw error;
 

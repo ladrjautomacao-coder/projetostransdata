@@ -33,6 +33,8 @@ const statusLabels: Record<ProjectStatus, string> = {
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const backPath = (location.state as any)?.from || "/projetos/lista";
   const { user, isAdmin } = useAuth();
   const { toast } = useToast();
   const [project, setProject] = useState<any>(null);

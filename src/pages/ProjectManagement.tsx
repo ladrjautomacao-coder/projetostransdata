@@ -75,6 +75,7 @@ export interface ProjectRow {
   is_pilot: boolean;
   complementary_sale: boolean;
   complementary_fleet: number;
+  observations: string | null;
   executive: { full_name: string } | null;
   manager: { full_name: string } | null;
   project_solutions: { solution: { name: string } | null }[];
@@ -96,7 +97,7 @@ export default function ProjectManagement() {
     setLoading(true);
     const { data } = await supabase
       .from("projects")
-      .select("id, company_name, city, state, contract_date, d_zero_date, handover_date, status, sub_phase, is_pilot, complementary_sale, complementary_fleet, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name))")
+      .select("id, company_name, city, state, contract_date, d_zero_date, handover_date, status, sub_phase, is_pilot, complementary_sale, complementary_fleet, observations, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name))")
       .order("company_name");
     setProjects((data as unknown as ProjectRow[]) || []);
     setLoading(false);
@@ -166,6 +167,21 @@ export default function ProjectManagement() {
     }
   }, [projects]);
 
+  const onUpdateObservations = useCallback(async (projectId: string, newText: string) => {
+    const project = projects.find(p => p.id === projectId);
+    const timestamp = format(new Date(), "dd/MM/yyyy HH:mm");
+    const entry = `[${timestamp}] ${newText}`;
+    const updated = project?.observations ? `${entry}\n${project.observations}` : entry;
+
+    const { error } = await supabase.from("projects").update({ observations: updated }).eq("id", projectId);
+    if (error) {
+      toast.error("Erro ao salvar acompanhamento");
+    } else {
+      toast.success("Acompanhamento registrado");
+      setProjects(prev => prev.map(p => p.id === projectId ? { ...p, observations: updated } : p));
+    }
+  }, [projects]);
+
   return (
     <div className="flex flex-col h-[calc(100vh-7rem)]">
       {/* Header */}
@@ -211,6 +227,7 @@ export default function ProjectManagement() {
                   status={status}
                   items={grouped[status]}
                   subPhases={subPhasesByStatus[status] || null}
+                  onUpdateObservations={onUpdateObservations}
                 />
               ))
             )}

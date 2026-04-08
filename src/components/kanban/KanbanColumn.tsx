@@ -13,9 +13,10 @@ interface Props {
   status: ProjectStatus;
   items: ProjectRow[];
   subPhases: SubPhaseConfig[] | null;
+  onUpdateObservations: (projectId: string, text: string) => Promise<void>;
 }
 
-export default function KanbanColumn({ status, items, subPhases }: Props) {
+export default function KanbanColumn({ status, items, subPhases, onUpdateObservations }: Props) {
   const colors = statusColors[status];
 
   const groupedBySubPhase = useMemo(() => {
@@ -86,7 +87,7 @@ export default function KanbanColumn({ status, items, subPhases }: Props) {
                       >
                         <div className="space-y-2">
                           {spItems.map((p, index) => (
-                            <KanbanCard key={p.id} project={p} index={index} />
+                            <KanbanCard key={p.id} project={p} index={index} onUpdateObservations={onUpdateObservations} />
                           ))}
                         </div>
                         {provided.placeholder}
@@ -111,7 +112,7 @@ export default function KanbanColumn({ status, items, subPhases }: Props) {
                     <p className="text-xs text-muted-foreground text-center py-8">Nenhum projeto</p>
                   ) : (
                     items.map((p, index) => (
-                      <KanbanCard key={p.id} project={p} index={index} />
+                      <KanbanCard key={p.id} project={p} index={index} onUpdateObservations={onUpdateObservations} />
                     ))
                   )}
                 </div>

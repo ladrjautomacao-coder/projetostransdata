@@ -1,8 +1,12 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Draggable } from "@hello-pangea/dnd";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Building2, MapPin, Calendar, Users } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Building2, MapPin, Calendar, Users, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import type { ProjectRow } from "@/pages/ProjectManagement";
 
@@ -11,10 +15,23 @@ const fmtDate = (d: string | null) => d ? format(new Date(d + "T00:00:00"), "dd/
 interface Props {
   project: ProjectRow;
   index: number;
+  onUpdateObservations: (projectId: string, text: string) => Promise<void>;
 }
 
-export default function KanbanCard({ project: p, index }: Props) {
+export default function KanbanCard({ project: p, index, onUpdateObservations }: Props) {
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [note, setNote] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!note.trim()) return;
+    setSaving(true);
+    await onUpdateObservations(p.id, note.trim());
+    setSaving(false);
+    setNote("");
+    setOpen(false);
+  };
 
   return (
     <Draggable draggableId={p.id} index={index}>
@@ -26,7 +43,7 @@ export default function KanbanCard({ project: p, index }: Props) {
         >
           <Card
             className={`cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow border-border/40 bg-card ${dragSnapshot.isDragging ? "shadow-lg ring-2 ring-primary/20" : ""} ${p.is_pilot ? "border-l-4 border-l-amber-500 bg-amber-50/30 dark:bg-amber-950/10" : p.complementary_sale ? "border-l-4 border-l-emerald-500 bg-emerald-50/30 dark:bg-emerald-950/10" : ""}`}
-            onClick={() => !dragSnapshot.isDragging && navigate(`/projetos/${p.id}`)}
+            onClick={() => !dragSnapshot.isDragging && !open && navigate(`/projetos/${p.id}`)}
           >
             <CardContent className="p-3 space-y-2">
               <div className="flex items-start gap-2">
@@ -40,6 +57,39 @@ export default function KanbanCard({ project: p, index }: Props) {
                     V. Compl.{p.complementary_fleet > 0 ? ` (${p.complementary_fleet})` : ""}
                   </Badge>
                 )}
+                <Popover open={open} onOpenChange={setOpen}>
+                  <PopoverTrigger asChild>
+                    <button
+                      className="p-0.5 rounded hover:bg-muted shrink-0"
+                      onClick={e => { e.stopPropagation(); }}
+                    >
+                      <Pencil className="h-3 w-3 text-muted-foreground" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-72"
+                    side="right"
+                    align="start"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold">Acompanhamento do Projeto</p>
+                      <Textarea
+                        value={note}
+                        onChange={e => setNote(e.target.value)}
+                        placeholder="Registre o andamento atual..."
+                        maxLength={500}
+                        rows={3}
+                        className="text-sm"
+                      />
+                      <div className="flex justify-end">
+                        <Button size="sm" onClick={handleSave} disabled={saving || !note.trim()}>
+                          {saving ? "Salvando..." : "Salvar"}
+                        </Button>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <MapPin className="h-3 w-3" />

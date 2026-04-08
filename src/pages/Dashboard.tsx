@@ -394,7 +394,7 @@ export default function Dashboard() {
     }));
     const names = [...solutionNames].sort();
     const sorted = [...filteredProjects]
-      .filter(p => p.fleet_size && p.fleet_size > 0)
+      .filter(p => getProjectFleet(p) > 0)
       .sort((a, b) => a.contract_date.localeCompare(b.contract_date));
     const months: Record<string, Record<string, number>> = {};
     sorted.forEach(p => {
@@ -402,7 +402,7 @@ export default function Dashboard() {
       if (!months[m]) months[m] = {};
       p.project_solutions?.forEach(ps => {
         if (ps.solution?.name) {
-          months[m][ps.solution.name] = (months[m][ps.solution.name] || 0) + (p.fleet_size || 0);
+          months[m][ps.solution.name] = (months[m][ps.solution.name] || 0) + getProjectFleet(p);
         }
       });
     });

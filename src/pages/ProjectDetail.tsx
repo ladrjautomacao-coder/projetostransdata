@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -33,6 +33,8 @@ const statusLabels: Record<ProjectStatus, string> = {
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const backPath = (location.state as any)?.from || "/projetos/lista";
   const { user, isAdmin } = useAuth();
   const { toast } = useToast();
   const [project, setProject] = useState<any>(null);
@@ -382,7 +384,7 @@ export default function ProjectDetail() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <Button variant="ghost" onClick={() => navigate("/projetos/lista")} className="mb-4">
+      <Button variant="ghost" onClick={() => navigate(backPath)} className="mb-4">
         <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
       </Button>
 

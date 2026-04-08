@@ -1189,7 +1189,7 @@ export default function Dashboard() {
       {/* Expandable tables for charts */}
       <ExpandableProjectTable sectionKey="status-chart" title="Projetos por Status" projectList={filteredProjects} />
       <ExpandableProjectTable sectionKey="solucoes-chart" title="Projetos por Solução" projectList={filteredProjects} />
-      <ExpandableProjectTable sectionKey="frota-chart" title="Projetos com Frota" projectList={filteredProjects.filter(p => p.fleet_size && p.fleet_size > 0)} />
+      <ExpandableProjectTable sectionKey="frota-chart" title="Projetos com Frota" projectList={filteredProjects.filter(p => getProjectFleet(p) > 0)} />
       <ExpandableProjectTable sectionKey="solucao-timeline" title="Projetos por Solução" projectList={filteredProjects.filter(p => p.project_solutions && p.project_solutions.length > 0)} />
       <ExpandableProjectTable
         sectionKey="estado-chart"

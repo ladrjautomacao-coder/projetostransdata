@@ -1,29 +1,42 @@
 
 
-## Plano: Destaque visual do card "Venda Complementar" no Kanban
+## Plano: Campo "Observações" logo abaixo da Linha do Tempo
 
 ### O que sera feito
 
-Aplicar borda lateral e fundo sutil nos cards de projetos com Venda Complementar, usando **emerald (verde)** — cor já presente no badge do card e que combina com a paleta tecnológica (laranja para Piloto, verde para V. Complementar).
+Adicionar um card "Observações" logo abaixo da Linha do Tempo, com um campo de texto livre para o gerente de projetos registrar o andamento atual do projeto. O campo fica visivel em destaque no topo, acessivel sem scroll.
 
-### Alteracao
+### Alteracoes
 
-**`src/components/kanban/KanbanCard.tsx`**
+**1. Migracao SQL**
+- Adicionar coluna `observations` (tipo `text`, nullable) na tabela `projects`
 
-Adicionar classe condicional quando `p.complementary_sale === true`:
-- `border-l-4 border-l-emerald-500 bg-emerald-50/30 dark:bg-emerald-950/10`
-
-Quando o projeto for **Piloto E Venda Complementar** ao mesmo tempo, manter prioridade do Piloto (amber) para evitar conflito visual.
-
-### Resultado visual
+**2. `src/pages/ProjectDetail.tsx`**
+- Adicionar state `observations` para o campo
+- Carregar e salvar o campo na query/update existentes
+- Registrar alteracoes no historico (buildChanges)
+- Renderizar card "Observacoes" entre a Linha do Tempo e o grid de Dados Gerais:
 
 ```text
-Card normal:        fundo branco, sem borda lateral
-Card Piloto:        borda amber + fundo amber suave
-Card V. Compl.:     borda emerald + fundo emerald suave
-Card ambos:         borda amber (Piloto prevalece)
+┌─ Linha do Tempo ─────────────────────┐
+│  ① Contratação  ② D-zero  ③ Handover │
+└──────────────────────────────────────┘
+
+┌─ Observações ────────────────────────┐
+│  Texto livre do gerente sobre o      │
+│  andamento atual do projeto.         │
+│                                      │
+│  (em modo edicao: Textarea)          │
+│  (em modo leitura: texto exibido)    │
+└──────────────────────────────────────┘
+
+┌─ Dados Gerais ──┐ ┌─ Equipe ────────┐
 ```
 
-### Arquivo alterado
-- `src/components/kanban/KanbanCard.tsx` (1 linha de classes condicionais)
+- Em modo leitura: exibe o texto ou "Nenhuma observacao registrada"
+- Em modo edicao: Textarea com placeholder e limite de 2000 caracteres
+
+### Arquivos alterados
+- Nova migracao SQL (1 coluna)
+- `src/pages/ProjectDetail.tsx` (state + query + save + render)
 

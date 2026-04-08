@@ -77,11 +77,19 @@ interface ProjectRow {
   contractual_deadline_days: number | null;
   implementation_deadline_days: number | null;
   is_pilot: boolean;
+  complementary_sale: boolean;
+  complementary_fleet: number;
   executive: { full_name: string } | null;
   manager: { full_name: string } | null;
   project_products: { product: { name: string } | null }[];
   project_solutions: { solution: { name: string } | null }[];
 }
+
+const getProjectFleet = (p: ProjectRow): number => {
+  const base = p.fleet_size || 0;
+  const complement = p.complementary_sale ? (p.complementary_fleet || 0) : 0;
+  return base + complement;
+};
 
 function AnimatedNumber({ value, duration = 1200 }: { value: number; duration?: number }) {
   const [display, setDisplay] = useState(0);
@@ -257,7 +265,7 @@ export default function Dashboard() {
         .from("projects")
         .select(`
           id, company_name, city, state, contract_date, d_zero_date, handover_date,
-          status, fleet_size, contractual_deadline_days, implementation_deadline_days, is_pilot,
+          status, fleet_size, contractual_deadline_days, implementation_deadline_days, is_pilot, complementary_sale, complementary_fleet,
           executive:team_members!projects_executive_id_fkey(full_name),
           manager:team_members!projects_manager_id_fkey(full_name),
           project_products(product:products(name)),
@@ -365,12 +373,12 @@ export default function Dashboard() {
 
   const fleetTimelineData = useMemo(() => {
     const sorted = [...filteredProjects]
-      .filter(p => p.fleet_size && p.fleet_size > 0)
+      .filter(p => getProjectFleet(p) > 0)
       .sort((a, b) => a.contract_date.localeCompare(b.contract_date));
     const months: Record<string, number> = {};
     sorted.forEach(p => {
       const m = format(parseISO(p.contract_date), "MMM/yy");
-      months[m] = (months[m] || 0) + (p.fleet_size || 0);
+      months[m] = (months[m] || 0) + getProjectFleet(p);
     });
     let cumulative = 0;
     return Object.entries(months).map(([month, fleet]) => {
@@ -386,7 +394,7 @@ export default function Dashboard() {
     }));
     const names = [...solutionNames].sort();
     const sorted = [...filteredProjects]
-      .filter(p => p.fleet_size && p.fleet_size > 0)
+      .filter(p => getProjectFleet(p) > 0)
       .sort((a, b) => a.contract_date.localeCompare(b.contract_date));
     const months: Record<string, Record<string, number>> = {};
     sorted.forEach(p => {
@@ -394,7 +402,7 @@ export default function Dashboard() {
       if (!months[m]) months[m] = {};
       p.project_solutions?.forEach(ps => {
         if (ps.solution?.name) {
-          months[m][ps.solution.name] = (months[m][ps.solution.name] || 0) + (p.fleet_size || 0);
+          months[m][ps.solution.name] = (months[m][ps.solution.name] || 0) + getProjectFleet(p);
         }
       });
     });
@@ -424,15 +432,15 @@ export default function Dashboard() {
   }, [filteredProjects]);
 
   const totalProjects = filteredProjects.length;
-  const avgFleet = filteredProjects.filter(p => p.fleet_size).reduce((a, p) => a + (p.fleet_size || 0), 0) / (filteredProjects.filter(p => p.fleet_size).length || 1);
-  const totalFleet = filteredProjects.reduce((a, p) => a + (p.fleet_size || 0), 0);
+  const avgFleet = filteredProjects.filter(p => getProjectFleet(p) > 0).reduce((a, p) => a + getProjectFleet(p), 0) / (filteredProjects.filter(p => getProjectFleet(p) > 0).length || 1);
+  const totalFleet = filteredProjects.reduce((a, p) => a + getProjectFleet(p), 0);
   const totalStates = new Set(filteredProjects.map(p => p.state)).size;
 
   const fleetByStatus = useMemo(() => {
     const map: Record<ProjectStatus, number> = {
       comercial: 0, planejamento: 0, implantacao: 0, encerrado: 0, suspenso: 0,
     };
-    filteredProjects.forEach(p => { map[p.status] += (p.fleet_size || 0); });
+    filteredProjects.forEach(p => { map[p.status] += getProjectFleet(p); });
     return map;
   }, [filteredProjects]);
 
@@ -509,7 +517,7 @@ export default function Dashboard() {
                                 {p.manager?.full_name || <span className="text-muted-foreground italic">Sem gerente</span>}
                               </span>
                             </td>
-                            <td className="py-2.5 px-3 font-semibold tabular-nums" style={{ fontFamily: "'Rajdhani', sans-serif" }}>{p.fleet_size || "—"}</td>
+                            <td className="py-2.5 px-3 font-semibold tabular-nums" style={{ fontFamily: "'Rajdhani', sans-serif" }}>{getProjectFleet(p) || "—"}</td>
                             <td className="py-2.5 px-3">
                               <div className="flex flex-wrap gap-1">
                                 {p.project_solutions?.map((ps, j) => (
@@ -681,8 +689,8 @@ export default function Dashboard() {
 
       <ExpandableProjectTable sectionKey="total" title="Todos os Projetos" projectList={filteredProjects} />
       <ExpandableProjectTable sectionKey="estados-kpi" title="Projetos por Estado" projectList={filteredProjects} />
-      <ExpandableProjectTable sectionKey="frota-kpi" title="Projetos com Frota" projectList={filteredProjects.filter(p => p.fleet_size && p.fleet_size > 0)} />
-      <ExpandableProjectTable sectionKey="frota-total" title="Frota Total por Projeto" projectList={filteredProjects.filter(p => p.fleet_size && p.fleet_size > 0)} />
+      <ExpandableProjectTable sectionKey="frota-kpi" title="Projetos com Frota" projectList={filteredProjects.filter(p => getProjectFleet(p) > 0)} />
+      <ExpandableProjectTable sectionKey="frota-total" title="Frota Total por Projeto" projectList={filteredProjects.filter(p => getProjectFleet(p) > 0)} />
 
       {/* Frota por Status expandable */}
       <AnimatePresence>
@@ -736,7 +744,7 @@ export default function Dashboard() {
                 {/* Project list for selected fleet status */}
                 <AnimatePresence>
                   {selectedFleetStatus && (() => {
-                    const statusProjects = filteredProjects.filter(p => p.status === selectedFleetStatus && (p.fleet_size || 0) > 0);
+                    const statusProjects = filteredProjects.filter(p => p.status === selectedFleetStatus && getProjectFleet(p) > 0);
                     const statusIndex = Constants.public.Enums.project_status.indexOf(selectedFleetStatus);
                     const statusColor = STATUS_COLORS[statusIndex];
                     return (
@@ -787,7 +795,7 @@ export default function Dashboard() {
                                       <td className="py-2 px-3 font-medium text-foreground">{p.company_name}</td>
                                       <td className="py-2 px-3 text-muted-foreground">{p.city}/{p.state}</td>
                                       <td className="py-2 px-3 text-muted-foreground">{p.manager?.full_name || "—"}</td>
-                                      <td className="py-2 px-3 text-right font-semibold tabular-nums" style={{ fontFamily: "'Rajdhani', sans-serif", color: statusColor }}>{p.fleet_size || 0}</td>
+                                      <td className="py-2 px-3 text-right font-semibold tabular-nums" style={{ fontFamily: "'Rajdhani', sans-serif", color: statusColor }}>{getProjectFleet(p)}</td>
                                     </motion.tr>
                                   ))}
                                 </tbody>
@@ -892,7 +900,7 @@ export default function Dashboard() {
                                   {p.manager?.full_name || <span className="text-muted-foreground italic">Sem gerente</span>}
                                 </span>
                               </td>
-                              <td className="py-2.5 px-3 font-semibold tabular-nums" style={{ fontFamily: "'Rajdhani', sans-serif" }}>{p.fleet_size || "—"}</td>
+                              <td className="py-2.5 px-3 font-semibold tabular-nums" style={{ fontFamily: "'Rajdhani', sans-serif" }}>{getProjectFleet(p) || "—"}</td>
                               <td className="py-2.5 px-3 text-muted-foreground">{format(parseISO(p.contract_date), "dd/MM/yyyy")}</td>
                               <td className="py-2.5 px-3">
                                 <div className="flex flex-wrap gap-1">
@@ -1181,7 +1189,7 @@ export default function Dashboard() {
       {/* Expandable tables for charts */}
       <ExpandableProjectTable sectionKey="status-chart" title="Projetos por Status" projectList={filteredProjects} />
       <ExpandableProjectTable sectionKey="solucoes-chart" title="Projetos por Solução" projectList={filteredProjects} />
-      <ExpandableProjectTable sectionKey="frota-chart" title="Projetos com Frota" projectList={filteredProjects.filter(p => p.fleet_size && p.fleet_size > 0)} />
+      <ExpandableProjectTable sectionKey="frota-chart" title="Projetos com Frota" projectList={filteredProjects.filter(p => getProjectFleet(p) > 0)} />
       <ExpandableProjectTable sectionKey="solucao-timeline" title="Projetos por Solução" projectList={filteredProjects.filter(p => p.project_solutions && p.project_solutions.length > 0)} />
       <ExpandableProjectTable
         sectionKey="estado-chart"
@@ -1216,7 +1224,7 @@ export default function Dashboard() {
                     { l: "Handover", v: fmtDate(p.handover_date) },
                     { l: "Gerente", v: p.manager?.full_name || "—" },
                     { l: "Executivo", v: p.executive?.full_name || "—" },
-                    { l: "Frota", v: String(p.fleet_size || "—") },
+                    { l: "Frota", v: String(getProjectFleet(p) || "—") },
                     { l: "Piloto", v: p.is_pilot ? "Sim" : "Não" },
                   ].map((item, i) => (
                     <motion.div

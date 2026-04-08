@@ -384,7 +384,7 @@ export default function ProjectDetail() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <Button variant="ghost" onClick={() => navigate("/projetos/lista")} className="mb-4">
+      <Button variant="ghost" onClick={() => navigate(backPath)} className="mb-4">
         <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
       </Button>
 

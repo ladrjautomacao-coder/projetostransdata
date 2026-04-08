@@ -43,7 +43,7 @@ export default function KanbanCard({ project: p, index, onUpdateObservations }: 
         >
           <Card
             className={`cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow border-border/40 bg-card ${dragSnapshot.isDragging ? "shadow-lg ring-2 ring-primary/20" : ""} ${p.is_pilot ? "border-l-4 border-l-amber-500 bg-amber-50/30 dark:bg-amber-950/10" : p.complementary_sale ? "border-l-4 border-l-emerald-500 bg-emerald-50/30 dark:bg-emerald-950/10" : ""}`}
-            onClick={() => !dragSnapshot.isDragging && !open && navigate(`/projetos/${p.id}`)}
+            onClick={() => !dragSnapshot.isDragging && !open && navigate(`/projetos/${p.id}`, { state: { from: "/projetos/gestao" } })}
           >
             <CardContent className="p-3 space-y-2">
               <div className="flex items-start gap-2">

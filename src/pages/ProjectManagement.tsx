@@ -75,6 +75,7 @@ export interface ProjectRow {
   is_pilot: boolean;
   complementary_sale: boolean;
   complementary_fleet: number;
+  observations: string | null;
   executive: { full_name: string } | null;
   manager: { full_name: string } | null;
   project_solutions: { solution: { name: string } | null }[];

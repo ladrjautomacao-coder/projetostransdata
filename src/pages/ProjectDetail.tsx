@@ -66,6 +66,7 @@ export default function ProjectDetail() {
   const [installationClient, setInstallationClient] = useState<string>("0");
   const [complementarySale, setComplementarySale] = useState(false);
   const [complementaryFleet, setComplementaryFleet] = useState<string>("0");
+  const [observations, setObservations] = useState("");
 
   // Lookups
   const [executives, setExecutives] = useState<{ id: string; full_name: string }[]>([]);
@@ -113,6 +114,7 @@ export default function ProjectDetail() {
       setInstallationClient(data.installation_client?.toString() || "0");
       setComplementarySale(data.complementary_sale || false);
       setComplementaryFleet(data.complementary_fleet?.toString() || "0");
+      setObservations(data.observations || "");
     }
     setLoading(false);
   };
@@ -187,6 +189,8 @@ export default function ProjectDetail() {
     add("Venda Complementar", project.complementary_sale ? "Sim" : "Não", complementarySale ? "Sim" : "Não");
     if (complementarySale) add("Frota Complementar", project.complementary_fleet ?? 0, parseInt(complementaryFleet) || 0);
 
+    add("Observações", project.observations || "—", observations || "—");
+
     return changes;
   };
 
@@ -222,6 +226,7 @@ export default function ProjectDetail() {
         installation_client: parseInt(installationClient) || 0,
         complementary_sale: complementarySale,
         complementary_fleet: complementarySale ? (parseInt(complementaryFleet) || 0) : 0,
+        observations: observations || null,
       }).eq("id", id);
       if (error) throw error;
 
@@ -409,6 +414,24 @@ export default function ProjectDetail() {
               </div>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Observações */}
+      <Card className="mb-6">
+        <CardHeader><CardTitle className="text-lg">Observações</CardTitle></CardHeader>
+        <CardContent>
+          {editing ? (
+            <Textarea
+              value={observations}
+              onChange={e => setObservations(e.target.value)}
+              placeholder="Registre aqui o andamento atual do projeto..."
+              maxLength={2000}
+              className="min-h-[100px]"
+            />
+          ) : (
+            <p className="text-sm whitespace-pre-wrap">{project.observations ? project.observations : <span className="text-muted-foreground italic">Nenhuma observação registrada.</span>}</p>
+          )}
         </CardContent>
       </Card>
 

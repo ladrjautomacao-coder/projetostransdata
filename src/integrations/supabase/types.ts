@@ -255,6 +255,7 @@ export type Database = {
           installation_transmobile: number
           is_pilot: boolean
           manager_id: string | null
+          observations: string | null
           pilot_info: string | null
           project_type_id: string | null
           state: Database["public"]["Enums"]["brazilian_state"]
@@ -282,6 +283,7 @@ export type Database = {
           installation_transmobile?: number
           is_pilot?: boolean
           manager_id?: string | null
+          observations?: string | null
           pilot_info?: string | null
           project_type_id?: string | null
           state: Database["public"]["Enums"]["brazilian_state"]
@@ -309,6 +311,7 @@ export type Database = {
           installation_transmobile?: number
           is_pilot?: boolean
           manager_id?: string | null
+          observations?: string | null
           pilot_info?: string | null
           project_type_id?: string | null
           state?: Database["public"]["Enums"]["brazilian_state"]

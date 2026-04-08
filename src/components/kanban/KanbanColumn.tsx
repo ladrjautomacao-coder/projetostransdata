@@ -16,7 +16,7 @@ interface Props {
   onUpdateObservations: (projectId: string, text: string) => Promise<void>;
 }
 
-export default function KanbanColumn({ status, items, subPhases }: Props) {
+export default function KanbanColumn({ status, items, subPhases, onUpdateObservations }: Props) {
   const colors = statusColors[status];
 
   const groupedBySubPhase = useMemo(() => {

@@ -77,11 +77,19 @@ interface ProjectRow {
   contractual_deadline_days: number | null;
   implementation_deadline_days: number | null;
   is_pilot: boolean;
+  complementary_sale: boolean;
+  complementary_fleet: number;
   executive: { full_name: string } | null;
   manager: { full_name: string } | null;
   project_products: { product: { name: string } | null }[];
   project_solutions: { solution: { name: string } | null }[];
 }
+
+const getProjectFleet = (p: ProjectRow): number => {
+  const base = p.fleet_size || 0;
+  const complement = p.complementary_sale ? (p.complementary_fleet || 0) : 0;
+  return base + complement;
+};
 
 function AnimatedNumber({ value, duration = 1200 }: { value: number; duration?: number }) {
   const [display, setDisplay] = useState(0);

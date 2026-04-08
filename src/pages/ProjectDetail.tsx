@@ -417,9 +417,9 @@ export default function ProjectDetail() {
         </CardContent>
       </Card>
 
-      {/* Observações */}
+      {/* Acompanhamento do Projeto */}
       <Card className="mb-6">
-        <CardHeader><CardTitle className="text-lg">Observações</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-lg">Acompanhamento do Projeto</CardTitle></CardHeader>
         <CardContent>
           {editing ? (
             <Textarea

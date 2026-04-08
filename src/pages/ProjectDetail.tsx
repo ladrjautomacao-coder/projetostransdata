@@ -226,6 +226,7 @@ export default function ProjectDetail() {
         installation_client: parseInt(installationClient) || 0,
         complementary_sale: complementarySale,
         complementary_fleet: complementarySale ? (parseInt(complementaryFleet) || 0) : 0,
+        observations: observations || null,
       }).eq("id", id);
       if (error) throw error;
 

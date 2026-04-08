@@ -87,7 +87,7 @@ export default function KanbanColumn({ status, items, subPhases, onUpdateObserva
                       >
                         <div className="space-y-2">
                           {spItems.map((p, index) => (
-                            <KanbanCard key={p.id} project={p} index={index} />
+                            <KanbanCard key={p.id} project={p} index={index} onUpdateObservations={onUpdateObservations} />
                           ))}
                         </div>
                         {provided.placeholder}

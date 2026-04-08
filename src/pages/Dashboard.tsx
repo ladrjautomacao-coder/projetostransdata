@@ -265,7 +265,7 @@ export default function Dashboard() {
         .from("projects")
         .select(`
           id, company_name, city, state, contract_date, d_zero_date, handover_date,
-          status, fleet_size, contractual_deadline_days, implementation_deadline_days, is_pilot,
+          status, fleet_size, contractual_deadline_days, implementation_deadline_days, is_pilot, complementary_sale, complementary_fleet,
           executive:team_members!projects_executive_id_fkey(full_name),
           manager:team_members!projects_manager_id_fkey(full_name),
           project_products(product:products(name)),

@@ -114,6 +114,7 @@ export default function ProjectDetail() {
       setInstallationClient(data.installation_client?.toString() || "0");
       setComplementarySale(data.complementary_sale || false);
       setComplementaryFleet(data.complementary_fleet?.toString() || "0");
+      setObservations(data.observations || "");
     }
     setLoading(false);
   };

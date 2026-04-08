@@ -13,6 +13,7 @@ interface Props {
   status: ProjectStatus;
   items: ProjectRow[];
   subPhases: SubPhaseConfig[] | null;
+  onUpdateObservations: (projectId: string, text: string) => Promise<void>;
 }
 
 export default function KanbanColumn({ status, items, subPhases }: Props) {

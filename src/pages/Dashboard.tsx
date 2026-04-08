@@ -689,8 +689,8 @@ export default function Dashboard() {
 
       <ExpandableProjectTable sectionKey="total" title="Todos os Projetos" projectList={filteredProjects} />
       <ExpandableProjectTable sectionKey="estados-kpi" title="Projetos por Estado" projectList={filteredProjects} />
-      <ExpandableProjectTable sectionKey="frota-kpi" title="Projetos com Frota" projectList={filteredProjects.filter(p => p.fleet_size && p.fleet_size > 0)} />
-      <ExpandableProjectTable sectionKey="frota-total" title="Frota Total por Projeto" projectList={filteredProjects.filter(p => p.fleet_size && p.fleet_size > 0)} />
+      <ExpandableProjectTable sectionKey="frota-kpi" title="Projetos com Frota" projectList={filteredProjects.filter(p => getProjectFleet(p) > 0)} />
+      <ExpandableProjectTable sectionKey="frota-total" title="Frota Total por Projeto" projectList={filteredProjects.filter(p => getProjectFleet(p) > 0)} />
 
       {/* Frota por Status expandable */}
       <AnimatePresence>

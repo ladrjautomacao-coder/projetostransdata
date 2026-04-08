@@ -440,7 +440,7 @@ export default function Dashboard() {
     const map: Record<ProjectStatus, number> = {
       comercial: 0, planejamento: 0, implantacao: 0, encerrado: 0, suspenso: 0,
     };
-    filteredProjects.forEach(p => { map[p.status] += (p.fleet_size || 0); });
+    filteredProjects.forEach(p => { map[p.status] += getProjectFleet(p); });
     return map;
   }, [filteredProjects]);
 

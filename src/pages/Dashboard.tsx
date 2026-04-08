@@ -1224,7 +1224,7 @@ export default function Dashboard() {
                     { l: "Handover", v: fmtDate(p.handover_date) },
                     { l: "Gerente", v: p.manager?.full_name || "—" },
                     { l: "Executivo", v: p.executive?.full_name || "—" },
-                    { l: "Frota", v: String(p.fleet_size || "—") },
+                    { l: "Frota", v: String(getProjectFleet(p) || "—") },
                     { l: "Piloto", v: p.is_pilot ? "Sim" : "Não" },
                   ].map((item, i) => (
                     <motion.div

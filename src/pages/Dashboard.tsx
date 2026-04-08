@@ -744,7 +744,7 @@ export default function Dashboard() {
                 {/* Project list for selected fleet status */}
                 <AnimatePresence>
                   {selectedFleetStatus && (() => {
-                    const statusProjects = filteredProjects.filter(p => p.status === selectedFleetStatus && (p.fleet_size || 0) > 0);
+                    const statusProjects = filteredProjects.filter(p => p.status === selectedFleetStatus && getProjectFleet(p) > 0);
                     const statusIndex = Constants.public.Enums.project_status.indexOf(selectedFleetStatus);
                     const statusColor = STATUS_COLORS[statusIndex];
                     return (

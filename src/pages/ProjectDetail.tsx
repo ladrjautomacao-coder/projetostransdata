@@ -430,7 +430,7 @@ export default function ProjectDetail() {
               className="min-h-[100px]"
             />
           ) : (
-            <p className="text-sm whitespace-pre-wrap">{project.observations || <span className="text-muted-foreground italic">Nenhuma observação registrada.</span>}</p>
+            <p className="text-sm whitespace-pre-wrap">{project.observations ? project.observations : <span className="text-muted-foreground italic">Nenhuma observação registrada.</span>}</p>
           )}
         </CardContent>
       </Card>

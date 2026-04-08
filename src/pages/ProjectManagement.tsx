@@ -167,6 +167,21 @@ export default function ProjectManagement() {
     }
   }, [projects]);
 
+  const onUpdateObservations = useCallback(async (projectId: string, newText: string) => {
+    const project = projects.find(p => p.id === projectId);
+    const timestamp = format(new Date(), "dd/MM/yyyy HH:mm");
+    const entry = `[${timestamp}] ${newText}`;
+    const updated = project?.observations ? `${entry}\n${project.observations}` : entry;
+
+    const { error } = await supabase.from("projects").update({ observations: updated }).eq("id", projectId);
+    if (error) {
+      toast.error("Erro ao salvar acompanhamento");
+    } else {
+      toast.success("Acompanhamento registrado");
+      setProjects(prev => prev.map(p => p.id === projectId ? { ...p, observations: updated } : p));
+    }
+  }, [projects]);
+
   return (
     <div className="flex flex-col h-[calc(100vh-7rem)]">
       {/* Header */}

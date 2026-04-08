@@ -112,7 +112,7 @@ export default function KanbanColumn({ status, items, subPhases, onUpdateObserva
                     <p className="text-xs text-muted-foreground text-center py-8">Nenhum projeto</p>
                   ) : (
                     items.map((p, index) => (
-                      <KanbanCard key={p.id} project={p} index={index} />
+                      <KanbanCard key={p.id} project={p} index={index} onUpdateObservations={onUpdateObservations} />
                     ))
                   )}
                 </div>

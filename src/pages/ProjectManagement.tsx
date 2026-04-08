@@ -227,6 +227,7 @@ export default function ProjectManagement() {
                   status={status}
                   items={grouped[status]}
                   subPhases={subPhasesByStatus[status] || null}
+                  onUpdateObservations={onUpdateObservations}
                 />
               ))
             )}

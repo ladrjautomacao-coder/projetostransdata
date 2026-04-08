@@ -417,6 +417,24 @@ export default function ProjectDetail() {
         </CardContent>
       </Card>
 
+      {/* Observações */}
+      <Card className="mb-6">
+        <CardHeader><CardTitle className="text-lg">Observações</CardTitle></CardHeader>
+        <CardContent>
+          {editing ? (
+            <Textarea
+              value={observations}
+              onChange={e => setObservations(e.target.value)}
+              placeholder="Registre aqui o andamento atual do projeto..."
+              maxLength={2000}
+              className="min-h-[100px]"
+            />
+          ) : (
+            <p className="text-sm whitespace-pre-wrap">{project.observations || <span className="text-muted-foreground italic">Nenhuma observação registrada.</span>}</p>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Details Grid */}
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         {/* Dados Gerais */}

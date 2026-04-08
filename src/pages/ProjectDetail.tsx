@@ -189,6 +189,8 @@ export default function ProjectDetail() {
     add("Venda Complementar", project.complementary_sale ? "Sim" : "Não", complementarySale ? "Sim" : "Não");
     if (complementarySale) add("Frota Complementar", project.complementary_fleet ?? 0, parseInt(complementaryFleet) || 0);
 
+    add("Observações", project.observations || "—", observations || "—");
+
     return changes;
   };
 

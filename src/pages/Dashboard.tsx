@@ -432,8 +432,8 @@ export default function Dashboard() {
   }, [filteredProjects]);
 
   const totalProjects = filteredProjects.length;
-  const avgFleet = filteredProjects.filter(p => p.fleet_size).reduce((a, p) => a + (p.fleet_size || 0), 0) / (filteredProjects.filter(p => p.fleet_size).length || 1);
-  const totalFleet = filteredProjects.reduce((a, p) => a + (p.fleet_size || 0), 0);
+  const avgFleet = filteredProjects.filter(p => getProjectFleet(p) > 0).reduce((a, p) => a + getProjectFleet(p), 0) / (filteredProjects.filter(p => getProjectFleet(p) > 0).length || 1);
+  const totalFleet = filteredProjects.reduce((a, p) => a + getProjectFleet(p), 0);
   const totalStates = new Set(filteredProjects.map(p => p.state)).size;
 
   const fleetByStatus = useMemo(() => {

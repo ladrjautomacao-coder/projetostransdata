@@ -66,6 +66,7 @@ export default function ProjectDetail() {
   const [installationClient, setInstallationClient] = useState<string>("0");
   const [complementarySale, setComplementarySale] = useState(false);
   const [complementaryFleet, setComplementaryFleet] = useState<string>("0");
+  const [observations, setObservations] = useState("");
 
   // Lookups
   const [executives, setExecutives] = useState<{ id: string; full_name: string }[]>([]);

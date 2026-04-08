@@ -189,7 +189,7 @@ export default function ProjectDetail() {
     add("Venda Complementar", project.complementary_sale ? "Sim" : "Não", complementarySale ? "Sim" : "Não");
     if (complementarySale) add("Frota Complementar", project.complementary_fleet ?? 0, parseInt(complementaryFleet) || 0);
 
-    add("Observações", project.observations || "—", observations || "—");
+    add("Acompanhamento do Projeto", project.observations || "—", observations || "—");
 
     return changes;
   };
@@ -417,9 +417,9 @@ export default function ProjectDetail() {
         </CardContent>
       </Card>
 
-      {/* Observações */}
+      {/* Acompanhamento do Projeto */}
       <Card className="mb-6">
-        <CardHeader><CardTitle className="text-lg">Observações</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-lg">Acompanhamento do Projeto</CardTitle></CardHeader>
         <CardContent>
           {editing ? (
             <Textarea

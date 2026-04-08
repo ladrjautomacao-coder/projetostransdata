@@ -373,12 +373,12 @@ export default function Dashboard() {
 
   const fleetTimelineData = useMemo(() => {
     const sorted = [...filteredProjects]
-      .filter(p => p.fleet_size && p.fleet_size > 0)
+      .filter(p => getProjectFleet(p) > 0)
       .sort((a, b) => a.contract_date.localeCompare(b.contract_date));
     const months: Record<string, number> = {};
     sorted.forEach(p => {
       const m = format(parseISO(p.contract_date), "MMM/yy");
-      months[m] = (months[m] || 0) + (p.fleet_size || 0);
+      months[m] = (months[m] || 0) + getProjectFleet(p);
     });
     let cumulative = 0;
     return Object.entries(months).map(([month, fleet]) => {

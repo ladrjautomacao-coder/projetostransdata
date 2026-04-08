@@ -517,7 +517,7 @@ export default function Dashboard() {
                                 {p.manager?.full_name || <span className="text-muted-foreground italic">Sem gerente</span>}
                               </span>
                             </td>
-                            <td className="py-2.5 px-3 font-semibold tabular-nums" style={{ fontFamily: "'Rajdhani', sans-serif" }}>{p.fleet_size || "—"}</td>
+                            <td className="py-2.5 px-3 font-semibold tabular-nums" style={{ fontFamily: "'Rajdhani', sans-serif" }}>{getProjectFleet(p) || "—"}</td>
                             <td className="py-2.5 px-3">
                               <div className="flex flex-wrap gap-1">
                                 {p.project_solutions?.map((ps, j) => (

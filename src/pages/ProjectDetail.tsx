@@ -204,7 +204,6 @@ export default function ProjectDetail() {
 
     // Integrations changes
     const currentIntNames = selectedIntegrations.map(iid => allIntegrations.find(i => i.id === iid)?.name).filter(Boolean).sort().join(", ") || "—";
-    const { data: oldPiData } = { data: null as any }; // We'll compare via loaded state
     const oldIntIds = project._integrationIds || [];
     const oldIntNames = oldIntIds.map((iid: string) => allIntegrations.find(i => i.id === iid)?.name).filter(Boolean).sort().join(", ") || "—";
     add("Integrações", oldIntNames, currentIntNames);

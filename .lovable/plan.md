@@ -1,21 +1,17 @@
 
 
-## Plano: Badge de Integrações nos cards do Kanban
+## Plano: Reposicionar badges de integrações no card do Kanban
 
-### O que sera feito
+### Problema
+Os badges de integrações estão aparecendo numa seção separada abaixo das soluções. O usuário quer que fiquem junto aos badges "Piloto" e "V. Compl.", no canto superior direito do card — empilhando abaixo deles se já existirem.
 
-Adicionar badges de integrações nos cards do Kanban, seguindo o mesmo padrão visual dos badges de "Piloto" e "V. Compl." já existentes. Cada integração vinculada ao projeto será exibida como um badge no card.
+### Alteração
 
-### Alterações
+**`src/components/kanban/KanbanCard.tsx`**
+- Remover o bloco separado de `project_integrations` que está no final do card
+- Mover os badges de integrações para dentro da área superior do card (junto com "Piloto" e "V. Compl."), reorganizando o layout do header para permitir empilhamento vertical dos badges quando há múltiplos
+- Usar `flex-col` nos badges do canto direito para que fiquem empilhados verticalmente (Piloto em cima, V. Compl. abaixo, integrações por último)
 
-**1. `src/pages/ProjectManagement.tsx`**
-- Adicionar `project_integrations(integration:integrations(name))` na query de projetos
-- Atualizar o tipo `ProjectRow` para incluir `project_integrations`
-
-**2. `src/components/kanban/KanbanCard.tsx`**
-- Renderizar badges das integrações na área de badges existente (junto com soluções), usando um estilo visual distinto (ex: azul/indigo) para diferenciar de soluções
-
-### Arquivos alterados
-- `src/pages/ProjectManagement.tsx` (query + tipo)
-- `src/components/kanban/KanbanCard.tsx` (render dos badges)
+### Arquivo alterado
+- `src/components/kanban/KanbanCard.tsx`
 

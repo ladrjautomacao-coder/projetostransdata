@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      integrations: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           active: boolean
@@ -140,6 +161,39 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "project_history_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_integrations: {
+        Row: {
+          id: string
+          integration_id: string
+          project_id: string
+        }
+        Insert: {
+          id?: string
+          integration_id: string
+          project_id: string
+        }
+        Update: {
+          id?: string
+          integration_id?: string
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_integrations_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_integrations_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"

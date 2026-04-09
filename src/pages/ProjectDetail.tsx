@@ -76,6 +76,8 @@ export default function ProjectDetail() {
   const [allProducts, setAllProducts] = useState<{ id: string; name: string }[]>([]);
   const [projectTypes, setProjectTypes] = useState<{ id: string; name: string }[]>([]);
   const [allSolutions, setAllSolutions] = useState<{ id: string; name: string }[]>([]);
+  const [allIntegrations, setAllIntegrations] = useState<{ id: string; name: string }[]>([]);
+  const [selectedIntegrations, setSelectedIntegrations] = useState<string[]>([]);
 
   const implEndDate = useMemo(() => {
     if (contractDate && implDeadlineDays && parseInt(implDeadlineDays) > 0) return addDays(contractDate, parseInt(implDeadlineDays));
@@ -117,6 +119,12 @@ export default function ProjectDetail() {
       setComplementarySale(data.complementary_sale || false);
       setComplementaryFleet(data.complementary_fleet?.toString() || "0");
       setObservations(data.observations || "");
+
+      // Load project integrations
+      const { data: piData } = await supabase.from("project_integrations").select("integration_id").eq("project_id", id);
+      const intIds = piData?.map((pi: any) => pi.integration_id) || [];
+      setSelectedIntegrations(intIds);
+      setProject((prev: any) => ({ ...prev, _integrationIds: intIds }));
     }
     setLoading(false);
   };
@@ -146,6 +154,7 @@ export default function ProjectDetail() {
     supabase.from("products").select("id, name").eq("active", true).then(({ data }) => setAllProducts(data || []));
     supabase.from("project_types").select("id, name").eq("active", true).then(({ data }) => setProjectTypes(data || []));
     supabase.from("solutions").select("id, name").eq("active", true).then(({ data }) => setAllSolutions(data || []));
+    supabase.from("integrations").select("id, name").eq("active", true).then(({ data }) => setAllIntegrations(data || []));
   }, [id]);
 
   const buildChanges = () => {
@@ -193,6 +202,12 @@ export default function ProjectDetail() {
 
     add("Acompanhamento do Projeto", project.observations || "—", observations || "—");
 
+    // Integrations changes
+    const currentIntNames = selectedIntegrations.map(iid => allIntegrations.find(i => i.id === iid)?.name).filter(Boolean).sort().join(", ") || "—";
+    const oldIntIds = project._integrationIds || [];
+    const oldIntNames = oldIntIds.map((iid: string) => allIntegrations.find(i => i.id === iid)?.name).filter(Boolean).sort().join(", ") || "—";
+    add("Integrações", oldIntNames, currentIntNames);
+
     return changes;
   };
 
@@ -236,6 +251,12 @@ export default function ProjectDetail() {
       await supabase.from("project_solutions").delete().eq("project_id", id);
       if (selectedSolutions.length > 0) {
         await supabase.from("project_solutions").insert(selectedSolutions.map(sid => ({ project_id: id, solution_id: sid })));
+      }
+
+      // Update integrations
+      await supabase.from("project_integrations").delete().eq("project_id", id);
+      if (selectedIntegrations.length > 0) {
+        await supabase.from("project_integrations").insert(selectedIntegrations.map(iid => ({ project_id: id, integration_id: iid })));
       }
 
       if (changes.length > 0) {
@@ -525,6 +546,16 @@ export default function ProjectDetail() {
                     </div>
                   ))}
                 </div>
+                <Separator />
+                <Label className="text-xs text-muted-foreground">Integrações</Label>
+                <div className="grid gap-1">
+                  {allIntegrations.map(ig => (
+                    <div key={ig.id} className="flex items-center gap-2">
+                      <Checkbox checked={selectedIntegrations.includes(ig.id)} onCheckedChange={c => setSelectedIntegrations(prev => c ? [...prev, ig.id] : prev.filter(x => x !== ig.id))} />
+                      <span className="text-sm">{ig.name}</span>
+                    </div>
+                  ))}
+                </div>
               </>
             ) : (
               <>
@@ -539,7 +570,18 @@ export default function ProjectDetail() {
                       : <span className="text-sm text-muted-foreground">Nenhuma</span>}
                   </div>
                 </div>
-              
+                <Separator />
+                <div>
+                  <span className="text-xs text-muted-foreground">Integrações</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {selectedIntegrations.length > 0
+                      ? selectedIntegrations.map(iid => {
+                          const name = allIntegrations.find(i => i.id === iid)?.name;
+                          return name ? <Badge key={iid} variant="outline">{name}</Badge> : null;
+                        })
+                      : <span className="text-sm text-muted-foreground">Nenhuma</span>}
+                  </div>
+                </div>
               </>
             )}
           </CardContent>

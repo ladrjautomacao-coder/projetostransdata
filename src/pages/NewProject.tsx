@@ -52,6 +52,7 @@ export default function NewProject() {
   // Novos campos
   const [projectTypeId, setProjectTypeId] = useState("");
   const [selectedSolutions, setSelectedSolutions] = useState<string[]>([]);
+  const [selectedIntegrations, setSelectedIntegrations] = useState<string[]>([]);
   const [fleetSize, setFleetSize] = useState<string>("");
   const [implDeadlineDays, setImplDeadlineDays] = useState<string>("");
   const [contractualDeadlineDays, setContractualDeadlineDays] = useState<string>("");
@@ -83,6 +84,7 @@ export default function NewProject() {
   const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
   const [projectTypes, setProjectTypes] = useState<{ id: string; name: string }[]>([]);
   const [solutions, setSolutions] = useState<{ id: string; name: string }[]>([]);
+  const [integrations, setIntegrations] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
     supabase.from("team_members").select("id, full_name").eq("role", "executivo_vendas").eq("active", true).then(({ data }) => setExecutives(data || []));
@@ -90,6 +92,7 @@ export default function NewProject() {
     supabase.from("products").select("id, name").eq("active", true).then(({ data }) => setProducts(data || []));
     supabase.from("project_types").select("id, name").eq("active", true).then(({ data }) => setProjectTypes(data || []));
     supabase.from("solutions").select("id, name").eq("active", true).then(({ data }) => setSolutions(data || []));
+    supabase.from("integrations").select("id, name").eq("active", true).then(({ data }) => setIntegrations(data || []));
   }, []);
 
   // Datas calculadas
@@ -178,6 +181,11 @@ export default function NewProject() {
       // Soluções
       if (selectedSolutions.length > 0) {
         await supabase.from("project_solutions").insert(selectedSolutions.map(sid => ({ project_id: project.id, solution_id: sid })));
+      }
+
+      // Integrações
+      if (selectedIntegrations.length > 0) {
+        await supabase.from("project_integrations").insert(selectedIntegrations.map(iid => ({ project_id: project.id, integration_id: iid })));
       }
 
       // Histórico
@@ -333,6 +341,33 @@ export default function NewProject() {
                 </div>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* === SEÇÃO: INTEGRAÇÕES === */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Integrações</CardTitle>
+            <CardDescription>Integrações contratadas para o projeto</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {integrations.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhuma integração cadastrada.</p>
+            ) : (
+              <div className="grid gap-2 sm:grid-cols-3">
+                {integrations.map(ig => (
+                  <div key={ig.id} className="flex items-center gap-2">
+                    <Checkbox
+                      checked={selectedIntegrations.includes(ig.id)}
+                      onCheckedChange={checked => {
+                        setSelectedIntegrations(prev => checked ? [...prev, ig.id] : prev.filter(x => x !== ig.id));
+                      }}
+                    />
+                    <span className="text-sm">{ig.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 

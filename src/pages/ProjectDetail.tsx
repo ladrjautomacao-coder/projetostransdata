@@ -200,6 +200,13 @@ export default function ProjectDetail() {
 
     add("Acompanhamento do Projeto", project.observations || "—", observations || "—");
 
+    // Integrations changes
+    const currentIntNames = selectedIntegrations.map(iid => allIntegrations.find(i => i.id === iid)?.name).filter(Boolean).sort().join(", ") || "—";
+    const { data: oldPiData } = { data: null as any }; // We'll compare via loaded state
+    const oldIntIds = project._integrationIds || [];
+    const oldIntNames = oldIntIds.map((iid: string) => allIntegrations.find(i => i.id === iid)?.name).filter(Boolean).sort().join(", ") || "—";
+    add("Integrações", oldIntNames, currentIntNames);
+
     return changes;
   };
 
@@ -243,6 +250,12 @@ export default function ProjectDetail() {
       await supabase.from("project_solutions").delete().eq("project_id", id);
       if (selectedSolutions.length > 0) {
         await supabase.from("project_solutions").insert(selectedSolutions.map(sid => ({ project_id: id, solution_id: sid })));
+      }
+
+      // Update integrations
+      await supabase.from("project_integrations").delete().eq("project_id", id);
+      if (selectedIntegrations.length > 0) {
+        await supabase.from("project_integrations").insert(selectedIntegrations.map(iid => ({ project_id: id, integration_id: iid })));
       }
 
       if (changes.length > 0) {

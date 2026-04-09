@@ -76,6 +76,8 @@ export default function ProjectDetail() {
   const [allProducts, setAllProducts] = useState<{ id: string; name: string }[]>([]);
   const [projectTypes, setProjectTypes] = useState<{ id: string; name: string }[]>([]);
   const [allSolutions, setAllSolutions] = useState<{ id: string; name: string }[]>([]);
+  const [allIntegrations, setAllIntegrations] = useState<{ id: string; name: string }[]>([]);
+  const [selectedIntegrations, setSelectedIntegrations] = useState<string[]>([]);
 
   const implEndDate = useMemo(() => {
     if (contractDate && implDeadlineDays && parseInt(implDeadlineDays) > 0) return addDays(contractDate, parseInt(implDeadlineDays));
@@ -117,6 +119,10 @@ export default function ProjectDetail() {
       setComplementarySale(data.complementary_sale || false);
       setComplementaryFleet(data.complementary_fleet?.toString() || "0");
       setObservations(data.observations || "");
+
+      // Load project integrations
+      const { data: piData } = await supabase.from("project_integrations").select("integration_id").eq("project_id", id);
+      setSelectedIntegrations(piData?.map((pi: any) => pi.integration_id) || []);
     }
     setLoading(false);
   };
@@ -146,6 +152,7 @@ export default function ProjectDetail() {
     supabase.from("products").select("id, name").eq("active", true).then(({ data }) => setAllProducts(data || []));
     supabase.from("project_types").select("id, name").eq("active", true).then(({ data }) => setProjectTypes(data || []));
     supabase.from("solutions").select("id, name").eq("active", true).then(({ data }) => setAllSolutions(data || []));
+    supabase.from("integrations").select("id, name").eq("active", true).then(({ data }) => setAllIntegrations(data || []));
   }, [id]);
 
   const buildChanges = () => {

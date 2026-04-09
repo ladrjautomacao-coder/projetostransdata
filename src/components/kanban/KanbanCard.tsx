@@ -114,6 +114,13 @@ export default function KanbanCard({ project: p, index, onUpdateObservations }: 
                   ))}
                 </div>
               )}
+              {p.project_integrations?.length > 0 && (
+                <div className="flex flex-wrap gap-1 pt-1">
+                  {p.project_integrations.map((pi, i) => (
+                    <Badge key={i} className="bg-indigo-100 text-indigo-800 hover:bg-indigo-100 border-indigo-200 text-[10px] h-4 px-1.5">{pi.integration?.name}</Badge>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

@@ -62,6 +62,63 @@ export default function KanbanCard({ project: p, index, onUpdateObservations }: 
                     <Badge key={i} className="bg-indigo-100 text-indigo-800 hover:bg-indigo-100 border-indigo-200 text-[10px] h-4 px-1.5">{pi.integration?.name}</Badge>
                   ))}
                 </div>
+                <Popover open={open} onOpenChange={setOpen}>
+                  <PopoverTrigger asChild>
+                    <button
+                      className="p-0.5 rounded hover:bg-muted shrink-0"
+                      onClick={e => { e.stopPropagation(); }}
+                    >
+                      <Pencil className="h-3 w-3 text-muted-foreground" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-72"
+                    side="right"
+                    align="start"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold">Acompanhamento do Projeto</p>
+                      <Textarea
+                        value={note}
+                        onChange={e => setNote(e.target.value)}
+                        placeholder="Registre o andamento atual..."
+                        maxLength={500}
+                        rows={3}
+                        className="text-sm"
+                      />
+                      <div className="flex justify-end">
+                        <Button size="sm" onClick={handleSave} disabled={saving || !note.trim()}>
+                          {saving ? "Salvando..." : "Salvar"}
+                        </Button>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <MapPin className="h-3 w-3" />
+                {p.city}/{p.state}
+              </div>
+              {p.manager?.full_name && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Users className="h-3 w-3" />
+                  {p.manager.full_name}
+                </div>
+              )}
+              {p.d_zero_date && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Calendar className="h-3 w-3" />
+                  D-zero: {fmtDate(p.d_zero_date)}
+                </div>
+              )}
+              {p.project_solutions?.length > 0 && (
+                <div className="flex flex-wrap gap-1 pt-1">
+                  {p.project_solutions.map((ps, i) => (
+                    <Badge key={i} variant="secondary" className="text-[10px] h-4 px-1.5">{ps.solution?.name}</Badge>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

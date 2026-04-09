@@ -1,38 +1,21 @@
 
 
-## Plano: Campo "Integrações" no cadastro e detalhe do projeto
+## Plano: Badge de Integrações nos cards do Kanban
 
 ### O que sera feito
 
-Adicionar uma nova seção "Integrações" logo abaixo de "Soluções / Escopo" no formulário de cadastro e na tela de detalhe do projeto. O campo terá checkboxes com as opções fixas:
-
-- CFTV - Plenatech
-- Bilhetagem - TRANSDATA
-- Monitoramento - Bus2
-
-As integrações selecionadas serão salvas no banco usando o mesmo padrão de `project_solutions` (tabela de junção).
+Adicionar badges de integrações nos cards do Kanban, seguindo o mesmo padrão visual dos badges de "Piloto" e "V. Compl." já existentes. Cada integração vinculada ao projeto será exibida como um badge no card.
 
 ### Alterações
 
-**1. Migração SQL**
-- Criar tabela `integrations` (id, name, active, created_at) e inserir os 3 registros
-- Criar tabela `project_integrations` (id, project_id, integration_id) com FK para projects e integrations
-- Habilitar RLS em ambas as tabelas com políticas para authenticated
+**1. `src/pages/ProjectManagement.tsx`**
+- Adicionar `project_integrations(integration:integrations(name))` na query de projetos
+- Atualizar o tipo `ProjectRow` para incluir `project_integrations`
 
-**2. `src/pages/NewProject.tsx`**
-- Carregar integrações do banco no useEffect
-- Adicionar state `selectedIntegrations`
-- Renderizar seção "Integrações" com checkboxes logo abaixo do card "Soluções / Escopo"
-- Salvar na tabela `project_integrations` ao submeter
-
-**3. `src/pages/ProjectDetail.tsx`**
-- Carregar integrações do projeto (project_integrations + integrations)
-- Exibir na seção de soluções em modo leitura
-- Permitir edição com checkboxes no modo edição
-- Registrar alterações no histórico
+**2. `src/components/kanban/KanbanCard.tsx`**
+- Renderizar badges das integrações na área de badges existente (junto com soluções), usando um estilo visual distinto (ex: azul/indigo) para diferenciar de soluções
 
 ### Arquivos alterados
-- Nova migração SQL (2 tabelas + seed + RLS)
-- `src/pages/NewProject.tsx`
-- `src/pages/ProjectDetail.tsx`
+- `src/pages/ProjectManagement.tsx` (query + tipo)
+- `src/components/kanban/KanbanCard.tsx` (render dos badges)
 

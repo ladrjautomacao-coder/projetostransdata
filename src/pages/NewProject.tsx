@@ -83,6 +83,7 @@ export default function NewProject() {
   const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
   const [projectTypes, setProjectTypes] = useState<{ id: string; name: string }[]>([]);
   const [solutions, setSolutions] = useState<{ id: string; name: string }[]>([]);
+  const [integrations, setIntegrations] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
     supabase.from("team_members").select("id, full_name").eq("role", "executivo_vendas").eq("active", true).then(({ data }) => setExecutives(data || []));
@@ -90,6 +91,7 @@ export default function NewProject() {
     supabase.from("products").select("id, name").eq("active", true).then(({ data }) => setProducts(data || []));
     supabase.from("project_types").select("id, name").eq("active", true).then(({ data }) => setProjectTypes(data || []));
     supabase.from("solutions").select("id, name").eq("active", true).then(({ data }) => setSolutions(data || []));
+    supabase.from("integrations").select("id, name").eq("active", true).then(({ data }) => setIntegrations(data || []));
   }, []);
 
   // Datas calculadas
@@ -178,6 +180,11 @@ export default function NewProject() {
       // Soluções
       if (selectedSolutions.length > 0) {
         await supabase.from("project_solutions").insert(selectedSolutions.map(sid => ({ project_id: project.id, solution_id: sid })));
+      }
+
+      // Integrações
+      if (selectedIntegrations.length > 0) {
+        await supabase.from("project_integrations").insert(selectedIntegrations.map(iid => ({ project_id: project.id, integration_id: iid })));
       }
 
       // Histórico

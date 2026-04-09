@@ -344,6 +344,33 @@ export default function NewProject() {
           </CardContent>
         </Card>
 
+        {/* === SEÇÃO: INTEGRAÇÕES === */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Integrações</CardTitle>
+            <CardDescription>Integrações contratadas para o projeto</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {integrations.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhuma integração cadastrada.</p>
+            ) : (
+              <div className="grid gap-2 sm:grid-cols-3">
+                {integrations.map(ig => (
+                  <div key={ig.id} className="flex items-center gap-2">
+                    <Checkbox
+                      checked={selectedIntegrations.includes(ig.id)}
+                      onCheckedChange={checked => {
+                        setSelectedIntegrations(prev => checked ? [...prev, ig.id] : prev.filter(x => x !== ig.id));
+                      }}
+                    />
+                    <span className="text-sm">{ig.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* === SEÇÃO: PRAZOS === */}
         <Card>
           <CardHeader>

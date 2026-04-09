@@ -49,14 +49,19 @@ export default function KanbanCard({ project: p, index, onUpdateObservations }: 
               <div className="flex items-start gap-2">
                 <Building2 className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
                 <span className="text-sm font-semibold leading-tight flex-1">{p.company_name}</span>
-                {p.is_pilot && (
-                  <Badge className="bg-amber-500 text-white hover:bg-amber-600 text-[10px] h-4 px-1.5 shrink-0">Piloto</Badge>
-                )}
-                {p.complementary_sale && (
-                  <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-emerald-200 text-[10px] h-4 px-1.5 shrink-0">
-                    V. Compl.{p.complementary_fleet > 0 ? ` (${p.complementary_fleet})` : ""}
-                  </Badge>
-                )}
+                <div className="flex flex-col gap-1 items-end shrink-0">
+                  {p.is_pilot && (
+                    <Badge className="bg-amber-500 text-white hover:bg-amber-600 text-[10px] h-4 px-1.5">Piloto</Badge>
+                  )}
+                  {p.complementary_sale && (
+                    <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-emerald-200 text-[10px] h-4 px-1.5">
+                      V. Compl.{p.complementary_fleet > 0 ? ` (${p.complementary_fleet})` : ""}
+                    </Badge>
+                  )}
+                  {p.project_integrations?.map((pi, i) => (
+                    <Badge key={i} className="bg-indigo-100 text-indigo-800 hover:bg-indigo-100 border-indigo-200 text-[10px] h-4 px-1.5">{pi.integration?.name}</Badge>
+                  ))}
+                </div>
                 <Popover open={open} onOpenChange={setOpen}>
                   <PopoverTrigger asChild>
                     <button
@@ -111,13 +116,6 @@ export default function KanbanCard({ project: p, index, onUpdateObservations }: 
                 <div className="flex flex-wrap gap-1 pt-1">
                   {p.project_solutions.map((ps, i) => (
                     <Badge key={i} variant="secondary" className="text-[10px] h-4 px-1.5">{ps.solution?.name}</Badge>
-                  ))}
-                </div>
-              )}
-              {p.project_integrations?.length > 0 && (
-                <div className="flex flex-wrap gap-1 pt-1">
-                  {p.project_integrations.map((pi, i) => (
-                    <Badge key={i} className="bg-indigo-100 text-indigo-800 hover:bg-indigo-100 border-indigo-200 text-[10px] h-4 px-1.5">{pi.integration?.name}</Badge>
                   ))}
                 </div>
               )}

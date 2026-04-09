@@ -547,6 +547,16 @@ export default function ProjectDetail() {
                     </div>
                   ))}
                 </div>
+                <Separator />
+                <Label className="text-xs text-muted-foreground">Integrações</Label>
+                <div className="grid gap-1">
+                  {allIntegrations.map(ig => (
+                    <div key={ig.id} className="flex items-center gap-2">
+                      <Checkbox checked={selectedIntegrations.includes(ig.id)} onCheckedChange={c => setSelectedIntegrations(prev => c ? [...prev, ig.id] : prev.filter(x => x !== ig.id))} />
+                      <span className="text-sm">{ig.name}</span>
+                    </div>
+                  ))}
+                </div>
               </>
             ) : (
               <>
@@ -561,7 +571,18 @@ export default function ProjectDetail() {
                       : <span className="text-sm text-muted-foreground">Nenhuma</span>}
                   </div>
                 </div>
-              
+                <Separator />
+                <div>
+                  <span className="text-xs text-muted-foreground">Integrações</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {selectedIntegrations.length > 0
+                      ? selectedIntegrations.map(iid => {
+                          const name = allIntegrations.find(i => i.id === iid)?.name;
+                          return name ? <Badge key={iid} variant="outline">{name}</Badge> : null;
+                        })
+                      : <span className="text-sm text-muted-foreground">Nenhuma</span>}
+                  </div>
+                </div>
               </>
             )}
           </CardContent>

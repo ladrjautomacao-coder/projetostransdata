@@ -122,7 +122,9 @@ export default function ProjectDetail() {
 
       // Load project integrations
       const { data: piData } = await supabase.from("project_integrations").select("integration_id").eq("project_id", id);
-      setSelectedIntegrations(piData?.map((pi: any) => pi.integration_id) || []);
+      const intIds = piData?.map((pi: any) => pi.integration_id) || [];
+      setSelectedIntegrations(intIds);
+      setProject((prev: any) => ({ ...prev, _integrationIds: intIds }));
     }
     setLoading(false);
   };

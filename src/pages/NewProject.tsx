@@ -52,6 +52,7 @@ export default function NewProject() {
   // Novos campos
   const [projectTypeId, setProjectTypeId] = useState("");
   const [selectedSolutions, setSelectedSolutions] = useState<string[]>([]);
+  const [selectedIntegrations, setSelectedIntegrations] = useState<string[]>([]);
   const [fleetSize, setFleetSize] = useState<string>("");
   const [implDeadlineDays, setImplDeadlineDays] = useState<string>("");
   const [contractualDeadlineDays, setContractualDeadlineDays] = useState<string>("");

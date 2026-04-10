@@ -820,7 +820,7 @@ export default function Dashboard() {
                                       <td className="py-2 px-3 font-medium text-foreground">{p.company_name}</td>
                                       <td className="py-2 px-3 text-muted-foreground">{p.city}/{p.state}</td>
                                       <td className="py-2 px-3 text-muted-foreground">{p.manager?.full_name || "—"}</td>
-                                      <td className="py-2 px-3 text-right font-semibold tabular-nums" style={{ fontFamily: "'Rajdhani', sans-serif", color: statusColor }}>{getProjectFleet(p)}</td>
+                                      <td className="py-2 px-3 text-right font-semibold tabular-nums" style={{ fontFamily: "'Rajdhani', sans-serif", color: statusColor }}>{getFleetForStatus(p, selectedFleetStatus!)}</td>
                                     </motion.tr>
                                   ))}
                                 </tbody>

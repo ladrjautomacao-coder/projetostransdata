@@ -69,6 +69,7 @@ export default function ProjectDetail() {
   const [installationClient, setInstallationClient] = useState<string>("0");
   const [complementarySale, setComplementarySale] = useState(false);
   const [complementaryFleet, setComplementaryFleet] = useState<string>("0");
+  const [implementedFleet, setImplementedFleet] = useState<string>("0");
   const [observations, setObservations] = useState("");
 
   // Lookups
@@ -119,6 +120,7 @@ export default function ProjectDetail() {
       setInstallationClient(data.installation_client?.toString() || "0");
       setComplementarySale(data.complementary_sale || false);
       setComplementaryFleet(data.complementary_fleet?.toString() || "0");
+      setImplementedFleet(data.implemented_fleet?.toString() || "0");
       setObservations(data.observations || "");
 
       // Load project integrations
@@ -200,6 +202,7 @@ export default function ProjectDetail() {
     add("Instalação Cliente", project.installation_client ?? 0, parseInt(installationClient) || 0);
     add("Venda Complementar", project.complementary_sale ? "Sim" : "Não", complementarySale ? "Sim" : "Não");
     if (complementarySale) add("Frota Complementar", project.complementary_fleet ?? 0, parseInt(complementaryFleet) || 0);
+    if (complementarySale) add("Frota Implementada", project.implemented_fleet ?? 0, parseInt(implementedFleet) || 0);
 
     add("Acompanhamento do Projeto", project.observations || "—", observations || "—");
 
@@ -244,6 +247,7 @@ export default function ProjectDetail() {
         installation_client: parseInt(installationClient) || 0,
         complementary_sale: complementarySale,
         complementary_fleet: complementarySale ? (parseInt(complementaryFleet) || 0) : 0,
+        implemented_fleet: complementarySale ? (parseInt(implementedFleet) || 0) : 0,
         observations: observations || null,
       }).eq("id", id);
       if (error) throw error;
@@ -749,17 +753,27 @@ export default function ProjectDetail() {
                 <Label>Possui venda complementar?</Label>
               </div>
               {complementarySale && (
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Frota Complementar</Label>
-                  <Input type="number" min={0} step={1} value={complementaryFleet} onChange={e => setComplementaryFleet(e.target.value)} />
-                </div>
+                <>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Frota Complementar</Label>
+                    <Input type="number" min={0} step={1} value={complementaryFleet} onChange={e => setComplementaryFleet(e.target.value)} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Frota Implementada</Label>
+                    <Input type="number" min={0} step={1} value={implementedFleet} onChange={e => setImplementedFleet(e.target.value)} />
+                    <p className="text-[10px] text-muted-foreground">Quantidade de veículos já implementados neste projeto</p>
+                  </div>
+                </>
               )}
             </>
           ) : (
             <>
               <div><span className="text-xs text-muted-foreground">Venda Complementar</span><p>{project.complementary_sale ? "Sim" : "Não"}</p></div>
               {project.complementary_sale && (
-                <div><span className="text-xs text-muted-foreground">Frota Complementar</span><p>{project.complementary_fleet ?? 0}</p></div>
+                <>
+                  <div><span className="text-xs text-muted-foreground">Frota Complementar</span><p>{project.complementary_fleet ?? 0}</p></div>
+                  <div><span className="text-xs text-muted-foreground">Frota Implementada</span><p>{project.implemented_fleet ?? 0}</p></div>
+                </>
               )}
             </>
           )}

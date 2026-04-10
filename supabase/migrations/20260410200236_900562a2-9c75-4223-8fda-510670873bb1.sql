@@ -1,0 +1,1 @@
+ALTER TABLE public.projects ADD COLUMN implemented_fleet integer NOT NULL DEFAULT 0;

@@ -79,6 +79,7 @@ interface ProjectRow {
   is_pilot: boolean;
   complementary_sale: boolean;
   complementary_fleet: number;
+  implemented_fleet: number;
   executive: { full_name: string } | null;
   manager: { full_name: string } | null;
   project_products: { product: { name: string } | null }[];
@@ -265,7 +266,7 @@ export default function Dashboard() {
         .from("projects")
         .select(`
           id, company_name, city, state, contract_date, d_zero_date, handover_date,
-          status, fleet_size, contractual_deadline_days, implementation_deadline_days, is_pilot, complementary_sale, complementary_fleet,
+          status, fleet_size, contractual_deadline_days, implementation_deadline_days, is_pilot, complementary_sale, complementary_fleet, implemented_fleet,
           executive:team_members!projects_executive_id_fkey(full_name),
           manager:team_members!projects_manager_id_fkey(full_name),
           project_products(product:products(name)),
@@ -440,7 +441,16 @@ export default function Dashboard() {
     const map: Record<ProjectStatus, number> = {
       comercial: 0, planejamento: 0, implantacao: 0, encerrado: 0, suspenso: 0,
     };
-    filteredProjects.forEach(p => { map[p.status] += getProjectFleet(p); });
+    filteredProjects.forEach(p => {
+      const totalFleet = getProjectFleet(p);
+      if (p.complementary_sale && p.implemented_fleet > 0) {
+        const impl = Math.min(p.implemented_fleet, totalFleet);
+        map["encerrado"] += impl;
+        map[p.status] += totalFleet - impl;
+      } else {
+        map[p.status] += totalFleet;
+      }
+    });
     return map;
   }, [filteredProjects]);
 

@@ -394,10 +394,14 @@ export default function ProjectDetail() {
     </p>
   );
 
+  // Status progression order for determining completed milestones
+  const statusOrder: ProjectStatus[] = ["comercial", "planejamento", "implantacao", "encerrado"];
+  const currentStatusIndex = statusOrder.indexOf(project.status as ProjectStatus);
+  // A milestone is "done" if it has a date OR if the project status is beyond that milestone's phase
   const timeline = [
     { label: "Contratação", date: project.contract_date, done: true },
-    { label: "D-zero", date: project.d_zero_date, done: !!project.d_zero_date },
-    { label: "Handover", date: project.handover_date, done: !!project.handover_date },
+    { label: "D-zero", date: project.d_zero_date, done: !!project.d_zero_date || currentStatusIndex >= 2 },
+    { label: "Handover", date: project.handover_date, done: !!project.handover_date || currentStatusIndex >= 3 },
   ];
 
   const projectTypeName = project.project_type?.name || "—";

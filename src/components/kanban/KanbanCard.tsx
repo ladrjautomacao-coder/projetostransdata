@@ -112,6 +112,12 @@ export default function KanbanCard({ project: p, index, onUpdateObservations }: 
                   D-zero: {fmtDate(p.d_zero_date)}
                 </div>
               )}
+              {p.complementary_sale && p.implemented_fleet > 0 && (
+                <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  {p.implemented_fleet} impl. / {(p.complementary_fleet || 0) + (p as any).fleet_size || p.complementary_fleet || 0} total
+                </div>
+              )}
               {p.project_solutions?.length > 0 && (
                 <div className="flex flex-wrap gap-1 pt-1">
                   {p.project_solutions.map((ps, i) => (

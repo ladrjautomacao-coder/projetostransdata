@@ -376,16 +376,23 @@ export default function ProjectDetail() {
   const DateField = ({ label, date, onSelect }: { label: string; date?: Date; onSelect: (d?: Date) => void }) => (
     <div className="space-y-1">
       <Label className="text-xs text-muted-foreground">{label}</Label>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className={cn("w-full justify-start", !date && "text-muted-foreground")}>
-            <CalendarIcon className="mr-2 h-3 w-3" /> {date ? format(date, "dd/MM/yyyy") : "—"}
+      <div className="flex items-center gap-1">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("w-full justify-start", !date && "text-muted-foreground")}>
+              <CalendarIcon className="mr-2 h-3 w-3" /> {date ? format(date, "dd/MM/yyyy") : "—"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={date} onSelect={onSelect} initialFocus className="p-3 pointer-events-auto" />
+          </PopoverContent>
+        </Popover>
+        {date && (
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive" onClick={() => onSelect(undefined)}>
+            <X className="h-3.5 w-3.5" />
           </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar mode="single" selected={date} onSelect={onSelect} initialFocus className="p-3 pointer-events-auto" />
-        </PopoverContent>
-      </Popover>
+        )}
+      </div>
     </div>
   );
 

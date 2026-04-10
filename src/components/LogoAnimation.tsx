@@ -14,7 +14,7 @@ function MiniRobot({ onComplete }: { onComplete: () => void }) {
       className="absolute bottom-0 z-20"
       initial={{ x: -80, opacity: 0 }}
       animate={{
-        x: [−80, 0, 0, 60],
+        x: [-80, 0, 0, 60],
         opacity: [0, 1, 1, 0],
       }}
       transition={{

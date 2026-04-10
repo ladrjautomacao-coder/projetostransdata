@@ -757,7 +757,19 @@ export default function Dashboard() {
                 {/* Project list for selected fleet status */}
                 <AnimatePresence>
                   {selectedFleetStatus && (() => {
-                    const statusProjects = filteredProjects.filter(p => p.status === selectedFleetStatus && getProjectFleet(p) > 0);
+                    const getFleetForStatus = (p: any, status: string) => {
+                      const total = getProjectFleet(p);
+                      const impl = p.implemented_fleet || 0;
+                      if (status === "encerrado") return impl;
+                      if (impl > 0) return Math.max(0, total - impl);
+                      return total;
+                    };
+                    const statusProjects = selectedFleetStatus === "encerrado"
+                      ? filteredProjects.filter(p => {
+                          if (p.status === "encerrado") return getProjectFleet(p) > 0;
+                          return (p.implemented_fleet || 0) > 0;
+                        })
+                      : filteredProjects.filter(p => p.status === selectedFleetStatus && getFleetForStatus(p, selectedFleetStatus) > 0);
                     const statusIndex = Constants.public.Enums.project_status.indexOf(selectedFleetStatus);
                     const statusColor = STATUS_COLORS[statusIndex];
                     return (

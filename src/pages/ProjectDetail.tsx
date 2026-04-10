@@ -753,10 +753,15 @@ export default function ProjectDetail() {
                 <Label>Possui venda complementar?</Label>
               </div>
               {complementarySale && (
-                <>
+               <>
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">Frota Complementar</Label>
                     <Input type="number" min={0} step={1} value={complementaryFleet} onChange={e => setComplementaryFleet(e.target.value)} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Frota Total</Label>
+                    <Input type="number" readOnly disabled value={(parseInt(fleetSize) || 0) + (parseInt(complementaryFleet) || 0)} className="bg-muted" />
+                    <p className="text-[10px] text-muted-foreground">Soma de Frota Contratada + Frota Complementar</p>
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">Frota Implementada</Label>
@@ -772,6 +777,7 @@ export default function ProjectDetail() {
               {project.complementary_sale && (
                 <>
                   <div><span className="text-xs text-muted-foreground">Frota Complementar</span><p>{project.complementary_fleet ?? 0}</p></div>
+                  <div><span className="text-xs text-muted-foreground">Frota Total</span><p>{(project.fleet_size ?? 0) + (project.complementary_fleet ?? 0)}</p></div>
                   <div><span className="text-xs text-muted-foreground">Frota Implementada</span><p>{project.implemented_fleet ?? 0}</p></div>
                 </>
               )}

@@ -443,10 +443,13 @@ export default function Dashboard() {
     };
     filteredProjects.forEach(p => {
       const totalFleet = getProjectFleet(p);
-      if (p.complementary_sale && p.implemented_fleet > 0) {
-        const impl = Math.min(p.implemented_fleet, totalFleet);
-        map["encerrado"] += impl;
-        map[p.status] += totalFleet - impl;
+      const impl = p.implemented_fleet || 0;
+      if (impl > 0) {
+        const implClamped = Math.min(impl, totalFleet);
+        map["encerrado"] += implClamped;
+        if (p.status !== "encerrado") {
+          map[p.status] += totalFleet - implClamped;
+        }
       } else {
         map[p.status] += totalFleet;
       }

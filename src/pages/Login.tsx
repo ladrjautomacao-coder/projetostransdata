@@ -160,14 +160,7 @@ export default function Login() {
           transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="relative z-10 text-center space-y-8 px-12"
         >
-          <motion.img
-            src={logoTransmobile}
-            alt="TransMobile"
-            className="h-16 mx-auto rounded-xl"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.6, type: "spring" }}
-          />
+          <LogoAnimation />
           <div>
             <h2 className="text-3xl font-bold text-background mb-3">Sistema de Gestão</h2>
             <p className="text-background/50 text-lg">Plataforma de gerenciamento de projetos de telemetria</p>

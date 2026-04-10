@@ -400,31 +400,14 @@ export default function ProjectDetail() {
   const currentStatusIndex = statusOrder.indexOf(project.status as ProjectStatus);
   // A milestone is "done" if it has a date OR if the project status is beyond that milestone's phase
   const timeline = [
-    { label: "Contratação", date: project.contract_date, done: true },
-    { label: "D-zero", date: project.d_zero_date, done: !!project.d_zero_date || currentStatusIndex >= 2 },
-    { label: "Handover", date: project.handover_date, done: !!project.handover_date || currentStatusIndex >= 3 },
+    { label: "Contratação", date: project.contract_date, done: true, isCurrent: currentStatusIndex === 0 },
+    { label: "D-zero", date: project.d_zero_date, done: !!project.d_zero_date || currentStatusIndex >= 2, isCurrent: currentStatusIndex === 1 || currentStatusIndex === 2 },
+    { label: "Handover", date: project.handover_date, done: !!project.handover_date || currentStatusIndex >= 3, isCurrent: currentStatusIndex === 2 && (!!project.d_zero_date || currentStatusIndex >= 2) },
+    { label: "Implementado", date: null, done: currentStatusIndex >= 3, isCurrent: currentStatusIndex >= 3 },
   ];
-
-  const projectTypeName = project.project_type?.name || "—";
-  const solutionNames = project.project_solutions?.map((ps: any) => ps.solution?.name).filter(Boolean) || [];
-
-  return (
-    <div className="max-w-4xl mx-auto">
-      <Button variant="ghost" onClick={() => navigate(backPath)} className="mb-4">
-        <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
-      </Button>
-
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{project.company_name}</h1>
-        {editing ? (
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setEditing(false)}><X className="mr-1 h-4 w-4" /> Cancelar</Button>
-            <Button size="sm" onClick={handleSave} disabled={saving}><Save className="mr-1 h-4 w-4" /> {saving ? "Salvando..." : "Salvar"}</Button>
-          </div>
-        ) : isAdmin ? (
-          <Button size="sm" onClick={() => setEditing(true)}><Edit2 className="mr-1 h-4 w-4" /> Editar</Button>
-        ) : null}
-      </div>
+  // Find the actual current step: the last done milestone
+  const lastDoneIndex = [...timeline].reverse().findIndex(t => t.done);
+  const currentMilestoneIndex = lastDoneIndex >= 0 ? timeline.length - 1 - lastDoneIndex : 0;
 
       {/* Timeline */}
       <Card className="mb-6">
@@ -432,15 +415,54 @@ export default function ProjectDetail() {
         <CardContent>
           <div className="flex items-center justify-between relative">
             <div className="absolute top-4 left-0 right-0 h-0.5 bg-border" />
-            {timeline.map((t, i) => (
-              <div key={i} className="relative flex flex-col items-center z-10">
-                <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold", t.done ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
-                  {i + 1}
+            {timeline.map((t, i) => {
+              const isCurrentStep = i === currentMilestoneIndex;
+              return (
+                <div key={i} className="relative flex flex-col items-center z-10">
+                  <div className="relative">
+                    {/* Pulsing rings for current step */}
+                    {isCurrentStep && (
+                      <>
+                        <motion.div
+                          className="absolute inset-[-4px] rounded-full border-2 border-primary"
+                          animate={{ scale: [1, 1.4, 1], opacity: [0.6, 0, 0.6] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        />
+                        <motion.div
+                          className="absolute inset-[-2px] rounded-full border border-primary"
+                          animate={{ scale: [1, 1.25, 1], opacity: [0.4, 0, 0.4] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+                        />
+                      </>
+                    )}
+                    <motion.div
+                      className={cn(
+                        "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold relative",
+                        t.done ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      )}
+                      animate={isCurrentStep ? {
+                        boxShadow: [
+                          "0 0 0px hsl(var(--primary) / 0.3)",
+                          "0 0 16px hsl(var(--primary) / 0.6)",
+                          "0 0 0px hsl(var(--primary) / 0.3)",
+                        ],
+                      } : {}}
+                      transition={isCurrentStep ? { duration: 1.5, repeat: Infinity, ease: "easeInOut" } : {}}
+                    >
+                      {i + 1}
+                    </motion.div>
+                  </div>
+                  <span className={cn("text-xs font-medium mt-2", isCurrentStep && "text-primary font-bold")}>{t.label}</span>
+                  {t.date ? (
+                    <span className="text-xs text-muted-foreground">{fmtDate(t.date)}</span>
+                  ) : t.done ? (
+                    <span className="text-xs text-primary font-semibold">✓</span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">—</span>
+                  )}
                 </div>
-                <span className="text-xs font-medium mt-2">{t.label}</span>
-                <span className="text-xs text-muted-foreground">{fmtDate(t.date)}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>

@@ -409,6 +409,27 @@ export default function ProjectDetail() {
   const lastDoneIndex = [...timeline].reverse().findIndex(t => t.done);
   const currentMilestoneIndex = lastDoneIndex >= 0 ? timeline.length - 1 - lastDoneIndex : 0;
 
+  const projectTypeName = project.project_type?.name || "—";
+  const solutionNames = project.project_solutions?.map((ps: any) => ps.solution?.name).filter(Boolean) || [];
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <Button variant="ghost" onClick={() => navigate(backPath)} className="mb-4">
+        <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+      </Button>
+
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">{project.company_name}</h1>
+        {editing ? (
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => setEditing(false)}><X className="mr-1 h-4 w-4" /> Cancelar</Button>
+            <Button size="sm" onClick={handleSave} disabled={saving}><Save className="mr-1 h-4 w-4" /> {saving ? "Salvando..." : "Salvar"}</Button>
+          </div>
+        ) : isAdmin ? (
+          <Button size="sm" onClick={() => setEditing(true)}><Edit2 className="mr-1 h-4 w-4" /> Editar</Button>
+        ) : null}
+      </div>
+
       {/* Timeline */}
       <Card className="mb-6">
         <CardHeader><CardTitle className="text-lg">Linha do Tempo</CardTitle></CardHeader>
@@ -420,7 +441,6 @@ export default function ProjectDetail() {
               return (
                 <div key={i} className="relative flex flex-col items-center z-10">
                   <div className="relative">
-                    {/* Pulsing rings for current step */}
                     {isCurrentStep && (
                       <>
                         <motion.div

@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Mail, Lock, User, Signal, Briefcase } from "lucide-react";
 import { motion } from "framer-motion";
 import logoTransmobile from "@/assets/logo-transmobile.png";
+import LogoAnimation from "@/components/LogoAnimation";
 
 function AnimatedGrid() {
   return (

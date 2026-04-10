@@ -1,29 +1,37 @@
 
 
-## Plano: Expandir Linha do Tempo com status "Implementado" e animação pulsante
+## Plano: Campo "Frota Implementada" para projetos com Venda Complementar
 
 ### Problema
-1. A timeline só tem 3 passos (Contratação, D-zero, Handover) — falta o passo "Implementado"
-2. Projetos com status "encerrado" (Implementado) ficam parados no Handover
-3. Não há indicação visual animada de qual é o passo atual do projeto
+Quando um projeto com venda complementar retorna ao status "Comercial" para implementar mais frota, toda a frota (base + complementar) é contabilizada no status atual (ex: Comercial), quando na verdade parte dela já está implementada.
+
+### Solução
+Adicionar um campo `implemented_fleet` na tabela `projects` que indica quantos veículos da frota total já estão implementados. Este campo só é relevante quando `complementary_sale = true`. A frota restante (total - implementada) segue o status atual do card no Kanban.
 
 ### Alterações
 
-**`src/pages/ProjectDetail.tsx`**
+**1. Migração de banco de dados**
+- Adicionar coluna `implemented_fleet integer NOT NULL DEFAULT 0` à tabela `projects`
 
-- Adicionar 4º milestone na timeline: `{ label: "Implementado", date: null, done: currentStatusIndex >= 3 }`
-- Identificar qual milestone é o **atual** (último "done" que ainda não foi superado) para aplicar animação
-- Adicionar lógica `isCurrent` a cada item da timeline
-- No círculo do milestone atual, aplicar animação pulsante com Framer Motion:
-  - Anel externo pulsando (scale + opacity)
-  - Glow com box-shadow animado na cor primária
-- Manter os milestones concluídos com estilo sólido (sem animação)
-- Milestones futuros permanecem com estilo "muted"
+**2. `src/pages/ProjectDetail.tsx`**
+- Adicionar estado `implementedFleet` para edição
+- Na seção "Venda Complementar", exibir novo campo "Frota Implementada" (visível apenas quando `complementary_sale` está ativo)
+- Incluir o campo no save e no carregamento do projeto
+- Validar que `implemented_fleet <= fleet_size + complementary_fleet`
 
-### Resultado visual
-- Timeline: Contratação → D-zero → Handover → **Implementado**
-- O passo correspondente ao status atual do projeto terá um efeito pulsante laranja, fácil de identificar
+**3. `src/pages/Dashboard.tsx`**
+- Alterar o cálculo de `fleetByStatus`: quando um projeto tem `complementary_sale` ativo e `implemented_fleet > 0`, distribuir `implemented_fleet` no status "encerrado" e o restante (`getProjectFleet(p) - implemented_fleet`) no status atual do card
+- Atualizar `getProjectFleet` ou o loop de `fleetByStatus` para refletir essa divisão
 
-### Arquivo alterado
-- `src/pages/ProjectDetail.tsx`
+**4. `src/components/kanban/KanbanCard.tsx`**
+- Exibir no card, quando `complementary_sale` estiver ativo e `implemented_fleet > 0`, uma informação adicional como "X impl. / Y total" para dar visibilidade
+
+**5. `src/pages/ProjectManagement.tsx`**
+- Incluir `implemented_fleet` na query de projetos do Kanban
+- Atualizar o tipo `ProjectRow` para incluir `implemented_fleet`
+
+### Resultado
+- O Dashboard contará corretamente a frota implementada separadamente da frota em andamento
+- O card do Kanban mostrará a divisão de frota de forma clara
+- O campo aparece na edição do projeto apenas quando venda complementar está ativa
 

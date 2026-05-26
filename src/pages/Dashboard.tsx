@@ -274,6 +274,7 @@ export default function Dashboard() {
         .select(`
           id, company_name, city, state, contract_date, d_zero_date, handover_date,
           status, fleet_size, contractual_deadline_days, implementation_deadline_days, is_pilot, complementary_sale, complementary_fleet, implemented_fleet,
+          reached_implemented, reached_implemented_at,
           executive:team_members!projects_executive_id_fkey(full_name),
           manager:team_members!projects_manager_id_fkey(full_name),
           project_products(product:products(name)),

@@ -1,42 +1,56 @@
+# Plano: Card "retornado de Implementado" — dashboard congelado e alerta visual
 
+## Comportamento desejado
+Quando um projeto atinge **Implementado** pela primeira vez e depois é movido de volta para qualquer outra coluna:
+1. Dashboard continua contabilizando o projeto como Implementado (frota e contagem).
+2. Linha do tempo do detalhe não regride — Implementado segue marcado como atingido.
+3. Card recebe alerta visual claro no Kanban.
 
-## Plano: Corrigir frota exibida no drill-down "Frota por Status"
+## Alterações
 
-### Problema
-Ao expandir um status no drill-down (ex: Comercial), a coluna "Frota" mostra `getProjectFleet(p)` — ou seja, a frota total (contratada + complementar). Deveria exibir apenas o saldo restante (`total - implemented_fleet`), pois a parte implementada já está contabilizada no quadrante "Implementado".
+### 1. Banco — nova flag em `projects`
+Migração adicionando:
+- `reached_implemented` boolean default `false`
+- `reached_implemented_at` timestamptz nullable
 
-### Alteração
+Backfill: setar `true` + `updated_at` para todos os projetos já com `status = 'encerrado'`. Uma vez `true`, nunca volta a `false`.
 
-**`src/pages/Dashboard.tsx`**
+### 2. Kanban — gravar a flag (`ProjectManagement.tsx`)
+No `onDragEnd`, quando destino for `encerrado` e o projeto ainda não tiver a flag, incluir `reached_implemented: true, reached_implemented_at: now()` no update. Demais movimentos não tocam na flag.
 
-1. **Linha ~760 — filtro do drill-down**: Além de filtrar por `p.status === selectedFleetStatus`, incluir projetos que tenham `implemented_fleet > 0` quando `selectedFleetStatus === "encerrado"` (mesmo que o card não esteja nesse status)
+### 3. Alerta no card (`KanbanCard.tsx`) — opção escolhida: borda + bolinha
+Quando `reached_implemented === true` **e** `status !== 'encerrado'`:
+- Borda esquerda vermelha: `border-l-4 border-l-red-500` + leve `bg-red-50/30 dark:bg-red-950/10` (substitui a borda âmbar/esmeralda se houver).
+- Bolinha pulsante vermelha no canto superior direito (`animate-ping` + dot sólido).
+- Envolto em `Tooltip`: **"Projeto retornou de Implementado em DD/MM/AAAA"** (data formatada de `reached_implemented_at`).
 
-2. **Linha ~811 — valor exibido na coluna Frota**: Criar uma função auxiliar que retorna a frota ajustada por status:
-   - Se o status selecionado é o status atual do projeto e `implemented_fleet > 0`: mostrar `totalFleet - implemented_fleet`
-   - Se o status selecionado é "encerrado" e o projeto tem `implemented_fleet > 0`: mostrar `implemented_fleet`
-   - Caso contrário: mostrar `getProjectFleet(p)` normalmente
+### 4. Dashboard — congelar contabilização (`Dashboard.tsx`)
+Criar helper `effectiveStatus(p) = p.reached_implemented ? 'encerrado' : p.status` e aplicar em todas as agregações por status:
+- `statusCounts` (contagem por status).
+- `fleetByStatus`: substituir `p.status` por `effectiveStatus(p)` na lógica atual (linhas ~440–457). Assim a frota restante deixa de migrar para Comercial/etc. e permanece em Implementado.
+- Drill-down "Frota por Status" (lista expandida por status, ~linha 767): filtrar projetos pelo `effectiveStatus`.
+- Demais gráficos/segmentações por status seguem o mesmo helper.
 
-3. **Contagem de projetos no badge**: Atualizar para refletir a lista correta de projetos
+Não muda: total de projetos, total de estados, frota total contratada.
 
-### Lógica resumida
-```text
-getFleetForStatus(project, selectedStatus):
-  total = fleet_size + complementary_fleet
-  impl  = implemented_fleet
+### 5. Timeline do detalhe (`ProjectTimeline.tsx` + `ProjectDetail.tsx`) — opção escolhida: mostrar fase atual + marca
+- Nova prop `reachedImplemented?: boolean` e `reachedImplementedAt?: string`.
+- `currentIndex` continua refletindo o `status` atual (fase atual destacada normalmente).
+- Quando `reachedImplemented` for true: a etapa "Implementado" recebe selo verde permanente (check) + label menor "já atingido"; etapas entre a atual e Implementado também ficam visualmente concluídas (verdes).
+- Pequeno badge acima da timeline: "Já atingiu Implementado em DD/MM/AAAA".
 
-  if selectedStatus == "encerrado":
-    return impl                    // só a parte implementada
-  else if impl > 0:
-    return total - impl            // saldo restante
-  else:
-    return total
-```
+### 6. Selects e tipos
+Incluir `reached_implemented, reached_implemented_at` nos `select(...)` de `projects` em `Dashboard.tsx`, `ProjectManagement.tsx`, `ProjectDetail.tsx`. `types.ts` é regenerado automaticamente.
 
-### Resultado
-- Drill-down "Comercial" mostrará 15 (não 37) para o Atlântico Salvador
-- Drill-down "Implementado" incluirá os 22 implementados desse projeto
-- Os totais por status no drill-down ficarão consistentes com os números dos cards
-
-### Arquivo alterado
+## Arquivos
+- `supabase/migrations/<novo>.sql`
+- `src/pages/ProjectManagement.tsx`
+- `src/components/kanban/KanbanCard.tsx`
 - `src/pages/Dashboard.tsx`
+- `src/components/ProjectTimeline.tsx`
+- `src/pages/ProjectDetail.tsx`
 
+## Resultado
+- Atlântico (exemplo): move Implementado → Comercial/Aguardando contrato. Dashboard intacto. Card aparece com borda vermelha + bolinha pulsante. Tooltip com a data. Timeline do detalhe segue mostrando Implementado como atingido.
+- Card voltando para Implementado: alerta some, segue comportamento normal.
+- Projetos que nunca tocaram Implementado: nada muda.

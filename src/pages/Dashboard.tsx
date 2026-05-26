@@ -80,6 +80,8 @@ interface ProjectRow {
   complementary_sale: boolean;
   complementary_fleet: number;
   implemented_fleet: number;
+  reached_implemented: boolean;
+  reached_implemented_at: string | null;
   executive: { full_name: string } | null;
   manager: { full_name: string } | null;
   project_products: { product: { name: string } | null }[];
@@ -91,6 +93,11 @@ const getProjectFleet = (p: ProjectRow): number => {
   const complement = p.complementary_sale ? (p.complementary_fleet || 0) : 0;
   return base + complement;
 };
+
+// Status efetivo para contabilização: projetos que já atingiram Implementado
+// permanecem contados como "encerrado" mesmo se forem movidos para outras colunas.
+const effectiveStatus = (p: ProjectRow): ProjectStatus =>
+  p.reached_implemented ? "encerrado" : p.status;
 
 function AnimatedNumber({ value, duration = 1200 }: { value: number; duration?: number }) {
   const [display, setDisplay] = useState(0);

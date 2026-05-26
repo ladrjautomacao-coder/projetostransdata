@@ -325,7 +325,7 @@ export default function Dashboard() {
 
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {
-      if (filterStatus !== "all" && p.status !== filterStatus) return false;
+      if (filterStatus !== "all" && effectiveStatus(p) !== filterStatus) return false;
       if (filterProject !== "all" && p.id !== filterProject) return false;
       if (filterState !== "all" && p.state !== filterState) return false;
       if (filterCity !== "all" && p.city !== filterCity) return false;

@@ -63,6 +63,7 @@ export const subPhasesByStatus: Partial<Record<ProjectStatus, SubPhaseConfig[]>>
   suspenso: [
     { id: "suspenso", label: "Suspenso", description: "Projeto temporariamente suspenso." },
     { id: "cancelado", label: "Cancelado", description: "Projeto cancelado." },
+    { id: "piloto_reprovado", label: "Piloto reprovado", description: "Projeto de piloto reprovado pelo cliente." },
   ],
 };
 

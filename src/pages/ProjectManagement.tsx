@@ -162,13 +162,24 @@ export default function ProjectManagement() {
     if (project.status === newStatus && project.sub_phase === newSubPhase) return;
 
     // Optimistic update
-    setProjects(prev => prev.map(p => p.id === draggableId ? { ...p, status: newStatus, sub_phase: newSubPhase } : p));
+    const willMarkReached = newStatus === "encerrado" && !project.reached_implemented;
+    const nowIso = new Date().toISOString();
+    setProjects(prev => prev.map(p => p.id === draggableId ? {
+      ...p,
+      status: newStatus,
+      sub_phase: newSubPhase,
+      ...(willMarkReached ? { reached_implemented: true, reached_implemented_at: nowIso } : {}),
+    } : p));
 
     const updateData: Record<string, unknown> = { status: newStatus, sub_phase: newSubPhase };
+    if (willMarkReached) {
+      updateData.reached_implemented = true;
+      updateData.reached_implemented_at = nowIso;
+    }
     const { error } = await supabase.from("projects").update(updateData).eq("id", draggableId);
     if (error) {
       toast.error("Erro ao atualizar status do projeto");
-      setProjects(prev => prev.map(p => p.id === draggableId ? { ...p, status: project.status, sub_phase: project.sub_phase } : p));
+      setProjects(prev => prev.map(p => p.id === draggableId ? { ...p, status: project.status, sub_phase: project.sub_phase, reached_implemented: project.reached_implemented, reached_implemented_at: project.reached_implemented_at } : p));
     } else {
       const label = newSubPhase
         ? subPhasesByStatus[newStatus]?.find(sp => sp.id === newSubPhase)?.label || statusLabels[newStatus]

@@ -107,7 +107,7 @@ export default function ProjectManagement() {
     setLoading(true);
     const { data } = await supabase
       .from("projects")
-      .select("id, company_name, city, state, contract_date, d_zero_date, handover_date, status, sub_phase, is_pilot, complementary_sale, complementary_fleet, implemented_fleet, observations, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name)), project_integrations(integration:integrations(name))")
+      .select("id, company_name, city, state, contract_date, d_zero_date, handover_date, status, sub_phase, is_pilot, complementary_sale, complementary_fleet, implemented_fleet, observations, reached_implemented, reached_implemented_at, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name)), project_integrations(integration:integrations(name))")
       .order("company_name");
     setProjects((data as unknown as ProjectRow[]) || []);
     setLoading(false);

@@ -34,7 +34,7 @@ const statusLabels: Record<ProjectStatus, string> = {
   planejamento: "Planejamento",
   implantacao: "Implantação",
   encerrado: "Implementado",
-  suspenso: "Suspenso",
+  suspenso: "Outros",
 };
 
 const STATUS_COLORS = [

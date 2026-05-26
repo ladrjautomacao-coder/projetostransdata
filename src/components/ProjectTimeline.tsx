@@ -9,7 +9,7 @@ const PHASES: { key: ProjectStatus; label: string; short: string }[] = [
   { key: "planejamento", label: "Planejamento", short: "Plan" },
   { key: "implantacao", label: "Implantação", short: "Impl" },
   { key: "encerrado", label: "Implementado", short: "Impl" },
-  { key: "suspenso", label: "Suspenso", short: "Susp" },
+  { key: "suspenso", label: "Outros", short: "Outros" },
 ];
 
 const PHASE_COLORS: Record<ProjectStatus, string> = {

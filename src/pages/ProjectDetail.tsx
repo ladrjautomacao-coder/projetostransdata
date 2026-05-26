@@ -408,23 +408,21 @@ export default function ProjectDetail() {
 
   // Status progression order for determining completed milestones
   const statusOrder: ProjectStatus[] = ["comercial", "planejamento", "implantacao", "encerrado"];
-  const currentStatusIndex = statusOrder.indexOf(project.status as ProjectStatus);
+  const currentStatusIndex = Math.max(0, statusOrder.indexOf(project.status as ProjectStatus));
   const reachedImplemented = !!project.reached_implemented;
   const reachedImplementedAt = project.reached_implemented_at
     ? format(new Date(project.reached_implemented_at), "dd/MM/yyyy")
     : null;
-  // A milestone is "done" if it has a date OR if the project status is beyond that milestone's phase.
-  // Se já atingiu Implementado uma vez, D-zero, Handover e Implementado permanecem concluídos
-  // mesmo que o status atual tenha regredido (ex.: voltou para Comercial aguardando contrato).
+  // Linha do tempo segue a fase atual; "Implementado" mantém o check permanente caso
+  // o projeto já tenha passado por essa fase (mesmo se voltou para outra coluna do Kanban).
   const timeline = [
-    { label: "Contratação", date: project.contract_date, done: true, isCurrent: currentStatusIndex === 0 && !reachedImplemented },
-    { label: "D-zero", date: project.d_zero_date, done: !!project.d_zero_date || currentStatusIndex >= 2 || reachedImplemented, isCurrent: !reachedImplemented && (currentStatusIndex === 1 || currentStatusIndex === 2) },
-    { label: "Handover", date: project.handover_date, done: !!project.handover_date || currentStatusIndex >= 3 || reachedImplemented, isCurrent: !reachedImplemented && currentStatusIndex === 2 && (!!project.d_zero_date || currentStatusIndex >= 2) },
-    { label: "Implementado", date: null, done: currentStatusIndex >= 3 || reachedImplemented, isCurrent: currentStatusIndex >= 3 },
+    { label: "Contratação", date: project.contract_date, done: true },
+    { label: "D-zero", date: project.d_zero_date, done: !!project.d_zero_date || currentStatusIndex >= 2 || reachedImplemented },
+    { label: "Handover", date: project.handover_date, done: !!project.handover_date || currentStatusIndex >= 3 || reachedImplemented },
+    { label: "Implementado", date: null, done: currentStatusIndex >= 3 || reachedImplemented, reachedBadge: reachedImplemented && currentStatusIndex < 3 },
   ];
-  // Find the actual current step: the last done milestone
-  const lastDoneIndex = [...timeline].reverse().findIndex(t => t.done);
-  const currentMilestoneIndex = lastDoneIndex >= 0 ? timeline.length - 1 - lastDoneIndex : 0;
+  // Etapa "atual" reflete o status corrente do projeto (não regride por reached_implemented).
+  const currentMilestoneIndex = currentStatusIndex;
 
   const projectTypeName = project.project_type?.name || "—";
   const solutionNames = project.project_solutions?.map((ps: any) => ps.solution?.name).filter(Boolean) || [];

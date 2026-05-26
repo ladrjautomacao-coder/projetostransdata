@@ -506,6 +506,11 @@ export default function ProjectDetail() {
                   ) : (
                     <span className="text-xs text-muted-foreground">—</span>
                   )}
+                  {(t as any).reachedBadge && (
+                    <span className="mt-1 text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                      Já atingido
+                    </span>
+                  )}
                 </div>
               );
             })}

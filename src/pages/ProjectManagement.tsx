@@ -60,6 +60,10 @@ export const subPhasesByStatus: Partial<Record<ProjectStatus, SubPhaseConfig[]>>
     { id: "aquisicao_materiais", label: "Aquisição de Materiais", description: "Envio da lista de materiais ao cliente para que a compra seja realizada junto aos fornecedores homologados." },
     { id: "cronograma_visita", label: "Cronograma de Visita Técnica", description: "Organização das visitas entre o cliente, o Gerente de Projetos e a equipe responsável pela implantação." },
   ],
+  suspenso: [
+    { id: "suspenso", label: "Suspenso", description: "Projeto temporariamente suspenso." },
+    { id: "cancelado", label: "Cancelado", description: "Projeto cancelado." },
+  ],
 };
 
 export interface ProjectRow {

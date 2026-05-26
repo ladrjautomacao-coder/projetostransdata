@@ -452,14 +452,15 @@ export default function Dashboard() {
     filteredProjects.forEach(p => {
       const totalFleet = getProjectFleet(p);
       const impl = p.implemented_fleet || 0;
+      const effStatus = effectiveStatus(p);
       if (impl > 0) {
         const implClamped = Math.min(impl, totalFleet);
         map["encerrado"] += implClamped;
-        if (p.status !== "encerrado") {
-          map[p.status] += totalFleet - implClamped;
+        if (effStatus !== "encerrado") {
+          map[effStatus] += totalFleet - implClamped;
         }
       } else {
-        map[p.status] += totalFleet;
+        map[effStatus] += totalFleet;
       }
     });
     return map;

@@ -775,10 +775,10 @@ export default function Dashboard() {
                     };
                     const statusProjects = selectedFleetStatus === "encerrado"
                       ? filteredProjects.filter(p => {
-                          if (p.status === "encerrado") return getProjectFleet(p) > 0;
+                          if (effectiveStatus(p) === "encerrado") return getProjectFleet(p) > 0;
                           return (p.implemented_fleet || 0) > 0;
                         })
-                      : filteredProjects.filter(p => p.status === selectedFleetStatus && getFleetForStatus(p, selectedFleetStatus) > 0);
+                      : filteredProjects.filter(p => effectiveStatus(p) === selectedFleetStatus && getFleetForStatus(p, selectedFleetStatus) > 0);
                     const statusIndex = Constants.public.Enums.project_status.indexOf(selectedFleetStatus);
                     const statusColor = STATUS_COLORS[statusIndex];
                     return (

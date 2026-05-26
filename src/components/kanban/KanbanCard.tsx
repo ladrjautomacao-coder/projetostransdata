@@ -34,6 +34,19 @@ export default function KanbanCard({ project: p, index, onUpdateObservations }: 
     setOpen(false);
   };
 
+  const returnedFromImplemented = p.reached_implemented && p.status !== "encerrado";
+  const returnedDateLabel = returnedFromImplemented && p.reached_implemented_at
+    ? format(new Date(p.reached_implemented_at), "dd/MM/yyyy")
+    : null;
+
+  const borderClass = returnedFromImplemented
+    ? "border-l-4 border-l-red-500 bg-red-50/30 dark:bg-red-950/10"
+    : p.is_pilot
+      ? "border-l-4 border-l-amber-500 bg-amber-50/30 dark:bg-amber-950/10"
+      : p.complementary_sale
+        ? "border-l-4 border-l-emerald-500 bg-emerald-50/30 dark:bg-emerald-950/10"
+        : "";
+
   return (
     <Draggable draggableId={p.id} index={index}>
       {(dragProvided, dragSnapshot) => (
@@ -43,9 +56,27 @@ export default function KanbanCard({ project: p, index, onUpdateObservations }: 
           {...dragProvided.dragHandleProps}
         >
           <Card
-            className={`cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow border-border/40 bg-card ${dragSnapshot.isDragging ? "shadow-lg ring-2 ring-primary/20" : ""} ${p.is_pilot ? "border-l-4 border-l-amber-500 bg-amber-50/30 dark:bg-amber-950/10" : p.complementary_sale ? "border-l-4 border-l-emerald-500 bg-emerald-50/30 dark:bg-emerald-950/10" : ""}`}
+            className={`relative cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow border-border/40 bg-card ${dragSnapshot.isDragging ? "shadow-lg ring-2 ring-primary/20" : ""} ${borderClass}`}
             onClick={() => !dragSnapshot.isDragging && !open && navigate(`/projetos/${p.id}`, { state: { from: "/projetos/gestao" } })}
           >
+            {returnedFromImplemented && (
+              <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span
+                      className="absolute top-1.5 right-1.5 z-20 flex h-2.5 w-2.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="text-xs">
+                    Projeto retornou de Implementado{returnedDateLabel ? ` em ${returnedDateLabel}` : ""}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
             <CardContent className="p-3 space-y-2">
               <div className="flex items-start gap-2">
                 <Building2 className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />

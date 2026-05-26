@@ -83,6 +83,8 @@ export interface ProjectRow {
   complementary_fleet: number;
   implemented_fleet: number;
   observations: string | null;
+  reached_implemented: boolean;
+  reached_implemented_at: string | null;
   executive: { full_name: string } | null;
   manager: { full_name: string } | null;
   project_solutions: { solution: { name: string } | null }[];

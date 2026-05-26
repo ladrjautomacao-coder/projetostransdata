@@ -64,14 +64,14 @@ export default function KanbanCard({ project: p, index, onUpdateObservations }: 
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span
-                      className="absolute top-1.5 right-1.5 z-20 flex h-2.5 w-2.5"
+                      className="absolute bottom-3 right-3 z-20 flex h-4 w-4"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+                      <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 border border-white dark:border-gray-900" />
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent side="left" className="text-xs">
+                  <TooltipContent side="top" className="text-xs">
                     Projeto retornou de Implementado{returnedDateLabel ? ` em ${returnedDateLabel}` : ""}
                   </TooltipContent>
                 </Tooltip>

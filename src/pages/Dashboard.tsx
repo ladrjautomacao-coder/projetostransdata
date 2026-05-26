@@ -349,7 +349,7 @@ export default function Dashboard() {
     const counts: Record<ProjectStatus, number> = {
       comercial: 0, planejamento: 0, implantacao: 0, encerrado: 0, suspenso: 0,
     };
-    filteredProjects.forEach(p => { counts[p.status] = (counts[p.status] || 0) + 1; });
+    filteredProjects.forEach(p => { const s = effectiveStatus(p); counts[s] = (counts[s] || 0) + 1; });
     return counts;
   }, [filteredProjects]);
 

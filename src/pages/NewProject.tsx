@@ -28,7 +28,7 @@ const statusLabels: Record<ProjectStatus, string> = {
   planejamento: "Planejamento",
   implantacao: "Implantação",
   encerrado: "Implementado",
-  suspenso: "Suspenso",
+  suspenso: "Outros",
 };
 
 export default function NewProject() {

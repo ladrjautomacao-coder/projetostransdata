@@ -28,7 +28,7 @@ type ProjectStatus = Database["public"]["Enums"]["project_status"];
 type BrazilianState = Database["public"]["Enums"]["brazilian_state"];
 
 const statusLabels: Record<ProjectStatus, string> = {
-  comercial: "Comercial", planejamento: "Planejamento", implantacao: "Implantação", encerrado: "Implementado", suspenso: "Suspenso",
+  comercial: "Comercial", planejamento: "Planejamento", implantacao: "Implantação", encerrado: "Implementado", suspenso: "Outros",
 };
 
 export default function ProjectDetail() {

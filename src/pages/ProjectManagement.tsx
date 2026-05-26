@@ -24,7 +24,7 @@ export const statusLabels: Record<ProjectStatus, string> = {
   planejamento: "Planejamento",
   implantacao: "Implantação",
   encerrado: "Implementado",
-  suspenso: "Suspenso",
+  suspenso: "Outros",
 };
 
 export const statusColors: Record<ProjectStatus, { bg: string; border: string; text: string; accent: string }> = {
@@ -59,6 +59,10 @@ export const subPhasesByStatus: Partial<Record<ProjectStatus, SubPhaseConfig[]>>
     { id: "levantamento_materiais", label: "Levantamento de Materiais", description: "Fase de coleta dos dados do veículo para definição dos materiais necessários." },
     { id: "aquisicao_materiais", label: "Aquisição de Materiais", description: "Envio da lista de materiais ao cliente para que a compra seja realizada junto aos fornecedores homologados." },
     { id: "cronograma_visita", label: "Cronograma de Visita Técnica", description: "Organização das visitas entre o cliente, o Gerente de Projetos e a equipe responsável pela implantação." },
+  ],
+  suspenso: [
+    { id: "suspenso", label: "Suspenso", description: "Projeto temporariamente suspenso." },
+    { id: "cancelado", label: "Cancelado", description: "Projeto cancelado." },
   ],
 };
 

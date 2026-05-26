@@ -449,6 +449,17 @@ export default function ProjectDetail() {
       <Card className="mb-6">
         <CardHeader><CardTitle className="text-lg">Linha do Tempo</CardTitle></CardHeader>
         <CardContent>
+          {reachedImplemented && currentStatusIndex < 3 && (
+            <div className="mb-4 flex items-center gap-2 rounded-md border border-red-200 bg-red-50/60 dark:border-red-900/40 dark:bg-red-950/20 px-3 py-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+              </span>
+              <span className="text-xs text-red-700 dark:text-red-300">
+                Projeto já atingiu <strong>Implementado</strong>{reachedImplementedAt ? ` em ${reachedImplementedAt}` : ""} e foi movido para <strong>{statusLabels[project.status as ProjectStatus]}</strong>.
+              </span>
+            </div>
+          )}
           <div className="flex items-center justify-between relative">
             <div className="absolute top-4 left-0 right-0 h-0.5 bg-border" />
             {timeline.map((t, i) => {

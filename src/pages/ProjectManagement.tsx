@@ -47,6 +47,7 @@ export interface SubPhaseConfig {
 
 export const subPhasesByStatus: Partial<Record<ProjectStatus, SubPhaseConfig[]>> = {
   comercial: [
+    { id: "aguardando_contrato", label: "Aguardando contrato", description: "Aguardando assinatura do contrato pelo cliente." },
     { id: "contrato_assinado", label: "Contrato Transdata assinado", description: "Contrato firmado entre as partes para início do projeto." },
     { id: "cobranca_dzero", label: "Cobrança D-zero emitida", description: "Emissão da cobrança referente ao D-zero do projeto." },
     { id: "pagamento_dzero", label: "Pagamento D-zero efetuado", description: "Confirmação do pagamento do D-zero pelo cliente." },

@@ -313,6 +313,8 @@ export type Database = {
           observations: string | null
           pilot_info: string | null
           project_type_id: string | null
+          reached_implemented: boolean
+          reached_implemented_at: string | null
           state: Database["public"]["Enums"]["brazilian_state"]
           status: Database["public"]["Enums"]["project_status"]
           sub_phase: string | null
@@ -342,6 +344,8 @@ export type Database = {
           observations?: string | null
           pilot_info?: string | null
           project_type_id?: string | null
+          reached_implemented?: boolean
+          reached_implemented_at?: string | null
           state: Database["public"]["Enums"]["brazilian_state"]
           status?: Database["public"]["Enums"]["project_status"]
           sub_phase?: string | null
@@ -371,6 +375,8 @@ export type Database = {
           observations?: string | null
           pilot_info?: string | null
           project_type_id?: string | null
+          reached_implemented?: boolean
+          reached_implemented_at?: string | null
           state?: Database["public"]["Enums"]["brazilian_state"]
           status?: Database["public"]["Enums"]["project_status"]
           sub_phase?: string | null

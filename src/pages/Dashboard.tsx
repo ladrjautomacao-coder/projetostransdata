@@ -80,6 +80,8 @@ interface ProjectRow {
   complementary_sale: boolean;
   complementary_fleet: number;
   implemented_fleet: number;
+  reached_implemented: boolean;
+  reached_implemented_at: string | null;
   executive: { full_name: string } | null;
   manager: { full_name: string } | null;
   project_products: { product: { name: string } | null }[];
@@ -91,6 +93,11 @@ const getProjectFleet = (p: ProjectRow): number => {
   const complement = p.complementary_sale ? (p.complementary_fleet || 0) : 0;
   return base + complement;
 };
+
+// Status efetivo para contabilização: projetos que já atingiram Implementado
+// permanecem contados como "encerrado" mesmo se forem movidos para outras colunas.
+const effectiveStatus = (p: ProjectRow): ProjectStatus =>
+  p.reached_implemented ? "encerrado" : p.status;
 
 function AnimatedNumber({ value, duration = 1200 }: { value: number; duration?: number }) {
   const [display, setDisplay] = useState(0);
@@ -267,6 +274,7 @@ export default function Dashboard() {
         .select(`
           id, company_name, city, state, contract_date, d_zero_date, handover_date,
           status, fleet_size, contractual_deadline_days, implementation_deadline_days, is_pilot, complementary_sale, complementary_fleet, implemented_fleet,
+          reached_implemented, reached_implemented_at,
           executive:team_members!projects_executive_id_fkey(full_name),
           manager:team_members!projects_manager_id_fkey(full_name),
           project_products(product:products(name)),
@@ -317,7 +325,7 @@ export default function Dashboard() {
 
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {
-      if (filterStatus !== "all" && p.status !== filterStatus) return false;
+      if (filterStatus !== "all" && effectiveStatus(p) !== filterStatus) return false;
       if (filterProject !== "all" && p.id !== filterProject) return false;
       if (filterState !== "all" && p.state !== filterState) return false;
       if (filterCity !== "all" && p.city !== filterCity) return false;
@@ -341,7 +349,7 @@ export default function Dashboard() {
     const counts: Record<ProjectStatus, number> = {
       comercial: 0, planejamento: 0, implantacao: 0, encerrado: 0, suspenso: 0,
     };
-    filteredProjects.forEach(p => { counts[p.status] = (counts[p.status] || 0) + 1; });
+    filteredProjects.forEach(p => { const s = effectiveStatus(p); counts[s] = (counts[s] || 0) + 1; });
     return counts;
   }, [filteredProjects]);
 
@@ -444,14 +452,15 @@ export default function Dashboard() {
     filteredProjects.forEach(p => {
       const totalFleet = getProjectFleet(p);
       const impl = p.implemented_fleet || 0;
+      const effStatus = effectiveStatus(p);
       if (impl > 0) {
         const implClamped = Math.min(impl, totalFleet);
         map["encerrado"] += implClamped;
-        if (p.status !== "encerrado") {
-          map[p.status] += totalFleet - implClamped;
+        if (effStatus !== "encerrado") {
+          map[effStatus] += totalFleet - implClamped;
         }
       } else {
-        map[p.status] += totalFleet;
+        map[effStatus] += totalFleet;
       }
     });
     return map;
@@ -766,10 +775,10 @@ export default function Dashboard() {
                     };
                     const statusProjects = selectedFleetStatus === "encerrado"
                       ? filteredProjects.filter(p => {
-                          if (p.status === "encerrado") return getProjectFleet(p) > 0;
+                          if (effectiveStatus(p) === "encerrado") return getProjectFleet(p) > 0;
                           return (p.implemented_fleet || 0) > 0;
                         })
-                      : filteredProjects.filter(p => p.status === selectedFleetStatus && getFleetForStatus(p, selectedFleetStatus) > 0);
+                      : filteredProjects.filter(p => effectiveStatus(p) === selectedFleetStatus && getFleetForStatus(p, selectedFleetStatus) > 0);
                     const statusIndex = Constants.public.Enums.project_status.indexOf(selectedFleetStatus);
                     const statusColor = STATUS_COLORS[statusIndex];
                     return (
@@ -864,7 +873,7 @@ export default function Dashboard() {
       {/* Expandable project list for selected status */}
       <AnimatePresence>
         {selectedStatus && (() => {
-          const statusProjects = filteredProjects.filter(p => p.status === selectedStatus);
+          const statusProjects = filteredProjects.filter(p => effectiveStatus(p) === selectedStatus);
           const statusIndex = Constants.public.Enums.project_status.indexOf(selectedStatus);
           const statusColor = STATUS_COLORS[statusIndex] || STATUS_COLORS[0];
           return (

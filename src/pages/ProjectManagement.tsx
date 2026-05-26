@@ -24,7 +24,7 @@ export const statusLabels: Record<ProjectStatus, string> = {
   planejamento: "Planejamento",
   implantacao: "Implantação",
   encerrado: "Implementado",
-  suspenso: "Suspenso",
+  suspenso: "Outros",
 };
 
 export const statusColors: Record<ProjectStatus, { bg: string; border: string; text: string; accent: string }> = {

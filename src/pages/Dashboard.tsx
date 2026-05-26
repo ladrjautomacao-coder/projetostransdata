@@ -873,7 +873,7 @@ export default function Dashboard() {
       {/* Expandable project list for selected status */}
       <AnimatePresence>
         {selectedStatus && (() => {
-          const statusProjects = filteredProjects.filter(p => p.status === selectedStatus);
+          const statusProjects = filteredProjects.filter(p => effectiveStatus(p) === selectedStatus);
           const statusIndex = Constants.public.Enums.project_status.indexOf(selectedStatus);
           const statusColor = STATUS_COLORS[statusIndex] || STATUS_COLORS[0];
           return (

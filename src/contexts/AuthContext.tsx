@@ -48,30 +48,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let isMounted = true;
     let initialized = false;
 
-    const applySession = (session: Session | null) => {
+    const applySession = async (session: Session | null) => {
       if (!isMounted) return;
 
+      setLoading(true);
       setSession(session);
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        void loadUserData(session.user.id);
+        await loadUserData(session.user.id);
       } else {
         requestIdRef.current += 1;
         resetUserData();
       }
+
+      if (isMounted) setLoading(false);
     };
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       initialized = true;
-      applySession(session);
-      if (isMounted) setLoading(false);
+      await applySession(session);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!initialized) return;
-      applySession(session);
-      if (isMounted) setLoading(false);
+      void applySession(session);
     });
 
     return () => {

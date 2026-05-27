@@ -5,7 +5,15 @@ import { Plus, List, Signal, Kanban } from "lucide-react";
 
 export default function Projects() {
   const navigate = useNavigate();
-  const { isAdmin } = useAuth();
+  const { isAdmin, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   const cards = [
     ...(isAdmin ? [{

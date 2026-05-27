@@ -7,11 +7,32 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Building2, MapPin, Calendar, Users, Pencil } from "lucide-react";
-import { format } from "date-fns";
+import { Building2, MapPin, Calendar, Users, Pencil, Clock } from "lucide-react";
+import { format, differenceInDays } from "date-fns";
 import type { ProjectRow } from "@/pages/ProjectManagement";
 
 const fmtDate = (d: string | null) => d ? format(new Date(d + "T00:00:00"), "dd/MM/yyyy") : "—";
+
+type SLALevel = "green" | "yellow" | "orange" | "red";
+function getSLA(updatedAt: string): { level: SLALevel; days: number } {
+  const days = Math.max(0, differenceInDays(new Date(), new Date(updatedAt)));
+  if (days <= 7) return { level: "green", days };
+  if (days <= 15) return { level: "yellow", days };
+  if (days <= 30) return { level: "orange", days };
+  return { level: "red", days };
+}
+const SLA_BAR: Record<SLALevel, string> = {
+  green: "bg-emerald-500",
+  yellow: "bg-yellow-500",
+  orange: "bg-orange-500",
+  red: "bg-red-500",
+};
+const SLA_LABEL: Record<SLALevel, string> = {
+  green: "Em dia",
+  yellow: "Atenção",
+  orange: "Atrasado",
+  red: "Crítico",
+};
 
 interface Props {
   project: ProjectRow;

@@ -23,9 +23,17 @@ export default defineConfig(({ mode }) => ({
       },
       includeAssets: ["favicon.ico", "robots.txt"],
       workbox: {
-        navigateFallbackDenylist: [/^\/~oauth/],
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/auth/, /^\/api/],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,woff,woff2}"],
+        runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.mode === "navigate",
+            handler: "NetworkFirst",
+            options: { cacheName: "html", networkTimeoutSeconds: 3 },
+          },
+        ],
       },
+
       manifest: {
         name: "TransMobile - Gestão de Projetos",
         short_name: "TransMobile",

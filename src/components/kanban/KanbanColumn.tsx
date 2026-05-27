@@ -31,7 +31,7 @@ export default function KanbanColumn({ status, items, subPhases, onUpdateObserva
   }, [items, subPhases]);
 
   return (
-    <div className={`flex-1 min-w-[260px] max-w-[340px] flex flex-col rounded-lg border ${colors.border} ${colors.bg}`}>
+    <div className={`shrink-0 w-[85vw] sm:w-auto sm:flex-1 sm:min-w-[260px] sm:max-w-[340px] flex flex-col rounded-lg border ${colors.border} ${colors.bg}`}>
       {/* Column header */}
       <div className="flex items-center gap-2 p-3 border-b border-border/30">
         <div className={`h-2.5 w-2.5 rounded-full ${colors.accent}`} />

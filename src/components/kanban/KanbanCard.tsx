@@ -85,13 +85,15 @@ export default function KanbanCard({ project: p, index, onUpdateObservations }: 
             onClick={() => !dragSnapshot.isDragging && !open && navigate(`/projetos/${p.id}`, { state: { from: "/projetos/gestao" } })}
           >
             {sla && (
-              <TooltipProvider delayDuration={150}>
+              <TooltipProvider delayDuration={100}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div
-                      className={`absolute top-0 left-0 right-0 h-1 ${SLA_BAR[sla.level]} ${sla.level === "red" ? "animate-pulse" : ""}`}
+                      className="absolute top-0 left-0 right-0 h-3 z-10 cursor-help"
                       onClick={(e) => e.stopPropagation()}
-                    />
+                    >
+                      <div className={`h-1.5 ${SLA_BAR[sla.level]} ${sla.level === "red" ? "animate-pulse" : ""}`} />
+                    </div>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">
                     {SLA_LABEL[sla.level]} — parado há {sla.days} dia{sla.days !== 1 ? "s" : ""} nesta etapa
@@ -99,9 +101,14 @@ export default function KanbanCard({ project: p, index, onUpdateObservations }: 
                 </Tooltip>
               </TooltipProvider>
             )}
-            {sla && sla.level === "red" && (
-              <span className="absolute top-1.5 right-1.5 z-10" onClick={(e) => e.stopPropagation()}>
-                <Clock className="h-3 w-3 text-red-500 animate-pulse" />
+            {sla && (
+              <span
+                className={`absolute top-2 right-2 z-10 flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold text-white ${SLA_BAR[sla.level]} ${sla.level === "red" ? "animate-pulse" : ""}`}
+                onClick={(e) => e.stopPropagation()}
+                title={`${SLA_LABEL[sla.level]} — parado há ${sla.days} dia${sla.days !== 1 ? "s" : ""}`}
+              >
+                <Clock className="h-2.5 w-2.5" />
+                {sla.days}d
               </span>
             )}
             {returnedFromImplemented && (

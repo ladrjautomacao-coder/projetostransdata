@@ -7,11 +7,32 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Building2, MapPin, Calendar, Users, Pencil } from "lucide-react";
-import { format } from "date-fns";
+import { Building2, MapPin, Calendar, Users, Pencil, Clock } from "lucide-react";
+import { format, differenceInDays } from "date-fns";
 import type { ProjectRow } from "@/pages/ProjectManagement";
 
 const fmtDate = (d: string | null) => d ? format(new Date(d + "T00:00:00"), "dd/MM/yyyy") : "—";
+
+type SLALevel = "green" | "yellow" | "orange" | "red";
+function getSLA(updatedAt: string): { level: SLALevel; days: number } {
+  const days = Math.max(0, differenceInDays(new Date(), new Date(updatedAt)));
+  if (days <= 7) return { level: "green", days };
+  if (days <= 15) return { level: "yellow", days };
+  if (days <= 30) return { level: "orange", days };
+  return { level: "red", days };
+}
+const SLA_BAR: Record<SLALevel, string> = {
+  green: "bg-emerald-500",
+  yellow: "bg-yellow-500",
+  orange: "bg-orange-500",
+  red: "bg-red-500",
+};
+const SLA_LABEL: Record<SLALevel, string> = {
+  green: "Em dia",
+  yellow: "Atenção",
+  orange: "Atrasado",
+  red: "Crítico",
+};
 
 interface Props {
   project: ProjectRow;
@@ -39,6 +60,10 @@ export default function KanbanCard({ project: p, index, onUpdateObservations }: 
     ? format(new Date(p.reached_implemented_at), "dd/MM/yyyy")
     : null;
 
+  // SLA: não aplicar em "Implementado" (encerrado) nem em "Outros" (suspenso)
+  const slaEligible = p.status !== "encerrado" && p.status !== "suspenso";
+  const sla = slaEligible && p.updated_at ? getSLA(p.updated_at) : null;
+
   const borderClass = returnedFromImplemented
     ? "border-l-4 border-l-red-500 bg-red-50/30 dark:bg-red-950/10"
     : p.is_pilot
@@ -56,9 +81,29 @@ export default function KanbanCard({ project: p, index, onUpdateObservations }: 
           {...dragProvided.dragHandleProps}
         >
           <Card
-            className={`relative cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow border-border/40 bg-card ${dragSnapshot.isDragging ? "shadow-lg ring-2 ring-primary/20" : ""} ${borderClass}`}
+            className={`relative cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow border-border/40 bg-card overflow-hidden ${dragSnapshot.isDragging ? "shadow-lg ring-2 ring-primary/20" : ""} ${borderClass}`}
             onClick={() => !dragSnapshot.isDragging && !open && navigate(`/projetos/${p.id}`, { state: { from: "/projetos/gestao" } })}
           >
+            {sla && (
+              <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      className={`absolute top-0 left-0 right-0 h-1 ${SLA_BAR[sla.level]} ${sla.level === "red" ? "animate-pulse" : ""}`}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">
+                    {SLA_LABEL[sla.level]} — parado há {sla.days} dia{sla.days !== 1 ? "s" : ""} nesta etapa
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            {sla && sla.level === "red" && (
+              <span className="absolute top-1.5 right-1.5 z-10" onClick={(e) => e.stopPropagation()}>
+                <Clock className="h-3 w-3 text-red-500 animate-pulse" />
+              </span>
+            )}
             {returnedFromImplemented && (
               <TooltipProvider delayDuration={150}>
                 <Tooltip>

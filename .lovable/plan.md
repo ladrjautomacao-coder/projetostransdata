@@ -1,56 +1,81 @@
-# Plano: Card "retornado de Implementado" — dashboard congelado e alerta visual
+# Plano — Melhorias Alto Impacto + Mobile/PWA
 
-## Comportamento desejado
-Quando um projeto atinge **Implementado** pela primeira vez e depois é movido de volta para qualquer outra coluna:
-1. Dashboard continua contabilizando o projeto como Implementado (frota e contagem).
-2. Linha do tempo do detalhe não regride — Implementado segue marcado como atingido.
-3. Card recebe alerta visual claro no Kanban.
+## Sobre o "backup nomeado"
+O Lovable cria automaticamente uma versão a cada alteração no histórico (botão de versões no topo). Não existe um comando para nomear branches via agente, mas para servir como **checkpoint nomeado** vou:
+- Garantir que **nada** seja alterado antes desta resposta ser aprovada;
+- Após aprovar, a primeira mudança criará uma versão que você pode renomear no histórico para `backup-pre-melhorias` (clique nos 3 pontos da versão → renomear);
+- Cada uma das 4 entregas abaixo será feita em **commits separados**, então cada etapa tem seu próprio ponto de restauração.
 
-## Alterações
+Se quiser uma garantia extra, posso também gerar um **dump SQL dos dados atuais** (projetos, kanban, history, users) para `/mnt/documents/` antes de começar — só me avise.
 
-### 1. Banco — nova flag em `projects`
-Migração adicionando:
-- `reached_implemented` boolean default `false`
-- `reached_implemented_at` timestamptz nullable
+---
 
-Backfill: setar `true` + `updated_at` para todos os projetos já com `status = 'encerrado'`. Uma vez `true`, nunca volta a `false`.
+## Etapa 1 — Central de Alertas Global (sino no header)
 
-### 2. Kanban — gravar a flag (`ProjectManagement.tsx`)
-No `onDragEnd`, quando destino for `encerrado` e o projeto ainda não tiver a flag, incluir `reached_implemented: true, reached_implemented_at: now()` no update. Demais movimentos não tocam na flag.
+**Onde:** `src/components/AppLayout.tsx` (header já existe), novo componente `src/components/AlertsBell.tsx`.
 
-### 3. Alerta no card (`KanbanCard.tsx`) — opção escolhida: borda + bolinha
-Quando `reached_implemented === true` **e** `status !== 'encerrado'`:
-- Borda esquerda vermelha: `border-l-4 border-l-red-500` + leve `bg-red-50/30 dark:bg-red-950/10` (substitui a borda âmbar/esmeralda se houver).
-- Bolinha pulsante vermelha no canto superior direito (`animate-ping` + dot sólido).
-- Envolto em `Tooltip`: **"Projeto retornou de Implementado em DD/MM/AAAA"** (data formatada de `reached_implemented_at`).
+**O que detecta** (consulta única ao Supabase, refetch a cada 60s):
+- Projetos retornados de Implementado (`reached_implemented=true AND status!='encerrado'`)
+- D-zero vencendo em ≤7 dias (`d_zero_date BETWEEN today AND today+7`)
+- Projetos parados >30 dias na mesma coluna (`updated_at < today-30`)
+- Projetos sem gestor (`manager_id IS NULL`)
 
-### 4. Dashboard — congelar contabilização (`Dashboard.tsx`)
-Criar helper `effectiveStatus(p) = p.reached_implemented ? 'encerrado' : p.status` e aplicar em todas as agregações por status:
-- `statusCounts` (contagem por status).
-- `fleetByStatus`: substituir `p.status` por `effectiveStatus(p)` na lógica atual (linhas ~440–457). Assim a frota restante deixa de migrar para Comercial/etc. e permanece em Implementado.
-- Drill-down "Frota por Status" (lista expandida por status, ~linha 767): filtrar projetos pelo `effectiveStatus`.
-- Demais gráficos/segmentações por status seguem o mesmo helper.
+**UI:** Ícone de sino no header com badge de contagem. Popover com lista agrupada por categoria, clique navega para o projeto.
 
-Não muda: total de projetos, total de estados, frota total contratada.
+---
 
-### 5. Timeline do detalhe (`ProjectTimeline.tsx` + `ProjectDetail.tsx`) — opção escolhida: mostrar fase atual + marca
-- Nova prop `reachedImplemented?: boolean` e `reachedImplementedAt?: string`.
-- `currentIndex` continua refletindo o `status` atual (fase atual destacada normalmente).
-- Quando `reachedImplemented` for true: a etapa "Implementado" recebe selo verde permanente (check) + label menor "já atingido"; etapas entre a atual e Implementado também ficam visualmente concluídas (verdes).
-- Pequeno badge acima da timeline: "Já atingiu Implementado em DD/MM/AAAA".
+## Etapa 2 — SLA / Heat Map nos cards do Kanban
 
-### 6. Selects e tipos
-Incluir `reached_implemented, reached_implemented_at` nos `select(...)` de `projects` em `Dashboard.tsx`, `ProjectManagement.tsx`, `ProjectDetail.tsx`. `types.ts` é regenerado automaticamente.
+**Onde:** `src/components/kanban/KanbanCard.tsx`.
 
-## Arquivos
-- `supabase/migrations/<novo>.sql`
-- `src/pages/ProjectManagement.tsx`
-- `src/components/kanban/KanbanCard.tsx`
-- `src/pages/Dashboard.tsx`
-- `src/components/ProjectTimeline.tsx`
-- `src/pages/ProjectDetail.tsx`
+**Regras** (baseado em `updated_at`):
+- 0–7 dias → tarja verde lateral
+- 8–15 dias → tarja amarela
+- 16–30 dias → tarja laranja
+- >30 dias → tarja vermelha + ícone de relógio piscando
 
-## Resultado
-- Atlântico (exemplo): move Implementado → Comercial/Aguardando contrato. Dashboard intacto. Card aparece com borda vermelha + bolinha pulsante. Tooltip com a data. Timeline do detalhe segue mostrando Implementado como atingido.
-- Card voltando para Implementado: alerta some, segue comportamento normal.
-- Projetos que nunca tocaram Implementado: nada muda.
+Tooltip mostra "Parado há X dias nesta etapa". Não conflita com a tarja do "retornou de Implementado" (que continua tendo prioridade visual).
+
+---
+
+## Etapa 3 — Command Palette (Ctrl/Cmd+K)
+
+**Onde:** Novo `src/components/CommandPalette.tsx` montado no `AppLayout`. Usa `@/components/ui/command` (já instalado).
+
+**O que faz:**
+- Atalho global `Ctrl+K` (Windows) / `Cmd+K` (Mac)
+- Busca projetos por nome da empresa, cidade, gestor
+- Atalhos de navegação: Dashboard, Kanban, Lista, Acervo, Implantação, Cadastrar
+- Mostra mini-info do projeto (status, sub-fase) e navega direto
+
+---
+
+## Etapa 4 — Mobile + PWA
+
+**Mobile (Kanban e telas principais):**
+- `KanbanColumn`: largura mínima reduzida para mobile, scroll horizontal fluido com snap
+- Cards mais compactos em <768px (paddings/fontes menores, esconde campos opcionais)
+- `AppSidebar` já é responsivo via SidebarProvider — apenas garantir que abre como drawer no mobile
+- Dashboard: KPIs em grid 2 colunas no mobile (hoje quebra ruim)
+
+**PWA:**
+- O projeto **já tem** `vite-plugin-pwa` configurado em `vite.config.ts` com manifest e ícones
+- Vou habilitar de forma segura: `registerType: autoUpdate`, **NetworkFirst** para HTML (evita ficar preso em build antigo), `navigateFallbackDenylist` para `/~oauth`, e guarda anti-iframe no `main.tsx` (já existe parcialmente)
+- Não adiciono push notifications nesta rodada (exige backend dedicado de subscription + edge function); fica como próxima fase se você confirmar
+
+---
+
+## Ordem de execução
+1. Etapa 2 (SLA) — mais baixo risco, só visual
+2. Etapa 1 (Alertas) — depende de query nova mas não muda schema
+3. Etapa 3 (Command Palette)
+4. Etapa 4 (Mobile + PWA) — última porque mexe em build/manifest
+
+Sem mudanças de schema. Sem migrations. Sem impacto no Dashboard ou no fluxo do Kanban.
+
+## Validação
+Após cada etapa: rebuild + verificação visual no preview (desktop e mobile 390x844).
+
+---
+
+**Confirma este plano para eu começar pela Etapa 1 (SLA visual)?**

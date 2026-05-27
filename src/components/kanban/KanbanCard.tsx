@@ -131,7 +131,7 @@ export default function KanbanCard({ project: p, index, onUpdateObservations }: 
             )}
             <CardContent className="p-3 space-y-2">
               <div className="flex items-start gap-2">
-                <Building2 className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                <Building2 className={`h-3.5 w-3.5 text-primary mt-0.5 shrink-0 ${sla ? "ml-10" : ""}`} />
                 <span className="text-sm font-semibold leading-tight flex-1">{p.company_name}</span>
                 <div className="flex flex-col gap-1 items-end shrink-0">
                   {p.is_pilot && (

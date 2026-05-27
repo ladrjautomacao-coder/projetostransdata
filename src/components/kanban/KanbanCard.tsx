@@ -60,6 +60,10 @@ export default function KanbanCard({ project: p, index, onUpdateObservations }: 
     ? format(new Date(p.reached_implemented_at), "dd/MM/yyyy")
     : null;
 
+  // SLA: não aplicar em "Implementado" (encerrado) nem em "Outros" (suspenso)
+  const slaEligible = p.status !== "encerrado" && p.status !== "suspenso";
+  const sla = slaEligible && p.updated_at ? getSLA(p.updated_at) : null;
+
   const borderClass = returnedFromImplemented
     ? "border-l-4 border-l-red-500 bg-red-50/30 dark:bg-red-950/10"
     : p.is_pilot
@@ -77,9 +81,29 @@ export default function KanbanCard({ project: p, index, onUpdateObservations }: 
           {...dragProvided.dragHandleProps}
         >
           <Card
-            className={`relative cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow border-border/40 bg-card ${dragSnapshot.isDragging ? "shadow-lg ring-2 ring-primary/20" : ""} ${borderClass}`}
+            className={`relative cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow border-border/40 bg-card overflow-hidden ${dragSnapshot.isDragging ? "shadow-lg ring-2 ring-primary/20" : ""} ${borderClass}`}
             onClick={() => !dragSnapshot.isDragging && !open && navigate(`/projetos/${p.id}`, { state: { from: "/projetos/gestao" } })}
           >
+            {sla && (
+              <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      className={`absolute top-0 left-0 right-0 h-1 ${SLA_BAR[sla.level]} ${sla.level === "red" ? "animate-pulse" : ""}`}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">
+                    {SLA_LABEL[sla.level]} — parado há {sla.days} dia{sla.days !== 1 ? "s" : ""} nesta etapa
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            {sla && sla.level === "red" && (
+              <span className="absolute top-1.5 right-1.5 z-10" onClick={(e) => e.stopPropagation()}>
+                <Clock className="h-3 w-3 text-red-500 animate-pulse" />
+              </span>
+            )}
             {returnedFromImplemented && (
               <TooltipProvider delayDuration={150}>
                 <Tooltip>

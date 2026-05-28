@@ -425,8 +425,8 @@ export default function ProjectDetail() {
 
   // Passos pós-Implementado: extraídos de project_history (status_change após reached_implemented_at).
   // Caso o histórico não exista (projetos antigos), usa fallback: status atual + updated_at.
-  const postImplementedSteps = useMemo(() => {
-    if (!reachedImplemented || project.status === "encerrado") return [];
+  const postImplementedSteps = (() => {
+    if (!reachedImplemented || project.status === "encerrado") return [] as { status: ProjectStatus; date: string }[];
     const reachedAt = project.reached_implemented_at ? new Date(project.reached_implemented_at).getTime() : 0;
     const moves = history
       .filter(h => h.change_type === "status_change" && new Date(h.created_at).getTime() >= reachedAt)
@@ -435,9 +435,8 @@ export default function ProjectDetail() {
         status: (h.new_values?.status || null) as ProjectStatus | null,
         date: h.created_at as string,
       }))
-      .filter(m => !!m.status);
-    // Deduplica movimentações consecutivas para o mesmo status
-    const dedup: typeof moves = [];
+      .filter(m => !!m.status) as { status: ProjectStatus; date: string }[];
+    const dedup: { status: ProjectStatus; date: string }[] = [];
     moves.forEach(m => {
       const last = dedup[dedup.length - 1];
       if (!last || last.status !== m.status) dedup.push(m);
@@ -446,7 +445,8 @@ export default function ProjectDetail() {
       return [{ status: project.status as ProjectStatus, date: project.updated_at as string }];
     }
     return dedup;
-  }, [history, reachedImplemented, project.status, project.reached_implemented_at, project.updated_at]);
+  })();
+
 
   const timeline = [
     ...baseTimeline,

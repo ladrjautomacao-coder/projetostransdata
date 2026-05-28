@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, AlertTriangle, Clock, CalendarClock, UserX, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -28,11 +29,29 @@ const CATEGORY_META: Record<Category, { label: string; icon: typeof Bell; color:
   stuck: { label: "Parados há mais de 30 dias", icon: Clock, color: "text-yellow-600" },
   no_manager: { label: "Sem gestor designado", icon: UserX, color: "text-blue-600" },
 };
-
 export function AlertsBell() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [projects, setProjects] = useState<AlertProject[]>([]);
+  const storageKey = user ? `alerts:seen:${user.id}` : "alerts:seen:anon";
+  const [seen, setSeen] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      return new Set(raw ? (JSON.parse(raw) as string[]) : []);
+    } catch {
+      return new Set();
+    }
+  });
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      setSeen(new Set(raw ? (JSON.parse(raw) as string[]) : []));
+    } catch {
+      setSeen(new Set());
+    }
+  }, [storageKey]);
 
   useEffect(() => {
     let mounted = true;
@@ -66,7 +85,33 @@ export function AlertsBell() {
     return result;
   }, [projects]);
 
-  const total = grouped.returned.length + grouped.dzero.length + grouped.stuck.length + grouped.no_manager.length;
+  const activeKeys = useMemo(() => {
+    const keys: string[] = [];
+    (Object.keys(grouped) as Category[]).forEach(cat => {
+      grouped[cat].forEach(p => keys.push(`${cat}:${p.id}`));
+    });
+    return keys;
+  }, [grouped]);
+
+  const total = activeKeys.length;
+  const unseenTotal = useMemo(
+    () => activeKeys.filter(k => !seen.has(k)).length,
+    [activeKeys, seen]
+  );
+
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (next) {
+      // Mark current alerts as seen, and prune stale keys
+      const active = new Set(activeKeys);
+      const newSeen = new Set<string>(activeKeys);
+      seen.forEach(k => { if (active.has(k)) newSeen.add(k); });
+      setSeen(newSeen);
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(Array.from(newSeen)));
+      } catch { /* ignore */ }
+    }
+  };
 
   const go = (id: string) => {
     setOpen(false);
@@ -74,17 +119,18 @@ export function AlertsBell() {
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative h-8 w-8" aria-label="Alertas">
           <Bell className="h-4 w-4" />
-          {total > 0 && (
+          {unseenTotal > 0 && (
             <Badge className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px] bg-red-500 hover:bg-red-500 text-white border-0">
-              {total > 99 ? "99+" : total}
+              {unseenTotal > 99 ? "99+" : unseenTotal}
             </Badge>
           )}
         </Button>
       </PopoverTrigger>
+
       <PopoverContent align="end" className="w-96 p-0">
         <div className="p-3 border-b flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-primary" />

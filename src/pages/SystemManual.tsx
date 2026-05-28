@@ -99,13 +99,16 @@ const FILE_PATH = "manual-sistema.pdf";
 export default function SystemManual() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [exists, setExists] = useState<boolean | null>(null);
-  const [pdfData, setPdfData] = useState<Uint8Array | null>(null);
+  const [pdfViewerUrl, setPdfViewerUrl] = useState<string | null>(null);
   const [pageCount, setPageCount] = useState(0);
   const [viewerWidth, setViewerWidth] = useState(0);
   const [loadError, setLoadError] = useState<string | null>(null);
   const viewerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    let isActive = true;
+    let objectUrl: string | null = null;
+
     const { data } = supabase.storage.from(BUCKET).getPublicUrl(FILE_PATH);
     const url = `${data.publicUrl}?v=${Date.now()}`;
     setPdfUrl(url);
@@ -113,23 +116,42 @@ export default function SystemManual() {
     const loadPdf = async () => {
       try {
         setLoadError(null);
+        setExists(null);
         const response = await fetch(url);
 
         if (!response.ok) {
+          if (!isActive) return;
           setExists(false);
+          setPdfViewerUrl(null);
           return;
         }
 
-        const buffer = await response.arrayBuffer();
-        setPdfData(new Uint8Array(buffer));
+        const blob = await response.blob();
+        objectUrl = URL.createObjectURL(blob);
+
+        if (!isActive) {
+          URL.revokeObjectURL(objectUrl);
+          return;
+        }
+
+        setPdfViewerUrl(objectUrl);
         setExists(true);
       } catch {
+        if (!isActive) return;
         setExists(false);
+        setPdfViewerUrl(null);
         setLoadError("Não foi possível carregar o manual no momento.");
       }
     };
 
     void loadPdf();
+
+    return () => {
+      isActive = false;
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -187,9 +209,9 @@ export default function SystemManual() {
       ) : (
         <Card className="overflow-hidden border border-border/50 bg-card/80 backdrop-blur-sm">
           <div ref={viewerRef} className="max-h-[calc(100vh-200px)] overflow-auto bg-muted/20 p-4 sm:p-6">
-            {pdfData ? (
+            {pdfViewerUrl ? (
               <Document
-                file={{ data: pdfData }}
+                file={pdfViewerUrl}
                 loading={
                   <div className="flex min-h-[480px] items-center justify-center gap-2 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />

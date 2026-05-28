@@ -203,16 +203,16 @@ export default function SystemManual() {
               >
                 <div className="mx-auto flex max-w-5xl flex-col gap-4">
                   {Array.from({ length: pageCount }, (_, index) => (
-                    <div key={index} className="overflow-hidden rounded-md border border-border/60 bg-background shadow-sm">
-                      <Page
-                        pageNumber={index + 1}
-                        width={Math.max(Math.min(viewerWidth - 4, 1100), 280)}
-                        renderAnnotationLayer={false}
-                        renderTextLayer={false}
-                      />
-                    </div>
+                    <LazyPdfPage
+                      key={index}
+                      pageNumber={index + 1}
+                      width={pageWidth}
+                      estimatedHeight={estimatedPageHeight}
+                      scrollRoot={viewerRef.current}
+                    />
                   ))}
                 </div>
+
               </Document>
             ) : (
               <div className="flex min-h-[480px] items-center justify-center gap-2 text-sm text-muted-foreground">

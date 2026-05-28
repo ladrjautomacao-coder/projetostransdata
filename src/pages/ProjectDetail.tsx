@@ -450,12 +450,13 @@ export default function ProjectDetail() {
 
   const timeline = [
     ...baseTimeline,
-    ...postImplementedSteps.map((s, i) => ({
+    ...postImplementedSteps.map((s) => ({
       label: statusLabels[s.status as ProjectStatus] || "—",
-      date: s.date,
+      date: s.date ? format(new Date(s.date), "yyyy-MM-dd") : null,
       done: true,
       returned: true,
     })),
+
   ];
 
   // Etapa "atual": último passo se houve movimentações pós-Implementado; senão, status corrente.

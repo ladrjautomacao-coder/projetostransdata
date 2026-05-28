@@ -55,16 +55,36 @@ export default function SystemManual() {
       ) : (
         <Card className="overflow-hidden border border-border/50 bg-card/80 backdrop-blur-sm">
           {pdfUrl && (
-            <iframe
-              src={pdfUrl}
-              title="Manual do Sistema"
-              className="w-full"
-              style={{ height: "calc(100vh - 200px)", minHeight: 500, border: 0 }}
-            />
+            <object
+              data={`${pdfUrl}#toolbar=1&navpanes=1&view=FitH`}
+              type="application/pdf"
+              className="w-full block"
+              style={{ height: "calc(100vh - 200px)", minHeight: 500 }}
+            >
+              <embed
+                src={`${pdfUrl}#toolbar=1&navpanes=1&view=FitH`}
+                type="application/pdf"
+                className="w-full block"
+                style={{ height: "calc(100vh - 200px)", minHeight: 500 }}
+              />
+              <div className="p-8 text-center text-sm text-muted-foreground">
+                Seu navegador não conseguiu exibir o PDF.{" "}
+                <a href={pdfUrl} target="_blank" rel="noreferrer" className="text-primary underline">
+                  Abrir em nova aba
+                </a>{" "}
+                ou use o botão "Baixar PDF".
+              </div>
+            </object>
           )}
           <div className="p-3 text-xs text-muted-foreground flex items-center gap-2 border-t border-border/40">
             <FileText className="h-3.5 w-3.5" />
-            Se o PDF não carregar no seu navegador, use o botão "Baixar PDF" acima.
+            Se o PDF não carregar no seu navegador, use o botão "Baixar PDF" acima ou{" "}
+            {pdfUrl && (
+              <a href={pdfUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                abra em nova aba
+              </a>
+            )}
+            .
           </div>
         </Card>
       )}

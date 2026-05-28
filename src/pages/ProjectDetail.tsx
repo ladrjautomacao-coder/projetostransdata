@@ -413,16 +413,54 @@ export default function ProjectDetail() {
   const reachedImplementedAt = project.reached_implemented_at
     ? format(new Date(project.reached_implemented_at), "dd/MM/yyyy")
     : null;
+
   // Linha do tempo segue a fase atual; "Implementado" mantém o check permanente caso
   // o projeto já tenha passado por essa fase (mesmo se voltou para outra coluna do Kanban).
-  const timeline = [
+  const baseTimeline: Array<{ label: string; date: string | null; done: boolean; reachedBadge?: boolean; returned?: boolean }> = [
     { label: "Contratação", date: project.contract_date, done: true },
     { label: "D-zero", date: project.d_zero_date, done: !!project.d_zero_date || currentStatusIndex >= 2 || reachedImplemented },
     { label: "Handover", date: project.handover_date, done: !!project.handover_date || currentStatusIndex >= 3 || reachedImplemented },
     { label: "Implementado", date: null, done: currentStatusIndex >= 3 || reachedImplemented, reachedBadge: reachedImplemented && currentStatusIndex < 3 },
   ];
-  // Etapa "atual" reflete o status corrente do projeto (não regride por reached_implemented).
-  const currentMilestoneIndex = currentStatusIndex;
+
+  // Passos pós-Implementado: extraídos de project_history (status_change após reached_implemented_at).
+  // Caso o histórico não exista (projetos antigos), usa fallback: status atual + updated_at.
+  const postImplementedSteps = useMemo(() => {
+    if (!reachedImplemented || project.status === "encerrado") return [];
+    const reachedAt = project.reached_implemented_at ? new Date(project.reached_implemented_at).getTime() : 0;
+    const moves = history
+      .filter(h => h.change_type === "status_change" && new Date(h.created_at).getTime() >= reachedAt)
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+      .map(h => ({
+        status: (h.new_values?.status || null) as ProjectStatus | null,
+        date: h.created_at as string,
+      }))
+      .filter(m => !!m.status);
+    // Deduplica movimentações consecutivas para o mesmo status
+    const dedup: typeof moves = [];
+    moves.forEach(m => {
+      const last = dedup[dedup.length - 1];
+      if (!last || last.status !== m.status) dedup.push(m);
+    });
+    if (dedup.length === 0) {
+      return [{ status: project.status as ProjectStatus, date: project.updated_at as string }];
+    }
+    return dedup;
+  }, [history, reachedImplemented, project.status, project.reached_implemented_at, project.updated_at]);
+
+  const timeline = [
+    ...baseTimeline,
+    ...postImplementedSteps.map((s, i) => ({
+      label: statusLabels[s.status as ProjectStatus] || "—",
+      date: s.date,
+      done: true,
+      returned: true,
+    })),
+  ];
+
+  // Etapa "atual": último passo se houve movimentações pós-Implementado; senão, status corrente.
+  const currentMilestoneIndex = postImplementedSteps.length > 0 ? timeline.length - 1 : currentStatusIndex;
+
 
   const projectTypeName = project.project_type?.name || "—";
   const solutionNames = project.project_solutions?.map((ps: any) => ps.solution?.name).filter(Boolean) || [];

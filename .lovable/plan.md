@@ -1,17 +1,37 @@
 ## Objetivo
-Quando o usuário clicar no sino de alertas (badge vermelho com número), os alertas atuais devem ser marcados como "vistos" e o badge deve sumir, parando de alertar até que novos alertas surjam.
 
-## Comportamento proposto
-- Ao abrir o popover do sino, registrar localmente (localStorage por usuário) os IDs dos alertas atualmente exibidos como "vistos".
-- O badge vermelho com contador só conta alertas que ainda NÃO foram vistos.
-- Se novos projetos entrarem em estado de alerta depois (ex: novo D-zero vencendo, novo retorno de Implementado), o badge volta a aparecer apenas para esses novos.
-- A lista dentro do popover continua mostrando todos os alertas ativos (vistos ou não), para que o usuário ainda consiga consultá-los.
+Após o projeto atingir **Implementado**, se ele for movido para outro Kanban (Comercial, Planejamento, Implantação, Outros), a Linha do Tempo deve **continuar** mostrando esse novo passo (e os seguintes, caso haja mais movimentações), em vez de parar em "Implementado". Isso garante rastreabilidade completa do percurso do projeto.
 
-## Alterações técnicas
-Arquivo: `src/components/AlertsBell.tsx`
-- Criar uma chave em `localStorage` por usuário, ex: `alerts:seen:<userId>`, contendo um conjunto de chaves `"${categoria}:${projectId}"`.
-- Computar `unseenTotal` = alertas atuais cuja chave não está no conjunto de vistos. O badge usa `unseenTotal` em vez de `total`.
-- No `onOpenChange` do Popover, quando abrir, salvar todas as chaves atuais como vistas e atualizar o estado.
-- Limpar do conjunto de vistos as chaves que não estão mais ativas (para evitar crescimento infinito).
+## Mudança proposta (apenas UI / leitura)
 
-Sem mudanças de backend, sem mudanças em outras telas.
+Arquivo: `src/pages/ProjectDetail.tsx` (seção "Linha do Tempo", linhas ~409–520).
+
+1. **Buscar histórico pós-Implementado** da tabela `project_history`:
+   - Consultar registros do `project_id` atual onde `change_type = 'status_change'` (ou equivalente já gravado), `created_at >= reached_implemented_at`, ordenados por data.
+   - Extrair sequência de status para os quais o projeto foi movido depois de atingir Implementado, deduplicando movimentações consecutivas para o mesmo status.
+   - Caso o `project_history` não esteja registrando mudanças de status (a verificar no código que faz update do status), usar como fallback apenas o **status atual** + `updated_at` como único passo adicional.
+
+2. **Compor a timeline dinâmica** quando `reached_implemented === true`:
+   - Manter os 4 passos fixos atuais: Contratação → D-zero → Handover → Implementado (sempre marcado como "Já atingido").
+   - **Anexar** N passos extras, um para cada movimentação posterior:
+     - Label: nome amigável da fase (`statusLabels[status]`, ex.: "Comercial", "Planejamento", "Implantação", "Outros").
+     - Data: `created_at` da mudança (formato dd/MM/yyyy).
+     - Marcado como concluído (✓) para etapas intermediárias; a **última** recebe o destaque de "etapa atual" (pulse/glow animado) em vez do "Implementado".
+   - Numeração contínua (5, 6, 7…).
+
+3. **Banner vermelho existente** ("Projeto já atingiu Implementado em … e foi movido para …") permanece, pois resume o estado atual.
+
+4. **Estilo visual** dos passos extras: igual aos demais (círculo numerado), mas com um indicador sutil de "retorno" — por exemplo, borda em `border-red-400` quando o status atual não é `encerrado`, para reforçar que está fora do fluxo ideal. Sem novas cores fora dos tokens do design system.
+
+## Detalhes técnicos
+
+- Adicionar `useEffect` que dispara após carregar o `project` e quando `reached_implemented` for `true`, consultando `project_history` via supabase client.
+- Estado novo: `postImplementedSteps: { status: ProjectStatus; date: string }[]`.
+- Render: substituir o array `timeline` fixo por `[...baseTimeline, ...postImplementedSteps.map(...)]`.
+- `currentMilestoneIndex` passa a ser `timeline.length - 1` quando há passos pós-Implementado.
+- Sem mudanças no banco: `project_history` já existe; verificar (no código de update) que mudanças de status estão sendo gravadas — se não estiverem, planejar instrumentar isso em uma etapa separada antes de ativar a UI completa.
+
+## Fora de escopo
+
+- Mudanças no Kanban, em outras telas, ou em regras de negócio do fluxo de status.
+- Edição manual desses passos pelo usuário.

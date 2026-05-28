@@ -22,6 +22,7 @@ import Implantacao from "./pages/Implantacao";
 import AcervoTecnico from "./pages/AcervoTecnico";
 
 import UserManagement from "./pages/UserManagement";
+import SystemManual from "./pages/SystemManual";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/admin/equipe" element={<AdminRoute><TeamMembers /></AdminRoute>} />
               <Route path="/admin/produtos" element={<AdminRoute><Products /></AdminRoute>} />
               <Route path="/admin/usuarios" element={<AdminRoute><UserManagement /></AdminRoute>} />
+              <Route path="/manual" element={<SystemManual />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -1,4 +1,4 @@
-import { FolderKanban, LayoutDashboard, HardHat, BookOpen, Users, Package, LogOut, Signal, ShieldCheck } from "lucide-react";
+import { FolderKanban, LayoutDashboard, HardHat, BookOpen, BookOpenCheck, Users, Package, LogOut, Signal, ShieldCheck } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -16,9 +16,10 @@ const mainItems = [
 ];
 
 const adminItems = [
-  { title: "Equipe", url: "/admin/equipe", icon: Users },
-  { title: "Produtos", url: "/admin/produtos", icon: Package },
-  { title: "Usuários", url: "/admin/usuarios", icon: ShieldCheck },
+  { title: "Equipe", url: "/admin/equipe", icon: Users, adminOnly: true },
+  { title: "Produtos", url: "/admin/produtos", icon: Package, adminOnly: true },
+  { title: "Usuários", url: "/admin/usuarios", icon: ShieldCheck, adminOnly: true },
+  { title: "Manual do Sistema", url: "/manual", icon: BookOpenCheck, adminOnly: false },
 ];
 
 export function AppSidebar() {
@@ -63,32 +64,36 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {isAdmin && (
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-[0.15em] font-semibold">
-            <Signal className="h-3 w-3 mr-1.5 text-sidebar-primary" />
-            Administração
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {adminItems.map(item => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className="hover:bg-sidebar-accent transition-all duration-200 group"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium border-l-2 border-sidebar-primary"
-                    >
-                      <item.icon className="mr-2 h-4 w-4 group-hover:text-sidebar-primary transition-colors" />
-                      <span>{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        )}
+        {(() => {
+          const visibleAdminItems = adminItems.filter(i => !i.adminOnly || isAdmin);
+          if (visibleAdminItems.length === 0) return null;
+          return (
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-[0.15em] font-semibold">
+                <Signal className="h-3 w-3 mr-1.5 text-sidebar-primary" />
+                Administração
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {visibleAdminItems.map(item => (
+                    <SidebarMenuItem key={item.url}>
+                      <SidebarMenuButton asChild>
+                        <NavLink
+                          to={item.url}
+                          className="hover:bg-sidebar-accent transition-all duration-200 group"
+                          activeClassName="bg-sidebar-accent text-sidebar-primary font-medium border-l-2 border-sidebar-primary"
+                        >
+                          <item.icon className="mr-2 h-4 w-4 group-hover:text-sidebar-primary transition-colors" />
+                          <span>{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          );
+        })()}
       </SidebarContent>
 
       {/* Footer with tech divider */}

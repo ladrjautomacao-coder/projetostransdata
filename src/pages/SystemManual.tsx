@@ -146,6 +146,14 @@ export default function SystemManual() {
     return () => observer.disconnect();
   }, []);
 
+  const pageWidth = useMemo(
+    () => Math.max(Math.min(viewerWidth - 4, 1100), 280),
+    [viewerWidth],
+  );
+  // A4 aspect ratio (~1.414) as a sensible placeholder height before render.
+  const estimatedPageHeight = Math.round(pageWidth * 1.414);
+
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BookOpen, Download, FileText, AlertCircle, Loader2 } from "lucide-react";
@@ -9,6 +9,89 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
   import.meta.url,
 ).toString();
+
+type LazyPdfPageProps = {
+  pageNumber: number;
+  width: number;
+  estimatedHeight: number;
+  scrollRoot: HTMLElement | null;
+};
+
+function LazyPdfPage({ pageNumber, width, estimatedHeight, scrollRoot }: LazyPdfPageProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [visible, setVisible] = useState(false);
+  const [rendered, setRendered] = useState(false);
+  const [measuredHeight, setMeasuredHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setVisible(true);
+            setRendered(true);
+          } else {
+            setVisible(false);
+          }
+        }
+      },
+      {
+        root: scrollRoot ?? null,
+        // Pre-render pages a viewport ahead/behind for smooth scrolling.
+        rootMargin: "800px 0px 800px 0px",
+        threshold: 0.01,
+      },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [scrollRoot]);
+
+  const placeholderHeight = measuredHeight ?? estimatedHeight;
+
+  return (
+    <div
+      ref={containerRef}
+      className="overflow-hidden rounded-md border border-border/60 bg-background shadow-sm"
+      style={{ minHeight: placeholderHeight }}
+    >
+      {rendered ? (
+        <div style={{ display: visible || measuredHeight ? "block" : "block" }}>
+          <Page
+            pageNumber={pageNumber}
+            width={width}
+            renderAnnotationLayer={false}
+            renderTextLayer={false}
+            onRenderSuccess={() => {
+              const node = containerRef.current;
+              if (node) setMeasuredHeight(node.clientHeight);
+            }}
+            loading={
+              <div
+                className="flex items-center justify-center text-xs text-muted-foreground"
+                style={{ height: placeholderHeight }}
+              >
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Página {pageNumber}
+              </div>
+            }
+          />
+        </div>
+      ) : (
+        <div
+          className="flex items-center justify-center text-xs text-muted-foreground"
+          style={{ height: placeholderHeight }}
+        >
+          Página {pageNumber}
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 const BUCKET = "manuals";
 const FILE_PATH = "manual-sistema.pdf";

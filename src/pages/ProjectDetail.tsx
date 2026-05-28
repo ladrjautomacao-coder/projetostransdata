@@ -523,7 +523,8 @@ export default function ProjectDetail() {
                     <motion.div
                       className={cn(
                         "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold relative",
-                        t.done ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                        t.done ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                        (t as any).returned && "ring-2 ring-red-400 ring-offset-2 ring-offset-background"
                       )}
                       animate={isCurrentStep ? {
                         boxShadow: [
@@ -550,6 +551,12 @@ export default function ProjectDetail() {
                       Já atingido
                     </span>
                   )}
+                  {(t as any).returned && (
+                    <span className="mt-1 text-[9px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400">
+                      Retorno
+                    </span>
+                  )}
+
                 </div>
               );
             })}

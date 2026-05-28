@@ -1,81 +1,33 @@
-# Plano — Melhorias Alto Impacto + Mobile/PWA
+## Objetivo
+Criar uma nova aba **"Manual do Sistema"** dentro do grupo **Administração** do menu lateral, acessível a todos usuários autenticados. A página exibirá o PDF do manual inline (leitura no navegador) e oferecerá um botão para download.
 
-## Sobre o "backup nomeado"
-O Lovable cria automaticamente uma versão a cada alteração no histórico (botão de versões no topo). Não existe um comando para nomear branches via agente, mas para servir como **checkpoint nomeado** vou:
-- Garantir que **nada** seja alterado antes desta resposta ser aprovada;
-- Após aprovar, a primeira mudança criará uma versão que você pode renomear no histórico para `backup-pre-melhorias` (clique nos 3 pontos da versão → renomear);
-- Cada uma das 4 entregas abaixo será feita em **commits separados**, então cada etapa tem seu próprio ponto de restauração.
+## Implementação
 
-Se quiser uma garantia extra, posso também gerar um **dump SQL dos dados atuais** (projetos, kanban, history, users) para `/mnt/documents/` antes de começar — só me avise.
+### 1. Storage (Lovable Cloud)
+- Criar bucket público `manuals` via migração SQL.
+- Políticas:
+  - Leitura pública (qualquer usuário autenticado consegue ler).
+  - Upload/atualização restrita ao role `service_role` (eu subo via tool quando você enviar o PDF).
+- Arquivo padrão: `manuals/manual-sistema.pdf`.
 
----
+### 2. Nova rota e página
+- Arquivo: `src/pages/SystemManual.tsx`
+- Conteúdo:
+  - Cabeçalho com título "Manual do Sistema", ícone `BookOpen` e botão **"Baixar PDF"** (link para a URL pública do Storage com `download` attr).
+  - Visualizador inline: `<iframe>` apontando para a URL pública do PDF, altura responsiva (`calc(100vh - 200px)`), borda arredondada e estilo glassmorphism alinhado ao restante do sistema.
+  - Mensagem de fallback caso o navegador não consiga renderizar PDF nativamente.
 
-## Etapa 1 — Central de Alertas Global (sino no header)
+### 3. Roteamento
+- Em `src/App.tsx`: adicionar `<Route path="/manual" element={<SystemManual />} />` dentro do `AppLayout` protegido (sem `AdminRoute`, pois é para todos logados).
 
-**Onde:** `src/components/AppLayout.tsx` (header já existe), novo componente `src/components/AlertsBell.tsx`.
+### 4. Menu lateral
+- Em `src/components/AppSidebar.tsx`: adicionar item **"Manual do Sistema"** no grupo **Administração**, com ícone `BookOpen` e rota `/manual`. Aparece para todos usuários (sem checagem `isAdmin`).
 
-**O que detecta** (consulta única ao Supabase, refetch a cada 60s):
-- Projetos retornados de Implementado (`reached_implemented=true AND status!='encerrado'`)
-- D-zero vencendo em ≤7 dias (`d_zero_date BETWEEN today AND today+7`)
-- Projetos parados >30 dias na mesma coluna (`updated_at < today-30`)
-- Projetos sem gestor (`manager_id IS NULL`)
+### 5. Command Palette
+- Em `src/components/CommandPalette.tsx`: adicionar entrada de navegação para `/manual` para busca rápida via Ctrl+K.
 
-**UI:** Ícone de sino no header com badge de contagem. Popover com lista agrupada por categoria, clique navega para o projeto.
+### 6. Upload do PDF
+- Após sua aprovação do plano e envio do PDF no próximo turno, faço o upload para `manuals/manual-sistema.pdf` no bucket recém-criado.
 
----
-
-## Etapa 2 — SLA / Heat Map nos cards do Kanban
-
-**Onde:** `src/components/kanban/KanbanCard.tsx`.
-
-**Regras** (baseado em `updated_at`):
-- 0–7 dias → tarja verde lateral
-- 8–15 dias → tarja amarela
-- 16–30 dias → tarja laranja
-- >30 dias → tarja vermelha + ícone de relógio piscando
-
-Tooltip mostra "Parado há X dias nesta etapa". Não conflita com a tarja do "retornou de Implementado" (que continua tendo prioridade visual).
-
----
-
-## Etapa 3 — Command Palette (Ctrl/Cmd+K)
-
-**Onde:** Novo `src/components/CommandPalette.tsx` montado no `AppLayout`. Usa `@/components/ui/command` (já instalado).
-
-**O que faz:**
-- Atalho global `Ctrl+K` (Windows) / `Cmd+K` (Mac)
-- Busca projetos por nome da empresa, cidade, gestor
-- Atalhos de navegação: Dashboard, Kanban, Lista, Acervo, Implantação, Cadastrar
-- Mostra mini-info do projeto (status, sub-fase) e navega direto
-
----
-
-## Etapa 4 — Mobile + PWA
-
-**Mobile (Kanban e telas principais):**
-- `KanbanColumn`: largura mínima reduzida para mobile, scroll horizontal fluido com snap
-- Cards mais compactos em <768px (paddings/fontes menores, esconde campos opcionais)
-- `AppSidebar` já é responsivo via SidebarProvider — apenas garantir que abre como drawer no mobile
-- Dashboard: KPIs em grid 2 colunas no mobile (hoje quebra ruim)
-
-**PWA:**
-- O projeto **já tem** `vite-plugin-pwa` configurado em `vite.config.ts` com manifest e ícones
-- Vou habilitar de forma segura: `registerType: autoUpdate`, **NetworkFirst** para HTML (evita ficar preso em build antigo), `navigateFallbackDenylist` para `/~oauth`, e guarda anti-iframe no `main.tsx` (já existe parcialmente)
-- Não adiciono push notifications nesta rodada (exige backend dedicado de subscription + edge function); fica como próxima fase se você confirmar
-
----
-
-## Ordem de execução
-1. Etapa 2 (SLA) — mais baixo risco, só visual
-2. Etapa 1 (Alertas) — depende de query nova mas não muda schema
-3. Etapa 3 (Command Palette)
-4. Etapa 4 (Mobile + PWA) — última porque mexe em build/manifest
-
-Sem mudanças de schema. Sem migrations. Sem impacto no Dashboard ou no fluxo do Kanban.
-
-## Validação
-Após cada etapa: rebuild + verificação visual no preview (desktop e mobile 390x844).
-
----
-
-**Confirma este plano para eu começar pela Etapa 1 (SLA visual)?**
+## Observação técnica
+O grupo de Administração no sidebar atualmente é renderizado somente para admins. Para manter o item visível para todos, vou colocar **"Manual do Sistema"** como um item permitido nesse grupo independente do `isAdmin`, ou (alternativa) movê-lo para o grupo principal logo abaixo de Administração. Vou usar a primeira abordagem — o grupo Administração passa a renderizar sempre que houver ao menos um item permitido, e o Manual será o item padrão visível para usuários não-admin.

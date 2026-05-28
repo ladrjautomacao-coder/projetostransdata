@@ -78,6 +78,9 @@ export function CommandPalette() {
           <CommandItem onSelect={() => go("/acervo")}>
             <BookOpen className="mr-2 h-4 w-4" /> Acervo Técnico
           </CommandItem>
+          <CommandItem onSelect={() => go("/manual")}>
+            <BookOpen className="mr-2 h-4 w-4" /> Manual do Sistema
+          </CommandItem>
           {isAdmin && (
             <>
               <CommandItem onSelect={() => go("/projetos/novo")}>

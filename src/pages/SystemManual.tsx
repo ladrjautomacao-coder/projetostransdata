@@ -1,8 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { BookOpen, Download, FileText, AlertCircle } from "lucide-react";
+import { BookOpen, Download, FileText, AlertCircle, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Document, Page, pdfjs } from "react-pdf";
+
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url,
+).toString();
 
 const BUCKET = "manuals";
 const FILE_PATH = "manual-sistema.pdf";
@@ -10,16 +16,51 @@ const FILE_PATH = "manual-sistema.pdf";
 export default function SystemManual() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [exists, setExists] = useState<boolean | null>(null);
+  const [pdfData, setPdfData] = useState<Uint8Array | null>(null);
+  const [pageCount, setPageCount] = useState(0);
+  const [viewerWidth, setViewerWidth] = useState(0);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const viewerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const { data } = supabase.storage.from(BUCKET).getPublicUrl(FILE_PATH);
     const url = `${data.publicUrl}?v=${Date.now()}`;
     setPdfUrl(url);
 
-    // check existence
-    fetch(url, { method: "HEAD" })
-      .then(r => setExists(r.ok))
-      .catch(() => setExists(false));
+    const loadPdf = async () => {
+      try {
+        setLoadError(null);
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          setExists(false);
+          return;
+        }
+
+        const buffer = await response.arrayBuffer();
+        setPdfData(new Uint8Array(buffer));
+        setExists(true);
+      } catch {
+        setExists(false);
+        setLoadError("Não foi possível carregar o manual no momento.");
+      }
+    };
+
+    void loadPdf();
+  }, []);
+
+  useEffect(() => {
+    if (!viewerRef.current) return;
+
+    const element = viewerRef.current;
+    const updateWidth = () => setViewerWidth(element.clientWidth);
+
+    updateWidth();
+
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(element);
+
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -49,36 +90,57 @@ export default function SystemManual() {
           <AlertCircle className="h-10 w-10 text-amber-500" />
           <h2 className="text-lg font-semibold">Manual ainda não disponível</h2>
           <p className="text-sm text-muted-foreground max-w-md">
-            O arquivo do manual ainda não foi enviado. Ele aparecerá aqui assim que for publicado.
+            {loadError ?? "O arquivo do manual ainda não foi enviado. Ele aparecerá aqui assim que for publicado."}
           </p>
         </Card>
       ) : (
         <Card className="overflow-hidden border border-border/50 bg-card/80 backdrop-blur-sm">
-          {pdfUrl && (
-            <object
-              data={`${pdfUrl}#toolbar=1&navpanes=1&view=FitH`}
-              type="application/pdf"
-              className="w-full block"
-              style={{ height: "calc(100vh - 200px)", minHeight: 500 }}
-            >
-              <embed
-                src={`${pdfUrl}#toolbar=1&navpanes=1&view=FitH`}
-                type="application/pdf"
-                className="w-full block"
-                style={{ height: "calc(100vh - 200px)", minHeight: 500 }}
-              />
-              <div className="p-8 text-center text-sm text-muted-foreground">
-                Seu navegador não conseguiu exibir o PDF.{" "}
-                <a href={pdfUrl} target="_blank" rel="noreferrer" className="text-primary underline">
-                  Abrir em nova aba
-                </a>{" "}
-                ou use o botão "Baixar PDF".
+          <div ref={viewerRef} className="max-h-[calc(100vh-200px)] overflow-auto bg-muted/20 p-4 sm:p-6">
+            {pdfData ? (
+              <Document
+                file={{ data: pdfData }}
+                loading={
+                  <div className="flex min-h-[480px] items-center justify-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Carregando manual...
+                  </div>
+                }
+                error={
+                  <div className="flex min-h-[480px] flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground">
+                    <AlertCircle className="h-8 w-8 text-destructive" />
+                    <p>Não foi possível renderizar o PDF nesta tela.</p>
+                    {pdfUrl && (
+                      <a href={pdfUrl} target="_blank" rel="noreferrer" className="text-primary underline">
+                        Abrir em nova aba
+                      </a>
+                    )}
+                  </div>
+                }
+                onLoadSuccess={({ numPages }) => setPageCount(numPages)}
+              >
+                <div className="mx-auto flex max-w-5xl flex-col gap-4">
+                  {Array.from({ length: pageCount }, (_, index) => (
+                    <div key={index} className="overflow-hidden rounded-md border border-border/60 bg-background shadow-sm">
+                      <Page
+                        pageNumber={index + 1}
+                        width={Math.max(Math.min(viewerWidth - 4, 1100), 280)}
+                        renderAnnotationLayer={false}
+                        renderTextLayer={false}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </Document>
+            ) : (
+              <div className="flex min-h-[480px] items-center justify-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Preparando visualização do manual...
               </div>
-            </object>
-          )}
+            )}
+          </div>
           <div className="p-3 text-xs text-muted-foreground flex items-center gap-2 border-t border-border/40">
             <FileText className="h-3.5 w-3.5" />
-            Se o PDF não carregar no seu navegador, use o botão "Baixar PDF" acima ou{" "}
+            Se a visualização não abrir corretamente, use o botão "Baixar PDF" acima ou{" "}
             {pdfUrl && (
               <a href={pdfUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">
                 abra em nova aba

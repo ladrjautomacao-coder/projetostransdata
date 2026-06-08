@@ -30,7 +30,7 @@ export function AppSidebar() {
       {/* Logo area with tech styling */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-sidebar-border relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-sidebar-primary/5 to-transparent" />
-        <img src={logoTransmobile} alt="TransMobile" className="h-9 w-auto relative z-10 rounded-lg" />
+        <img src={logoTransdata.url} alt="Transdata" className="h-10 w-auto relative z-10 rounded-lg" />
         <div className="flex flex-col relative z-10">
           <span className="text-[10px] uppercase tracking-[0.2em] text-sidebar-primary font-semibold">Sistema de Gestão</span>
           <span className="text-xs text-sidebar-foreground/50">{profile?.full_name || "Usuário"}</span>

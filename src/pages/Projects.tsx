@@ -57,7 +57,7 @@ export default function Projects() {
           Projetos
         </h1>
         <p className="text-muted-foreground mt-2 text-sm max-w-md mx-auto">
-          Gerencie, monitore e analise seus projetos de telemetria
+          Gerencie, monitore e analise seus projetos de bilhetagem
         </p>
       </div>
 

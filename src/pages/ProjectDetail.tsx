@@ -71,6 +71,9 @@ export default function ProjectDetail() {
   const [complementaryFleet, setComplementaryFleet] = useState<string>("0");
   const [implementedFleet, setImplementedFleet] = useState<string>("0");
   const [observations, setObservations] = useState("");
+  const [notes, setNotes] = useState<any[]>([]);
+  const [newNote, setNewNote] = useState("");
+  const [addingNote, setAddingNote] = useState(false);
 
   // Lookups
   const [executives, setExecutives] = useState<{ id: string; full_name: string }[]>([]);

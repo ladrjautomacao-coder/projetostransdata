@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import logoTransmobile from "@/assets/logo-transmobile.png";
+import logoTransdata from "@/assets/logo-transdata.png.asset.json";
 
 const LETTERS_TRANS = "TRANS".split("");
-const LETTERS_MOBILE = "MOBILE".split("");
+const LETTERS_MOBILE = "DATA".split("");
 
 function MiniRobot({ onComplete }: { onComplete: () => void }) {
   return (

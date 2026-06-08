@@ -6,7 +6,7 @@ import {
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import logoTransmobile from "@/assets/logo-transmobile.png";
+import logoTransdata from "@/assets/logo-transdata.png.asset.json";
 
 const mainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },

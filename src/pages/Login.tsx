@@ -9,7 +9,7 @@ import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Mail, Lock, User, Signal, Briefcase } from "lucide-react";
 import { motion } from "framer-motion";
-import logoTransmobile from "@/assets/logo-transmobile.png";
+import logoTransdata from "@/assets/logo-transdata.png.asset.json";
 import LogoAnimation from "@/components/LogoAnimation";
 
 function AnimatedGrid() {

@@ -9,7 +9,7 @@ import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Mail, Lock, User, Signal, Briefcase } from "lucide-react";
 import { motion } from "framer-motion";
-import logoTransmobile from "@/assets/logo-transmobile.png";
+import logoTransdata from "@/assets/logo-transdata.png.asset.json";
 import LogoAnimation from "@/components/LogoAnimation";
 
 function AnimatedGrid() {
@@ -163,7 +163,7 @@ export default function Login() {
           <LogoAnimation />
           <div>
             <h2 className="text-3xl font-bold text-background mb-3">Sistema de Gestão</h2>
-            <p className="text-background/50 text-lg">Plataforma de gerenciamento de projetos de telemetria</p>
+            <p className="text-background/50 text-lg">Plataforma de gerenciamento de projetos de bilhetagem</p>
           </div>
           <motion.div
             className="flex items-center justify-center gap-2 text-primary max-w-xs mx-auto"
@@ -187,7 +187,7 @@ export default function Login() {
           <Card className="w-full max-w-md shadow-lg border-primary/20 glow-orange">
             <CardHeader className="text-center space-y-3">
               <div className="lg:hidden flex justify-center mb-2">
-                <img src={logoTransmobile} alt="TransMobile" className="h-10" />
+                <img src={logoTransdata.url} alt="Transdata" className="h-12 rounded-lg bg-primary p-1.5" />
               </div>
               <CardTitle className="text-2xl font-bold">
                 {isSignUp ? "Criar Conta" : "Acessar Sistema"}

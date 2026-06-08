@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import logoTransmobile from "@/assets/logo-transmobile.png";
+import logoTransdata from "@/assets/logo-transdata.png.asset.json";
 
 const LETTERS_TRANS = "TRANS".split("");
-const LETTERS_MOBILE = "MOBILE".split("");
+const LETTERS_MOBILE = "DATA".split("");
 
 function MiniRobot({ onComplete }: { onComplete: () => void }) {
   return (
@@ -181,9 +181,9 @@ export default function LogoAnimation() {
         ) : (
           <motion.img
             key="logo"
-            src={logoTransmobile}
-            alt="TransMobile"
-            className="h-16 rounded-xl z-10 relative"
+            src={logoTransdata.url}
+            alt="Transdata"
+            className="h-20 rounded-xl z-10 relative bg-primary p-2"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, type: "spring" }}

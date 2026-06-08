@@ -135,6 +135,39 @@ export default function ProjectDetail() {
     setLoading(false);
   };
 
+  const loadNotes = async () => {
+    if (!id) return;
+    const { data } = await supabase.from("project_notes").select("*").eq("project_id", id).order("created_at", { ascending: false });
+    if (!data) { setNotes([]); return; }
+    const userIds = [...new Set(data.map(n => n.created_by).filter(Boolean))] as string[];
+    let profileMap: Record<string, string> = {};
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", userIds);
+      if (profiles) profiles.forEach(p => { profileMap[p.user_id] = p.full_name || "Usuário"; });
+    }
+    setNotes(data.map(n => ({ ...n, _user_name: n.created_by ? (profileMap[n.created_by] || "Usuário") : "Sistema" })));
+  };
+
+  const handleAddNote = async () => {
+    if (!id || !newNote.trim()) return;
+    setAddingNote(true);
+    try {
+      const { error } = await supabase.from("project_notes").insert({
+        project_id: id,
+        content: newNote.trim(),
+        created_by: user?.id || null,
+      });
+      if (error) throw error;
+      setNewNote("");
+      toast({ title: "Acompanhamento registrado!" });
+      loadNotes();
+    } catch (err: any) {
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    } finally {
+      setAddingNote(false);
+    }
+  };
+
   const loadHistory = async () => {
     if (!id) return;
     const { data } = await supabase.from("project_history").select("*").eq("project_id", id).order("created_at", { ascending: false });

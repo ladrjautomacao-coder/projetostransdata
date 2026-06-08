@@ -71,6 +71,9 @@ export default function ProjectDetail() {
   const [complementaryFleet, setComplementaryFleet] = useState<string>("0");
   const [implementedFleet, setImplementedFleet] = useState<string>("0");
   const [observations, setObservations] = useState("");
+  const [notes, setNotes] = useState<any[]>([]);
+  const [newNote, setNewNote] = useState("");
+  const [addingNote, setAddingNote] = useState(false);
 
   // Lookups
   const [executives, setExecutives] = useState<{ id: string; full_name: string }[]>([]);
@@ -132,6 +135,39 @@ export default function ProjectDetail() {
     setLoading(false);
   };
 
+  const loadNotes = async () => {
+    if (!id) return;
+    const { data } = await supabase.from("project_notes").select("*").eq("project_id", id).order("created_at", { ascending: false });
+    if (!data) { setNotes([]); return; }
+    const userIds = [...new Set(data.map(n => n.created_by).filter(Boolean))] as string[];
+    let profileMap: Record<string, string> = {};
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", userIds);
+      if (profiles) profiles.forEach(p => { profileMap[p.user_id] = p.full_name || "Usuário"; });
+    }
+    setNotes(data.map(n => ({ ...n, _user_name: n.created_by ? (profileMap[n.created_by] || "Usuário") : "Sistema" })));
+  };
+
+  const handleAddNote = async () => {
+    if (!id || !newNote.trim()) return;
+    setAddingNote(true);
+    try {
+      const { error } = await supabase.from("project_notes").insert({
+        project_id: id,
+        content: newNote.trim(),
+        created_by: user?.id || null,
+      });
+      if (error) throw error;
+      setNewNote("");
+      toast({ title: "Acompanhamento registrado!" });
+      loadNotes();
+    } catch (err: any) {
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    } finally {
+      setAddingNote(false);
+    }
+  };
+
   const loadHistory = async () => {
     if (!id) return;
     const { data } = await supabase.from("project_history").select("*").eq("project_id", id).order("created_at", { ascending: false });
@@ -150,6 +186,7 @@ export default function ProjectDetail() {
     loadProject();
     if (id) {
       loadHistory();
+      loadNotes();
       supabase.from("project_attachments").select("*").eq("project_id", id).order("created_at", { ascending: false }).then(({ data }) => setAttachments(data || []));
     }
     supabase.from("team_members").select("id, full_name").eq("role", "executivo_vendas").eq("active", true).then(({ data }) => setExecutives(data || []));
@@ -566,18 +603,44 @@ export default function ProjectDetail() {
 
       {/* Acompanhamento do Projeto */}
       <Card className="mb-6">
-        <CardHeader><CardTitle className="text-lg">Acompanhamento do Projeto</CardTitle></CardHeader>
-        <CardContent>
-          {editing ? (
+        <CardHeader>
+          <CardTitle className="text-lg">Acompanhamento do Projeto</CardTitle>
+          <CardDescription>Cada registro guarda automaticamente o autor, a data e a hora. Sem limite de caracteres.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
             <Textarea
-              value={observations}
-              onChange={e => setObservations(e.target.value)}
-              placeholder="Registre aqui o andamento atual do projeto..."
-              maxLength={2000}
+              value={newNote}
+              onChange={e => setNewNote(e.target.value)}
+              placeholder="Registre aqui uma nova informação de acompanhamento..."
               className="min-h-[100px]"
             />
+            <div className="flex justify-end">
+              <Button size="sm" onClick={handleAddNote} disabled={addingNote || !newNote.trim()}>
+                <PlusCircle className="w-4 h-4 mr-2" />
+                {addingNote ? "Registrando..." : "Registrar acompanhamento"}
+              </Button>
+            </div>
+          </div>
+
+          <Separator />
+
+          {notes.length === 0 ? (
+            <p className="text-sm text-muted-foreground italic">Nenhum acompanhamento registrado.</p>
           ) : (
-            <p className="text-sm whitespace-pre-wrap">{project.observations ? project.observations : <span className="text-muted-foreground italic">Nenhuma observação registrada.</span>}</p>
+            <div className="space-y-3">
+              {notes.map(n => (
+                <div key={n.id} className="rounded-lg border border-border/60 bg-muted/30 p-3">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                    <User className="w-3.5 h-3.5" />
+                    <span className="font-medium text-foreground">{n._user_name}</span>
+                    <span>•</span>
+                    <span>{format(new Date(n.created_at), "dd/MM/yyyy 'às' HH:mm")}</span>
+                  </div>
+                  <p className="text-sm whitespace-pre-wrap">{n.content}</p>
+                </div>
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>

@@ -163,7 +163,7 @@ export default function Login() {
           <LogoAnimation />
           <div>
             <h2 className="text-3xl font-bold text-background mb-3">Sistema de Gestão</h2>
-            <p className="text-background/50 text-lg">Plataforma de gerenciamento de projetos de telemetria</p>
+            <p className="text-background/50 text-lg">Plataforma de gerenciamento de projetos de bilhetagem</p>
           </div>
           <motion.div
             className="flex items-center justify-center gap-2 text-primary max-w-xs mx-auto"

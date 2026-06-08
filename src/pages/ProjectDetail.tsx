@@ -603,18 +603,44 @@ export default function ProjectDetail() {
 
       {/* Acompanhamento do Projeto */}
       <Card className="mb-6">
-        <CardHeader><CardTitle className="text-lg">Acompanhamento do Projeto</CardTitle></CardHeader>
-        <CardContent>
-          {editing ? (
+        <CardHeader>
+          <CardTitle className="text-lg">Acompanhamento do Projeto</CardTitle>
+          <CardDescription>Cada registro guarda automaticamente o autor, a data e a hora. Sem limite de caracteres.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
             <Textarea
-              value={observations}
-              onChange={e => setObservations(e.target.value)}
-              placeholder="Registre aqui o andamento atual do projeto..."
-              maxLength={2000}
+              value={newNote}
+              onChange={e => setNewNote(e.target.value)}
+              placeholder="Registre aqui uma nova informação de acompanhamento..."
               className="min-h-[100px]"
             />
+            <div className="flex justify-end">
+              <Button size="sm" onClick={handleAddNote} disabled={addingNote || !newNote.trim()}>
+                <PlusCircle className="w-4 h-4 mr-2" />
+                {addingNote ? "Registrando..." : "Registrar acompanhamento"}
+              </Button>
+            </div>
+          </div>
+
+          <Separator />
+
+          {notes.length === 0 ? (
+            <p className="text-sm text-muted-foreground italic">Nenhum acompanhamento registrado.</p>
           ) : (
-            <p className="text-sm whitespace-pre-wrap">{project.observations ? project.observations : <span className="text-muted-foreground italic">Nenhuma observação registrada.</span>}</p>
+            <div className="space-y-3">
+              {notes.map(n => (
+                <div key={n.id} className="rounded-lg border border-border/60 bg-muted/30 p-3">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                    <User className="w-3.5 h-3.5" />
+                    <span className="font-medium text-foreground">{n._user_name}</span>
+                    <span>•</span>
+                    <span>{format(new Date(n.created_at), "dd/MM/yyyy 'às' HH:mm")}</span>
+                  </div>
+                  <p className="text-sm whitespace-pre-wrap">{n.content}</p>
+                </div>
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>

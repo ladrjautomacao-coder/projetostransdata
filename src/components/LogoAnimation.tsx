@@ -183,7 +183,7 @@ export default function LogoAnimation() {
             key="logo"
             src={logoTransdata.url}
             alt="Transdata"
-            className="h-20 rounded-xl z-10 relative bg-primary p-2"
+            className="h-32 rounded-xl z-10 relative"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, type: "spring" }}

@@ -187,7 +187,7 @@ export default function Login() {
           <Card className="w-full max-w-md shadow-lg border-primary/20 glow-orange">
             <CardHeader className="text-center space-y-3">
               <div className="lg:hidden flex justify-center mb-2">
-                <img src={logoTransdata.url} alt="Transdata" className="h-12 rounded-lg bg-primary p-1.5" />
+                <img src={logoTransdata.url} alt="Transdata" className="h-20 rounded-lg" />
               </div>
               <CardTitle className="text-2xl font-bold">
                 {isSignUp ? "Criar Conta" : "Acessar Sistema"}

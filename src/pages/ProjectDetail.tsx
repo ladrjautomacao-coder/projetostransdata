@@ -186,6 +186,7 @@ export default function ProjectDetail() {
     loadProject();
     if (id) {
       loadHistory();
+      loadNotes();
       supabase.from("project_attachments").select("*").eq("project_id", id).order("created_at", { ascending: false }).then(({ data }) => setAttachments(data || []));
     }
     supabase.from("team_members").select("id, full_name").eq("role", "executivo_vendas").eq("active", true).then(({ data }) => setExecutives(data || []));

@@ -322,7 +322,8 @@ export default function UserManagement() {
               {confirmAction?.type === "reset" && "Resetar Senha"}
               {confirmAction?.type === "approve" && "Aprovar Usuário"}
               {confirmAction?.type === "ban" && (confirmAction.user.banned ? "Desbanir Usuário" : "Banir Usuário")}
-              {confirmAction?.type === "toggle_role" && (confirmAction.user.role === "admin" ? "Remover Administrador" : "Tornar Administrador")}
+              {confirmAction?.type === "toggle_role" && (confirmAction.user.role !== "user" ? "Remover Administrador" : "Tornar Administrador")}
+              {confirmAction?.type === "toggle_super" && (confirmAction.user.role === "super_admin" ? "Remover Super Admin" : "Tornar Super Admin")}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {confirmAction?.type === "delete" && (

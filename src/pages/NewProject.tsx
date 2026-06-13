@@ -23,6 +23,8 @@ import type { Database } from "@/integrations/supabase/types";
 type BrazilianState = Database["public"]["Enums"]["brazilian_state"];
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 
+const sanitizeCity = (v: string) => v.replace(/[^A-Za-zÀ-ÿ\s'-]/g, "");
+
 const statusLabels: Record<ProjectStatus, string> = {
   comercial: "Comercial",
   planejamento: "Planejamento",

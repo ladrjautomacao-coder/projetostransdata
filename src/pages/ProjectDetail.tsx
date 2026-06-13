@@ -284,6 +284,16 @@ export default function ProjectDetail() {
     const newEqStr = fmtEq(newEqRows);
     add("Equipamentos", oldEqStr, newEqStr);
 
+    // Features (sub-características de soluções, ex.: AtlasMob)
+    const fmtFeat = (ids: string[]) =>
+      ids.map(fid => {
+        const f = solutionFeatures.find(x => x.id === fid);
+        if (!f) return null;
+        const sol = allSolutions.find(s => s.id === f.solution_id)?.name || "?";
+        return `${sol} → ${f.name}`;
+      }).filter(Boolean).sort().join(", ") || "—";
+    add("Características de Soluções", fmtFeat(originalFeatures), fmtFeat(selectedFeatures));
+
     return changes;
   };
 

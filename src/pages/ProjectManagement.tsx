@@ -175,6 +175,10 @@ export default function ProjectManagement() {
 
     const project = projects.find(p => p.id === draggableId);
     if (!project) return;
+    if (!canEditProject(project)) {
+      toast.error("Você só pode mover projetos vinculados a você.");
+      return;
+    }
     if (project.status === newStatus && project.sub_phase === newSubPhase) return;
 
     // Optimistic update

@@ -73,14 +73,25 @@ Deno.serve(async (req) => {
       const { data: roles } = await adminClient.from("user_roles").select("user_id, role");
 
       const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
-      const roleMap = new Map((roles || []).map((r: any) => [r.user_id, r.role]));
+      const roleMap = new Map<string, Set<string>>();
+      for (const r of roles ?? []) {
+        if (!roleMap.has(r.user_id)) roleMap.set(r.user_id, new Set());
+        roleMap.get(r.user_id)!.add(r.role);
+      }
+      const topRole = (uid: string) => {
+        const set = roleMap.get(uid);
+        if (!set) return "user";
+        if (set.has("super_admin")) return "super_admin";
+        if (set.has("admin")) return "admin";
+        return "user";
+      };
 
       const enriched = users.map((u: any) => ({
         id: u.id,
         email: u.email,
         full_name: profileMap.get(u.id)?.full_name || u.user_metadata?.full_name || "—",
         cargo: profileMap.get(u.id)?.cargo || "—",
-        role: roleMap.get(u.id) || "user",
+        role: topRole(u.id),
         email_confirmed: !!u.email_confirmed_at,
         created_at: u.created_at,
         last_sign_in: u.last_sign_in_at,

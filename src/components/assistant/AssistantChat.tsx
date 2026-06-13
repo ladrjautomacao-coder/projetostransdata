@@ -197,6 +197,11 @@ function MessageBubble({ message, onAsk }: { message: UIMessage; onAsk?: (q: str
                 td: ({ children }) => <td className="px-3 py-2 align-top border-b border-border/40 last:border-b-0">{children}</td>,
                 tr: ({ children }) => <tr className="even:bg-muted/40">{children}</tr>,
                 code: ({ children }) => <code className="px-1 py-0.5 rounded bg-muted text-[0.85em] font-mono">{children}</code>,
+                blockquote: ({ children }) => (
+                  <blockquote className="my-3 rounded-md border-l-4 border-primary bg-primary/5 px-3 py-2 text-foreground not-italic [&_p]:my-1">
+                    {children}
+                  </blockquote>
+                ),
               }}
             >{text}</ReactMarkdown>
           </div>

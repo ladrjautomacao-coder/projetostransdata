@@ -137,6 +137,13 @@ export default function ProjectDetail() {
       const intIds = piData?.map((pi: any) => pi.integration_id) || [];
       setSelectedIntegrations(intIds);
       setProject((prev: any) => ({ ...prev, _integrationIds: intIds }));
+
+      // Load project equipments
+      const { data: peData } = await (supabase.from("project_equipments" as any) as any).select("equipment_type_id, quantity").eq("project_id", id);
+      const eqRows: { id: string; quantity: number }[] = (peData || []).map((p: any) => ({ id: p.equipment_type_id, quantity: p.quantity }));
+      setSelectedEquipments(eqRows.map(r => r.id));
+      setEquipmentQty(Object.fromEntries(eqRows.map(r => [r.id, String(r.quantity)])));
+      setOriginalEquipments(eqRows);
     }
     setLoading(false);
   };

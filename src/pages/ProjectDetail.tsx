@@ -109,6 +109,7 @@ export default function ProjectDetail() {
       setContractDate(new Date(data.contract_date + "T00:00:00"));
       setDZeroDate(data.d_zero_date ? new Date(data.d_zero_date + "T00:00:00") : undefined);
       setHandoverDate(data.handover_date ? new Date(data.handover_date + "T00:00:00") : undefined);
+      setExecutiveProjectDate(data.executive_project_date ? new Date(data.executive_project_date + "T00:00:00") : undefined);
       setExecutiveId(data.executive?.id || "");
       setManagerId(data.manager?.id || "");
       setStatus(data.status);

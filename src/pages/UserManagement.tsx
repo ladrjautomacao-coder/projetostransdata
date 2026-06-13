@@ -261,16 +261,28 @@ export default function UserManagement() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className={`h-8 text-xs ${user.role === "admin" ? "border-amber-500/30 text-amber-600" : "border-blue-500/30 text-blue-600"}`}
+                      className={`h-8 text-xs ${user.role !== "user" ? "border-amber-500/30 text-amber-600" : "border-blue-500/30 text-blue-600"}`}
                       disabled={actionLoading === user.id}
                       onClick={() => setConfirmAction({ type: "toggle_role", user })}
                     >
-                      {user.role === "admin" ? (
+                      {user.role !== "user" ? (
                         <><ShieldAlert className="h-3.5 w-3.5 mr-1" /> Remover Admin</>
                       ) : (
                         <><Shield className="h-3.5 w-3.5 mr-1" /> Tornar Admin</>
                       )}
                     </Button>
+                    {isSuperAdmin && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={`h-8 text-xs ${user.role === "super_admin" ? "border-accent/40 text-accent" : "border-accent/30 text-accent"}`}
+                        disabled={actionLoading === user.id}
+                        onClick={() => setConfirmAction({ type: "toggle_super", user })}
+                      >
+                        <Sparkles className="h-3.5 w-3.5 mr-1" />
+                        {user.role === "super_admin" ? "Remover Super" : "Tornar Super"}
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"

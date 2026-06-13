@@ -327,6 +327,15 @@ export default function ProjectDetail() {
         await supabase.from("project_integrations").insert(selectedIntegrations.map(iid => ({ project_id: id, integration_id: iid })));
       }
 
+      // Update equipments
+      await (supabase.from("project_equipments" as any) as any).delete().eq("project_id", id);
+      const eqRowsToInsert = selectedEquipments
+        .map(eid => ({ project_id: id, equipment_type_id: eid, quantity: parseInt(equipmentQty[eid] || "0") || 0 }))
+        .filter(r => r.quantity > 0);
+      if (eqRowsToInsert.length > 0) {
+        await (supabase.from("project_equipments" as any) as any).insert(eqRowsToInsert);
+      }
+
       if (changes.length > 0) {
         await supabase.from("project_history").insert({
           project_id: id,

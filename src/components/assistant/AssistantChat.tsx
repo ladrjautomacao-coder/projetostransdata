@@ -34,7 +34,10 @@ export function AssistantChat({ onClose }: { onClose?: () => void }) {
   if (token && !transport.current) {
     transport.current = new DefaultChatTransport({
       api: ENDPOINT,
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      },
     });
   }
 

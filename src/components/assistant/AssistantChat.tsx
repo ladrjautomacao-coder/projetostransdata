@@ -121,9 +121,10 @@ function AssistantChatInner({ token, onClose }: { token: string; onClose?: () =>
             key={m.id}
             message={m}
             displayMap={displayMap.current}
-            onAsk={(q, label) => handleSend(q, label)}
+            onAsk={(q, label) => { void handleSend(q, label); }}
           />
         ))}
+
 
 
         {status === "submitted" && (

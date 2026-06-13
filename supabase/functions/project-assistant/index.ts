@@ -285,7 +285,7 @@ Como responder:
     const result = streamText({
       model,
       system,
-      messages: convertToModelMessages(messages),
+      messages: await convertToModelMessages(messages),
       tools,
       stopWhen: stepCountIs(50),
     });

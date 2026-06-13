@@ -17,12 +17,6 @@ const PHASE_LABELS: Record<string, string> = {
   suspenso: "Suspenso/Outros",
 };
 
-function slaInfo(updatedAt: string | null) {
-  if (!updatedAt) return { days: 0, level: "n/a" };
-  const days = Math.max(0, Math.floor((Date.now() - new Date(updatedAt).getTime()) / 86_400_000));
-  const level = days <= 7 ? "em_dia" : days <= 15 ? "atencao" : days <= 30 ? "atrasado" : "critico";
-  return { days, level };
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });

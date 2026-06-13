@@ -389,6 +389,54 @@ export default function NewProject() {
           </CardContent>
         </Card>
 
+        {/* === SEÇÃO: EQUIPAMENTOS === */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Equipamentos</CardTitle>
+            <CardDescription>Marque os equipamentos contratados e informe a quantidade</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {equipmentTypes.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhum equipamento cadastrado.</p>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {equipmentTypes.map(eq => {
+                  const checked = selectedEquipments.includes(eq.id);
+                  return (
+                    <div key={eq.id} className="flex items-center gap-3 border rounded-md p-2">
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={c => {
+                          if (c) {
+                            setSelectedEquipments(prev => [...prev, eq.id]);
+                            setEquipmentQty(prev => ({ ...prev, [eq.id]: prev[eq.id] || "1" }));
+                          } else {
+                            setSelectedEquipments(prev => prev.filter(x => x !== eq.id));
+                          }
+                        }}
+                      />
+                      <span className="text-sm flex-1">{eq.name}</span>
+                      {checked && (
+                        <Input
+                          type="number"
+                          min={1}
+                          step={1}
+                          value={equipmentQty[eq.id] || ""}
+                          onChange={e => setEquipmentQty(prev => ({ ...prev, [eq.id]: e.target.value }))}
+                          placeholder="Qtd"
+                          className="w-24 h-8"
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+
+
         {/* === SEÇÃO: PRAZOS === */}
         <Card>
           <CardHeader>

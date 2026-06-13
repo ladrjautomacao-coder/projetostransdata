@@ -44,14 +44,16 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const { data: roleData } = await adminClient
+    const { data: callerRoles } = await adminClient
       .from("user_roles")
       .select("role")
-      .eq("user_id", callerId)
-      .eq("role", "admin")
-      .maybeSingle();
+      .eq("user_id", callerId);
 
-    if (!roleData) {
+    const callerRoleSet = new Set((callerRoles ?? []).map((r: any) => r.role));
+    const isAdmin = callerRoleSet.has("admin") || callerRoleSet.has("super_admin");
+    const isSuperAdmin = callerRoleSet.has("super_admin");
+
+    if (!isAdmin) {
       return new Response(JSON.stringify({ error: "Forbidden: admin only" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -71,14 +73,25 @@ Deno.serve(async (req) => {
       const { data: roles } = await adminClient.from("user_roles").select("user_id, role");
 
       const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
-      const roleMap = new Map((roles || []).map((r: any) => [r.user_id, r.role]));
+      const roleMap = new Map<string, Set<string>>();
+      for (const r of roles ?? []) {
+        if (!roleMap.has(r.user_id)) roleMap.set(r.user_id, new Set());
+        roleMap.get(r.user_id)!.add(r.role);
+      }
+      const topRole = (uid: string) => {
+        const set = roleMap.get(uid);
+        if (!set) return "user";
+        if (set.has("super_admin")) return "super_admin";
+        if (set.has("admin")) return "admin";
+        return "user";
+      };
 
       const enriched = users.map((u: any) => ({
         id: u.id,
         email: u.email,
         full_name: profileMap.get(u.id)?.full_name || u.user_metadata?.full_name || "—",
         cargo: profileMap.get(u.id)?.cargo || "—",
-        role: roleMap.get(u.id) || "user",
+        role: topRole(u.id),
         email_confirmed: !!u.email_confirmed_at,
         created_at: u.created_at,
         last_sign_in: u.last_sign_in_at,
@@ -146,7 +159,25 @@ Deno.serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        const newRole = body.role === "admin" ? "admin" : "user";
+        const allowed = ["user", "admin", "super_admin"];
+        const newRole = allowed.includes(body.role) ? body.role : "user";
+        if (newRole === "super_admin" && !isSuperAdmin) {
+          return new Response(JSON.stringify({ error: "Apenas Super Admins podem conceder o papel Super Admin" }), {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        // Block non-super_admins from demoting a super_admin
+        if (!isSuperAdmin) {
+          const { data: targetRoles } = await adminClient
+            .from("user_roles").select("role").eq("user_id", targetUserId).eq("role", "super_admin").maybeSingle();
+          if (targetRoles) {
+            return new Response(JSON.stringify({ error: "Apenas Super Admins podem alterar outro Super Admin" }), {
+              status: 403,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
+        }
         await adminClient.from("user_roles").delete().eq("user_id", targetUserId);
         const { error } = await adminClient.from("user_roles").insert({ user_id: targetUserId, role: newRole });
         if (error) throw error;

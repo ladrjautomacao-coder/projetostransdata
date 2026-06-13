@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { EmptyState } from "@/components/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   CheckCircle, XCircle, Trash2, KeyRound, Search, Shield, ShieldAlert,
-  UserCheck, UserX, Mail, Clock, RefreshCw, Users,
+  UserCheck, UserX, Mail, Clock, RefreshCw, Users, Sparkles,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
@@ -30,12 +31,13 @@ interface ManagedUser {
 
 export default function UserManagement() {
   const { toast } = useToast();
+  const { isSuperAdmin } = useAuth();
   const [users, setUsers] = useState<ManagedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<{
-    type: "delete" | "reset" | "approve" | "ban" | "toggle_role";
+    type: "delete" | "reset" | "approve" | "ban" | "toggle_role" | "toggle_super";
     user: ManagedUser;
   } | null>(null);
 
@@ -95,7 +97,10 @@ export default function UserManagement() {
         executeAction("toggle_ban", user.id, { ban: !user.banned });
         break;
       case "toggle_role":
-        executeAction("toggle_role", user.id, { role: user.role === "admin" ? "user" : "admin" });
+        executeAction("toggle_role", user.id, { role: user.role === "admin" || user.role === "super_admin" ? "user" : "admin" });
+        break;
+      case "toggle_super":
+        executeAction("toggle_role", user.id, { role: user.role === "super_admin" ? "admin" : "super_admin" });
         break;
     }
   };
@@ -195,6 +200,11 @@ export default function UserManagement() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold text-sm truncate">{user.full_name}</span>
+                        {user.role === "super_admin" && (
+                          <Badge className="text-[10px] px-1.5 py-0 bg-accent text-accent-foreground gap-0.5">
+                            <Sparkles className="h-2.5 w-2.5" /> Super Admin
+                          </Badge>
+                        )}
                         {user.role === "admin" && (
                           <Badge variant="default" className="text-[10px] px-1.5 py-0">Admin</Badge>
                         )}
@@ -251,16 +261,28 @@ export default function UserManagement() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className={`h-8 text-xs ${user.role === "admin" ? "border-amber-500/30 text-amber-600" : "border-blue-500/30 text-blue-600"}`}
+                      className={`h-8 text-xs ${user.role !== "user" ? "border-amber-500/30 text-amber-600" : "border-blue-500/30 text-blue-600"}`}
                       disabled={actionLoading === user.id}
                       onClick={() => setConfirmAction({ type: "toggle_role", user })}
                     >
-                      {user.role === "admin" ? (
+                      {user.role !== "user" ? (
                         <><ShieldAlert className="h-3.5 w-3.5 mr-1" /> Remover Admin</>
                       ) : (
                         <><Shield className="h-3.5 w-3.5 mr-1" /> Tornar Admin</>
                       )}
                     </Button>
+                    {isSuperAdmin && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={`h-8 text-xs ${user.role === "super_admin" ? "border-accent/40 text-accent" : "border-accent/30 text-accent"}`}
+                        disabled={actionLoading === user.id}
+                        onClick={() => setConfirmAction({ type: "toggle_super", user })}
+                      >
+                        <Sparkles className="h-3.5 w-3.5 mr-1" />
+                        {user.role === "super_admin" ? "Remover Super" : "Tornar Super"}
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"
@@ -300,7 +322,8 @@ export default function UserManagement() {
               {confirmAction?.type === "reset" && "Resetar Senha"}
               {confirmAction?.type === "approve" && "Aprovar Usuário"}
               {confirmAction?.type === "ban" && (confirmAction.user.banned ? "Desbanir Usuário" : "Banir Usuário")}
-              {confirmAction?.type === "toggle_role" && (confirmAction.user.role === "admin" ? "Remover Administrador" : "Tornar Administrador")}
+              {confirmAction?.type === "toggle_role" && (confirmAction.user.role !== "user" ? "Remover Administrador" : "Tornar Administrador")}
+              {confirmAction?.type === "toggle_super" && (confirmAction.user.role === "super_admin" ? "Remover Super Admin" : "Tornar Super Admin")}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {confirmAction?.type === "delete" && (
@@ -318,9 +341,14 @@ export default function UserManagement() {
                   : <>Deseja bloquear o acesso de <strong>{confirmAction?.user.full_name}</strong> ao sistema?</>
               )}
               {confirmAction?.type === "toggle_role" && (
-                confirmAction.user.role === "admin"
+                confirmAction.user.role !== "user"
                   ? <>Deseja remover o papel de administrador de <strong>{confirmAction.user.full_name}</strong>?</>
                   : <>Deseja tornar <strong>{confirmAction.user.full_name}</strong> um administrador do sistema?</>
+              )}
+              {confirmAction?.type === "toggle_super" && (
+                confirmAction.user.role === "super_admin"
+                  ? <>Deseja remover o papel de Super Admin de <strong>{confirmAction.user.full_name}</strong>? Ele perderá acesso ao Assistente de IA.</>
+                  : <>Deseja tornar <strong>{confirmAction.user.full_name}</strong> um Super Admin? Ele terá acesso ao Assistente de IA dos projetos.</>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>

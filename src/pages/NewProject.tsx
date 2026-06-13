@@ -23,6 +23,8 @@ import type { Database } from "@/integrations/supabase/types";
 type BrazilianState = Database["public"]["Enums"]["brazilian_state"];
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 
+const sanitizeCity = (v: string) => v.replace(/[^A-Za-zÀ-ÿ\s'-]/g, "");
+
 const statusLabels: Record<ProjectStatus, string> = {
   comercial: "Comercial",
   planejamento: "Planejamento",
@@ -44,6 +46,7 @@ export default function NewProject() {
   const [contractDate, setContractDate] = useState<Date>();
   const [dZeroDate, setDZeroDate] = useState<Date>();
   const [handoverDate, setHandoverDate] = useState<Date>();
+  const [executiveProjectDate, setExecutiveProjectDate] = useState<Date>();
   const [executiveId, setExecutiveId] = useState("");
   const [managerId, setManagerId] = useState("");
   const [status, setStatus] = useState<ProjectStatus>("planejamento");
@@ -155,6 +158,7 @@ export default function NewProject() {
         contract_date: format(contractDate, "yyyy-MM-dd"),
         d_zero_date: dZeroDate ? format(dZeroDate, "yyyy-MM-dd") : null,
         handover_date: handoverDate ? format(handoverDate, "yyyy-MM-dd") : null,
+        executive_project_date: executiveProjectDate ? format(executiveProjectDate, "yyyy-MM-dd") : null,
         executive_id: executiveId || null,
         manager_id: managerId || null,
         status,
@@ -274,7 +278,8 @@ export default function NewProject() {
             </div>
             <div className="space-y-2">
               <Label>Cidade <span className="text-destructive">*</span></Label>
-              <Input value={city} onChange={e => setCity(e.target.value)} placeholder="Ex.: São Paulo" required maxLength={100} />
+              <Input value={city} onChange={e => setCity(sanitizeCity(e.target.value))} placeholder="Ex.: São Paulo" required maxLength={100} />
+              <HelperText>Apenas letras, espaços, hífen e apóstrofo</HelperText>
             </div>
             <div className="space-y-2">
               <Label>Estado <span className="text-destructive">*</span></Label>
@@ -311,6 +316,7 @@ export default function NewProject() {
             <DatePicker label="Data de Contratação" date={contractDate} onSelect={setContractDate} required />
             <DatePicker label="Data D-zero" date={dZeroDate} onSelect={setDZeroDate} />
             <DatePicker label="Data Handover" date={handoverDate} onSelect={setHandoverDate} />
+            <DatePicker label="Projeto Executivo" date={executiveProjectDate} onSelect={setExecutiveProjectDate} />
           </CardContent>
         </Card>
 

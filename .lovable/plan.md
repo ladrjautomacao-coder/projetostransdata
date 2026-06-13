@@ -1,37 +1,40 @@
-## Objetivo
+## Mudanças solicitadas
 
-Após o projeto atingir **Implementado**, se ele for movido para outro Kanban (Comercial, Planejamento, Implantação, Outros), a Linha do Tempo deve **continuar** mostrando esse novo passo (e os seguintes, caso haja mais movimentações), em vez de parar em "Implementado". Isso garante rastreabilidade completa do percurso do projeto.
+### 1. Bloquear caracteres especiais no campo "Cidade"
+- Em `src/pages/NewProject.tsx` e `src/pages/ProjectDetail.tsx`, alterar o `onChange` do input de Cidade para sanitizar em tempo real, permitindo apenas: letras (incluindo acentuadas), espaços, hífen e apóstrofo (ex.: "Mogi das Cruzes", "Embu-Guaçu", "Santa Bárbara d'Oeste").
+- Regex aplicada: `/[^A-Za-zÀ-ÿ\s'-]/g` → removidos no momento da digitação.
+- Sem mudança de schema; validação puramente client-side.
 
-## Mudança proposta (apenas UI / leitura)
+### 2. Popular "Tipo do Projeto" com as 6 opções fixas
+Inserir via dados (não schema) na tabela `project_types` os registros abaixo, mantendo eles ativos. Antes de inserir, desativar (`active = false`) os tipos existentes que não estão na lista, para o select exibir somente os corretos:
 
-Arquivo: `src/pages/ProjectDetail.tsx` (seção "Linha do Tempo", linhas ~409–520).
+- Implantação Data Center (DAT)
+- Implantação Locação (PIL)
+- Implantação Piloto (PIP)
+- Implantação Venda (PIV)
+- Venda Complementar (VCP)
+- Serviços (SER)
 
-1. **Buscar histórico pós-Implementado** da tabela `project_history`:
-   - Consultar registros do `project_id` atual onde `change_type = 'status_change'` (ou equivalente já gravado), `created_at >= reached_implemented_at`, ordenados por data.
-   - Extrair sequência de status para os quais o projeto foi movido depois de atingir Implementado, deduplicando movimentações consecutivas para o mesmo status.
-   - Caso o `project_history` não esteja registrando mudanças de status (a verificar no código que faz update do status), usar como fallback apenas o **status atual** + `updated_at` como único passo adicional.
+A tela de cadastro já lê `project_types` dinamicamente, então nenhuma alteração de código é necessária para o select.
 
-2. **Compor a timeline dinâmica** quando `reached_implemented === true`:
-   - Manter os 4 passos fixos atuais: Contratação → D-zero → Handover → Implementado (sempre marcado como "Já atingido").
-   - **Anexar** N passos extras, um para cada movimentação posterior:
-     - Label: nome amigável da fase (`statusLabels[status]`, ex.: "Comercial", "Planejamento", "Implantação", "Outros").
-     - Data: `created_at` da mudança (formato dd/MM/yyyy).
-     - Marcado como concluído (✓) para etapas intermediárias; a **última** recebe o destaque de "etapa atual" (pulse/glow animado) em vez do "Implementado".
-   - Numeração contínua (5, 6, 7…).
-
-3. **Banner vermelho existente** ("Projeto já atingiu Implementado em … e foi movido para …") permanece, pois resume o estado atual.
-
-4. **Estilo visual** dos passos extras: igual aos demais (círculo numerado), mas com um indicador sutil de "retorno" — por exemplo, borda em `border-red-400` quando o status atual não é `encerrado`, para reforçar que está fora do fluxo ideal. Sem novas cores fora dos tokens do design system.
+### 3. Novo campo "Projeto Executivo" (data)
+- **Migração** adicionando coluna `executive_project_date date` (nullable) em `public.projects`.
+- **Cadastro** (`src/pages/NewProject.tsx`): adicionar estado `executiveProjectDate` e renderizar um `<DatePicker label="Projeto Executivo" .../>` na seção "Projeto", seguindo o padrão visual dos demais campos de data (mesmo componente Popover/Calendar já usado). Incluir o valor no `insert` enviado ao Supabase.
+- **Detalhe/edição** (`src/pages/ProjectDetail.tsx`): carregar o campo, exibir/editar com o mesmo `DatePicker`, incluir no `update` e no diff de histórico ("Projeto Executivo").
+- Campo opcional — sem validação obrigatória.
 
 ## Detalhes técnicos
 
-- Adicionar `useEffect` que dispara após carregar o `project` e quando `reached_implemented` for `true`, consultando `project_history` via supabase client.
-- Estado novo: `postImplementedSteps: { status: ProjectStatus; date: string }[]`.
-- Render: substituir o array `timeline` fixo por `[...baseTimeline, ...postImplementedSteps.map(...)]`.
-- `currentMilestoneIndex` passa a ser `timeline.length - 1` quando há passos pós-Implementado.
-- Sem mudanças no banco: `project_history` já existe; verificar (no código de update) que mudanças de status estão sendo gravadas — se não estiverem, planejar instrumentar isso em uma etapa separada antes de ativar a UI completa.
+Sanitização da cidade (helper inline):
+```ts
+const sanitizeCity = (v: string) => v.replace(/[^A-Za-zÀ-ÿ\s'-]/g, "");
+// <Input value={city} onChange={e => setCity(sanitizeCity(e.target.value))} ... />
+```
 
-## Fora de escopo
+Migração SQL:
+```sql
+ALTER TABLE public.projects
+  ADD COLUMN executive_project_date date;
+```
 
-- Mudanças no Kanban, em outras telas, ou em regras de negócio do fluxo de status.
-- Edição manual desses passos pelo usuário.
+Seed dos tipos de projeto (via tool de dados): desativar os atuais fora da lista e fazer upsert por `name` dos 6 itens com `active = true`.

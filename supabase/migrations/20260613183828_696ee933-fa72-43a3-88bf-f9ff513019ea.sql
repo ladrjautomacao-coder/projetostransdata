@@ -1,0 +1,1 @@
+ALTER TABLE public.projects ADD COLUMN executive_project_date date;

@@ -52,6 +52,7 @@ export default function ProjectDetail() {
   const [contractDate, setContractDate] = useState<Date>();
   const [dZeroDate, setDZeroDate] = useState<Date>();
   const [handoverDate, setHandoverDate] = useState<Date>();
+  const [executiveProjectDate, setExecutiveProjectDate] = useState<Date>();
   const [executiveId, setExecutiveId] = useState("");
   const [managerId, setManagerId] = useState("");
   const [status, setStatus] = useState<ProjectStatus>("planejamento");
@@ -108,6 +109,7 @@ export default function ProjectDetail() {
       setContractDate(new Date(data.contract_date + "T00:00:00"));
       setDZeroDate(data.d_zero_date ? new Date(data.d_zero_date + "T00:00:00") : undefined);
       setHandoverDate(data.handover_date ? new Date(data.handover_date + "T00:00:00") : undefined);
+      setExecutiveProjectDate(data.executive_project_date ? new Date(data.executive_project_date + "T00:00:00") : undefined);
       setExecutiveId(data.executive?.id || "");
       setManagerId(data.manager?.id || "");
       setStatus(data.status);
@@ -229,6 +231,7 @@ export default function ProjectDetail() {
     add("Data do Contrato", fmtDate(project.contract_date), contractDate ? format(contractDate, "dd/MM/yyyy") : "—");
     add("Data D-Zero", fmtDate(project.d_zero_date), dZeroDate ? format(dZeroDate, "dd/MM/yyyy") : "—");
     add("Data de Entrega", fmtDate(project.handover_date), handoverDate ? format(handoverDate, "dd/MM/yyyy") : "—");
+    add("Projeto Executivo", fmtDate(project.executive_project_date), executiveProjectDate ? format(executiveProjectDate, "dd/MM/yyyy") : "—");
 
     const oldSols = (project.project_solutions?.map((ps: any) => ps.solution?.name).filter(Boolean) || []).sort().join(", ") || "—";
     const newSols = selectedSolutions.map(sid => allSolutions.find(s => s.id === sid)?.name).filter(Boolean).sort().join(", ") || "—";
@@ -273,6 +276,7 @@ export default function ProjectDetail() {
         contract_date: contractDate ? format(contractDate, "yyyy-MM-dd") : project.contract_date,
         d_zero_date: dZeroDate ? format(dZeroDate, "yyyy-MM-dd") : null,
         handover_date: handoverDate ? format(handoverDate, "yyyy-MM-dd") : null,
+        executive_project_date: executiveProjectDate ? format(executiveProjectDate, "yyyy-MM-dd") : null,
         executive_id: executiveId || null, manager_id: managerId || null, status,
         project_type_id: projectTypeId || null,
         fleet_size: fleet,
@@ -655,7 +659,7 @@ export default function ProjectDetail() {
               <>
                 <div className="space-y-1"><Label className="text-xs text-muted-foreground">Empresa</Label><Input value={companyName} onChange={e => setCompanyName(e.target.value)} /></div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1"><Label className="text-xs text-muted-foreground">Cidade</Label><Input value={city} onChange={e => setCity(e.target.value)} /></div>
+                  <div className="space-y-1"><Label className="text-xs text-muted-foreground">Cidade</Label><Input value={city} onChange={e => setCity(e.target.value.replace(/[^A-Za-zÀ-ÿ\s'-]/g, ""))} /></div>
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">Estado</Label>
                     <Select value={state} onValueChange={v => setState(v as BrazilianState)}>
@@ -678,6 +682,7 @@ export default function ProjectDetail() {
                 <DateField label="Contratação" date={contractDate} onSelect={d => d && setContractDate(d)} />
                 <DateField label="D-zero" date={dZeroDate} onSelect={setDZeroDate} />
                 <DateField label="Handover" date={handoverDate} onSelect={setHandoverDate} />
+                <DateField label="Projeto Executivo" date={executiveProjectDate} onSelect={setExecutiveProjectDate} />
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Status</Label>
                   <Select value={status} onValueChange={v => setStatus(v as ProjectStatus)}>
@@ -697,6 +702,7 @@ export default function ProjectDetail() {
                   <div><span className="text-xs text-muted-foreground">D-zero</span><p>{fmtDate(project.d_zero_date)}</p></div>
                   <div><span className="text-xs text-muted-foreground">Handover</span><p>{fmtDate(project.handover_date)}</p></div>
                 </div>
+                <div><span className="text-xs text-muted-foreground">Projeto Executivo</span><p>{fmtDate(project.executive_project_date)}</p></div>
                 <div><span className="text-xs text-muted-foreground">Status</span><p><Badge variant="outline">{statusLabels[project.status as ProjectStatus]}</Badge></p></div>
               </>
             )}

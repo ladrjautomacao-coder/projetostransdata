@@ -132,13 +132,13 @@ function AssistantChatInner({ token, onClose }: { token: string; onClose?: () =>
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
           }}
-          placeholder={token ? "Pergunte algo… (Enter envia, Shift+Enter quebra linha)" : "Carregando sessão…"}
+          placeholder="Pergunte algo… (Enter envia, Shift+Enter quebra linha)"
           rows={2}
-          disabled={!token || isBusy}
+          disabled={isBusy}
           className="resize-none text-sm"
         />
         <div className="flex justify-end">
-          <Button size="sm" onClick={() => handleSend()} disabled={!input.trim() || isBusy || !token}>
+          <Button size="sm" onClick={() => handleSend()} disabled={!input.trim() || isBusy}>
             <Send className="h-3.5 w-3.5 mr-1.5" /> Enviar
           </Button>
         </div>

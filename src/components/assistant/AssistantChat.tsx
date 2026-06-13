@@ -112,7 +112,7 @@ function AssistantChatInner({ token, onClose }: { token: string; onClose?: () =>
         )}
 
         {messages.map(m => (
-          <MessageBubble key={m.id} message={m} />
+          <MessageBubble key={m.id} message={m} onAsk={(q) => handleSend(q)} />
         ))}
 
         {status === "submitted" && (

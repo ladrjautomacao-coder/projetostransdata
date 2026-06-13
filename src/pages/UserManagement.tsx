@@ -31,12 +31,13 @@ interface ManagedUser {
 
 export default function UserManagement() {
   const { toast } = useToast();
+  const { isSuperAdmin } = useAuth();
   const [users, setUsers] = useState<ManagedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<{
-    type: "delete" | "reset" | "approve" | "ban" | "toggle_role";
+    type: "delete" | "reset" | "approve" | "ban" | "toggle_role" | "toggle_super";
     user: ManagedUser;
   } | null>(null);
 

@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Building2, MapPin, Calendar, Users, Pencil, Clock } from "lucide-react";
+import { Building2, MapPin, Calendar, Users, Pencil, Clock, Lock } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import type { ProjectRow } from "@/pages/ProjectManagement";
 

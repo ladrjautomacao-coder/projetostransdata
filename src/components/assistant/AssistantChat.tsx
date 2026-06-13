@@ -117,8 +117,14 @@ function AssistantChatInner({ token, onClose }: { token: string; onClose?: () =>
         )}
 
         {messages.map(m => (
-          <MessageBubble key={m.id} message={m} onAsk={(q) => handleSend(q)} />
+          <MessageBubble
+            key={m.id}
+            message={m}
+            displayMap={displayMap.current}
+            onAsk={(q, label) => handleSend(q, label)}
+          />
         ))}
+
 
         {status === "submitted" && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">

@@ -702,6 +702,7 @@ export default function ProjectDetail() {
                   <div><span className="text-xs text-muted-foreground">D-zero</span><p>{fmtDate(project.d_zero_date)}</p></div>
                   <div><span className="text-xs text-muted-foreground">Handover</span><p>{fmtDate(project.handover_date)}</p></div>
                 </div>
+                <div><span className="text-xs text-muted-foreground">Projeto Executivo</span><p>{fmtDate(project.executive_project_date)}</p></div>
                 <div><span className="text-xs text-muted-foreground">Status</span><p><Badge variant="outline">{statusLabels[project.status as ProjectStatus]}</Badge></p></div>
               </>
             )}

@@ -97,26 +97,39 @@ export interface ProjectRow {
 export default function ProjectManagement() {
   const navigate = useNavigate();
   const { filters, setFilter, clearFilters } = useProjectFilters();
+  const { user, isAdmin } = useAuth();
   const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [managers, setManagers] = useState<{ id: string; full_name: string }[]>([]);
+  const [currentManagerId, setCurrentManagerId] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.from("team_members").select("id, full_name").eq("role", "gerente_projetos").eq("active", true)
       .then(({ data }) => setManagers(data || []));
   }, []);
 
+  useEffect(() => {
+    if (!user?.email) { setCurrentManagerId(null); return; }
+    supabase.from("team_members").select("id").eq("email", user.email).eq("role", "gerente_projetos").eq("active", true).maybeSingle()
+      .then(({ data }) => setCurrentManagerId(data?.id || null));
+  }, [user?.email]);
+
   const loadProjects = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase
       .from("projects")
-      .select("id, company_name, city, state, contract_date, d_zero_date, handover_date, status, sub_phase, is_pilot, complementary_sale, complementary_fleet, implemented_fleet, observations, reached_implemented, reached_implemented_at, updated_at, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name)), project_integrations(integration:integrations(name))")
+      .select("id, company_name, city, state, contract_date, d_zero_date, handover_date, status, sub_phase, is_pilot, complementary_sale, complementary_fleet, implemented_fleet, observations, reached_implemented, reached_implemented_at, updated_at, manager_id, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name)), project_integrations(integration:integrations(name))")
       .order("company_name");
     setProjects((data as unknown as ProjectRow[]) || []);
     setLoading(false);
   }, []);
 
   useEffect(() => { loadProjects(); }, [loadProjects]);
+
+  const canEditProject = useCallback(
+    (p: { manager_id: string | null }) => isAdmin || (!!currentManagerId && p.manager_id === currentManagerId),
+    [isAdmin, currentManagerId]
+  );
 
   const cities = useMemo(() => {
     const set = new Set(projects.map(p => p.city));

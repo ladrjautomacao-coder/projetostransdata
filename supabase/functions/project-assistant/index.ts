@@ -186,7 +186,6 @@ Deno.serve(async (req) => {
             venda_complementar: x.complementary_sale,
             solucoes: x.project_solutions?.map((s: any) => s.solution?.name).filter(Boolean) ?? [],
             integracoes: x.project_integrations?.map((i: any) => i.integration?.name).filter(Boolean) ?? [],
-            sla: slaInfo(x.updated_at),
             observacoes: x.observations,
           };
         },

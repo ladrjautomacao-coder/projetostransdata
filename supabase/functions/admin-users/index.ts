@@ -159,7 +159,25 @@ Deno.serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        const newRole = body.role === "admin" ? "admin" : "user";
+        const allowed = ["user", "admin", "super_admin"];
+        const newRole = allowed.includes(body.role) ? body.role : "user";
+        if (newRole === "super_admin" && !isSuperAdmin) {
+          return new Response(JSON.stringify({ error: "Apenas Super Admins podem conceder o papel Super Admin" }), {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        // Block non-super_admins from demoting a super_admin
+        if (!isSuperAdmin) {
+          const { data: targetRoles } = await adminClient
+            .from("user_roles").select("role").eq("user_id", targetUserId).eq("role", "super_admin").maybeSingle();
+          if (targetRoles) {
+            return new Response(JSON.stringify({ error: "Apenas Super Admins podem alterar outro Super Admin" }), {
+              status: 403,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
+        }
         await adminClient.from("user_roles").delete().eq("user_id", targetUserId);
         const { error } = await adminClient.from("user_roles").insert({ user_id: targetUserId, role: newRole });
         if (error) throw error;

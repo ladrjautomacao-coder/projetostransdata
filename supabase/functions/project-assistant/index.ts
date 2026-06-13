@@ -200,7 +200,7 @@ Deno.serve(async (req) => {
         execute: async ({ status, managerName, minDaysStalled, isPilot, complementarySale, limit }) => {
           let q = supabase
             .from("projects")
-            .select("id, company_name, city, state, status, sub_phase, updated_at, is_pilot, complementary_sale, manager:team_members!projects_manager_id_fkey(id, full_name)")
+            .select("id, company_name, city, state, status, sub_phase, updated_at, is_pilot, complementary_sale, fleet_size, implemented_fleet, manager:team_members!projects_manager_id_fkey(id, full_name)")
             .order("updated_at", { ascending: true })
             .limit(limit);
           if (status) q = q.eq("status", status);
@@ -222,6 +222,7 @@ Deno.serve(async (req) => {
             gestor: p.manager?.full_name ?? null,
             piloto: p.is_pilot,
             venda_complementar: p.complementary_sale,
+            frota: { contratada: p.fleet_size ?? 0, implementada: p.implemented_fleet ?? 0 },
             sla: slaInfo(p.updated_at),
           }));
           if (minDaysStalled !== undefined) rows = rows.filter(r => r.sla.days >= minDaysStalled);
@@ -277,7 +278,9 @@ Como responder:
 - Quando o usuário citar um projeto pelo nome, use \`searchProjects\` antes de chamar tools que exigem \`projectId\`.
 - Se houver mais de um resultado na busca, peça desambiguação listando as opções com cidade e gestor.
 - Ao mostrar a "última atualização" de um projeto, traga: empresa, fase/sub-fase, gestor, SLA em dias e o texto da última nota com data e autor.
-- Para listas, use markdown com bullets curtos. Inclua links no formato [Empresa](/projetos/<id>) sempre que houver \`id\` do projeto.
+- **Padrão para QUALQUER listagem ou consulta de projetos**: SEMPRE exiba, no mínimo, **Nome da Empresa**, **Status (fase/sub-fase)** e **Total de Frota** (contratada/implementada). Quando útil, adicione gestor, cidade e SLA. Use tabela markdown quando houver 2+ projetos; use bullets para 1 projeto.
+- Mesmo em respostas resumidas ou agregadas (ex.: "projetos em andamento"), liste os projetos individualmente com esses três campos antes de qualquer agregação.
+- Inclua links no formato [Empresa](/projetos/<id>) sempre que houver \`id\` do projeto.
 - Em respostas longas, use cabeçalhos H3 e tabelas markdown quando ajudar.
 - Se a pergunta pedir uma ação (criar, editar, mover), explique que você é somente leitura e oriente o usuário a usar a tela apropriada.
 - Se não houver dados ou o usuário não tiver permissão, diga isso de forma transparente.`;

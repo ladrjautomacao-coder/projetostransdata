@@ -6,12 +6,14 @@ import { ProjectFiltersProvider } from "@/contexts/ProjectFiltersContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AlertsBell } from "@/components/AlertsBell";
 import { CommandPalette } from "@/components/CommandPalette";
+import { AssistantWidget } from "@/components/assistant/AssistantWidget";
 
 export function AppLayout() {
   return (
     <ProjectFiltersProvider>
     <SidebarProvider>
       <CommandPalette />
+      <AssistantWidget />
       <div className="flex min-h-screen w-full">
         <AppSidebar />
         <main className="flex-1 flex flex-col min-w-0">

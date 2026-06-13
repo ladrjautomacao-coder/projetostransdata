@@ -46,6 +46,7 @@ export default function NewProject() {
   const [contractDate, setContractDate] = useState<Date>();
   const [dZeroDate, setDZeroDate] = useState<Date>();
   const [handoverDate, setHandoverDate] = useState<Date>();
+  const [executiveProjectDate, setExecutiveProjectDate] = useState<Date>();
   const [executiveId, setExecutiveId] = useState("");
   const [managerId, setManagerId] = useState("");
   const [status, setStatus] = useState<ProjectStatus>("planejamento");

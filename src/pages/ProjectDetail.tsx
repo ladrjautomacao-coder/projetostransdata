@@ -231,6 +231,7 @@ export default function ProjectDetail() {
     add("Data do Contrato", fmtDate(project.contract_date), contractDate ? format(contractDate, "dd/MM/yyyy") : "—");
     add("Data D-Zero", fmtDate(project.d_zero_date), dZeroDate ? format(dZeroDate, "dd/MM/yyyy") : "—");
     add("Data de Entrega", fmtDate(project.handover_date), handoverDate ? format(handoverDate, "dd/MM/yyyy") : "—");
+    add("Projeto Executivo", fmtDate(project.executive_project_date), executiveProjectDate ? format(executiveProjectDate, "dd/MM/yyyy") : "—");
 
     const oldSols = (project.project_solutions?.map((ps: any) => ps.solution?.name).filter(Boolean) || []).sort().join(", ") || "—";
     const newSols = selectedSolutions.map(sid => allSolutions.find(s => s.id === sid)?.name).filter(Boolean).sort().join(", ") || "—";

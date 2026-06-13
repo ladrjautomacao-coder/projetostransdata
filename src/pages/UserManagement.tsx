@@ -97,7 +97,10 @@ export default function UserManagement() {
         executeAction("toggle_ban", user.id, { ban: !user.banned });
         break;
       case "toggle_role":
-        executeAction("toggle_role", user.id, { role: user.role === "admin" ? "user" : "admin" });
+        executeAction("toggle_role", user.id, { role: user.role === "admin" || user.role === "super_admin" ? "user" : "admin" });
+        break;
+      case "toggle_super":
+        executeAction("toggle_role", user.id, { role: user.role === "super_admin" ? "admin" : "super_admin" });
         break;
     }
   };

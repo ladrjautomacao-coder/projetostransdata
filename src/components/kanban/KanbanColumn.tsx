@@ -14,9 +14,10 @@ interface Props {
   items: ProjectRow[];
   subPhases: SubPhaseConfig[] | null;
   onUpdateObservations: (projectId: string, text: string) => Promise<void>;
+  canEditProject: (p: { manager_id: string | null }) => boolean;
 }
 
-export default function KanbanColumn({ status, items, subPhases, onUpdateObservations }: Props) {
+export default function KanbanColumn({ status, items, subPhases, onUpdateObservations, canEditProject }: Props) {
   const colors = statusColors[status];
 
   const groupedBySubPhase = useMemo(() => {

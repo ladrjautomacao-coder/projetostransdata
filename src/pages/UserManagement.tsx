@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { EmptyState } from "@/components/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   CheckCircle, XCircle, Trash2, KeyRound, Search, Shield, ShieldAlert,
-  UserCheck, UserX, Mail, Clock, RefreshCw, Users,
+  UserCheck, UserX, Mail, Clock, RefreshCw, Users, Sparkles,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 

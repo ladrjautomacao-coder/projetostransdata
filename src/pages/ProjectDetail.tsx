@@ -874,9 +874,21 @@ export default function ProjectDetail() {
                 <Separator />
                 <div>
                   <span className="text-xs text-muted-foreground">Soluções</span>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {solutionNames.length > 0
-                      ? solutionNames.map((name: string, i: number) => <Badge key={i} variant="default">{name}</Badge>)
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {(project.project_solutions || []).length > 0
+                      ? (project.project_solutions as any[]).map((ps: any) => {
+                          const sid = ps.solution?.id || ps.solution_id;
+                          const sname = ps.solution?.name || "?";
+                          const feats = solutionFeatures
+                            .filter(f => f.solution_id === sid && originalFeatures.includes(f.id))
+                            .map(f => f.name);
+                          return (
+                            <Badge key={sid} variant="default" className="whitespace-normal">
+                              {sname}
+                              {feats.length > 0 && <span className="ml-1 opacity-90">— {feats.join(", ")}</span>}
+                            </Badge>
+                          );
+                        })
                       : <span className="text-sm text-muted-foreground">Nenhuma</span>}
                   </div>
                 </div>

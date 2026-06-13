@@ -44,14 +44,16 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const { data: roleData } = await adminClient
+    const { data: callerRoles } = await adminClient
       .from("user_roles")
       .select("role")
-      .eq("user_id", callerId)
-      .eq("role", "admin")
-      .maybeSingle();
+      .eq("user_id", callerId);
 
-    if (!roleData) {
+    const callerRoleSet = new Set((callerRoles ?? []).map((r: any) => r.role));
+    const isAdmin = callerRoleSet.has("admin") || callerRoleSet.has("super_admin");
+    const isSuperAdmin = callerRoleSet.has("super_admin");
+
+    if (!isAdmin) {
       return new Response(JSON.stringify({ error: "Forbidden: admin only" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

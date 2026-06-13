@@ -218,6 +218,7 @@ export default function ProjectDetail() {
     supabase.from("solutions").select("id, name").eq("active", true).then(({ data }) => setAllSolutions(data || []));
     supabase.from("integrations").select("id, name").eq("active", true).then(({ data }) => setAllIntegrations(data || []));
     (supabase.from("equipment_types" as any) as any).select("id, name").eq("active", true).order("sort_order").then(({ data }: any) => setAllEquipments(data || []));
+    (supabase.from("solution_features" as any) as any).select("id, solution_id, name").eq("active", true).order("sort_order").then(({ data }: any) => setSolutionFeatures(data || []));
   }, [id]);
 
   const buildChanges = () => {

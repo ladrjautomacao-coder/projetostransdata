@@ -95,7 +95,6 @@ Deno.serve(async (req) => {
             fase: PHASE_LABELS[p.status] ?? p.status,
             sub_fase: p.sub_phase,
             gestor: p.manager?.full_name ?? null,
-            sla: slaInfo(p.updated_at),
           }));
         },
       }),

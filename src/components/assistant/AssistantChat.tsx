@@ -97,7 +97,7 @@ function AssistantChatInner({ token, onClose }: { token: string; onClose?: () =>
         {messages.length === 0 && (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Olá! Pergunte sobre qualquer projeto. Posso trazer a última atualização do Acompanhamento, listar projetos por filtro e dar um panorama geral.
+              Olá! Posso informar a <strong>última atualização</strong> de um projeto. Clique na opção abaixo para começar.
             </p>
             <div className="flex flex-wrap gap-2">
               {SUGGESTIONS.map(s => (

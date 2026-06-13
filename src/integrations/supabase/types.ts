@@ -332,6 +332,7 @@ export type Database = {
           created_by: string | null
           d_zero_date: string | null
           executive_id: string | null
+          executive_project_date: string | null
           filled_by: string | null
           fleet_size: number | null
           handover_date: string | null
@@ -363,6 +364,7 @@ export type Database = {
           created_by?: string | null
           d_zero_date?: string | null
           executive_id?: string | null
+          executive_project_date?: string | null
           filled_by?: string | null
           fleet_size?: number | null
           handover_date?: string | null
@@ -394,6 +396,7 @@ export type Database = {
           created_by?: string | null
           d_zero_date?: string | null
           executive_id?: string | null
+          executive_project_date?: string | null
           filled_by?: string | null
           fleet_size?: number | null
           handover_date?: string | null

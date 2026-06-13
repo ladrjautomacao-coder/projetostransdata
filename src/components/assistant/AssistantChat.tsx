@@ -192,14 +192,20 @@ function MessageBubble({ message, onAsk, displayMap }: { message: UIMessage; onA
                     const isPick = href.startsWith("#pick:");
                     const raw = decodeURIComponent(href.slice(isPick ? 6 : 5));
                     const q = isPick ? `Última atualização do projeto ${raw}` : raw;
+                    const label = typeof children === "string"
+                      ? children
+                      : Array.isArray(children)
+                        ? children.map(c => (typeof c === "string" ? c : "")).join("")
+                        : undefined;
                     return (
                       <button
                         type="button"
-                        onClick={() => onAsk?.(q)}
+                        onClick={() => onAsk?.(q, label ? `Ver última atualização — ${label}` : "Ver última atualização")}
                         className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-medium px-2.5 py-0.5 text-xs my-0.5 transition-colors"
                       >{children}</button>
                     );
                   }
+
                   return href?.startsWith("/")
                     ? <Link to={href} className="text-primary font-medium hover:underline">{children}</Link>
                     : <a href={href} target="_blank" rel="noreferrer" className="text-primary font-medium hover:underline">{children}</a>;

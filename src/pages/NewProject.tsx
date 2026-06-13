@@ -359,9 +359,9 @@ export default function NewProject() {
                 <p className="text-sm text-muted-foreground">Nenhuma solução cadastrada.</p>
               ) : (
                 <div className="space-y-3">
-                  <div className="grid gap-2 sm:grid-cols-3">
+                  <div className="grid gap-3 sm:grid-cols-2">
                     {solutions.map(s => (
-                      <div key={s.id} className="flex items-center gap-2">
+                      <div key={s.id} className="flex items-center gap-3 border rounded-md p-2">
                         <Checkbox
                           checked={selectedSolutions.includes(s.id)}
                           onCheckedChange={checked => {
@@ -372,7 +372,7 @@ export default function NewProject() {
                             }
                           }}
                         />
-                        <span className="text-sm">{s.name}</span>
+                        <span className="text-sm flex-1">{s.name}</span>
                       </div>
                     ))}
                   </div>

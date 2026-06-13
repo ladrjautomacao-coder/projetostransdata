@@ -12,12 +12,10 @@ const mainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Projetos", url: "/projetos", icon: FolderKanban },
   { title: "Implantação", url: "/implantacao", icon: HardHat },
-  { title: "Acervo Técnico", url: "/acervo", icon: BookOpen },
 ];
 
 const adminItems = [
   { title: "Equipe", url: "/admin/equipe", icon: Users, adminOnly: true },
-  { title: "Produtos", url: "/admin/produtos", icon: Package, adminOnly: true },
   { title: "Usuários", url: "/admin/usuarios", icon: ShieldCheck, adminOnly: true },
   { title: "Manual do Sistema", url: "/manual", icon: BookOpenCheck, adminOnly: false },
 ];

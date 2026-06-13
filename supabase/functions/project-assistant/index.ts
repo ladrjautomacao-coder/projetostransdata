@@ -200,7 +200,7 @@ Deno.serve(async (req) => {
         execute: async ({ status, managerName, minDaysStalled, isPilot, complementarySale, limit }) => {
           let q = supabase
             .from("projects")
-            .select("id, company_name, city, state, status, sub_phase, updated_at, is_pilot, complementary_sale, manager:team_members!projects_manager_id_fkey(id, full_name)")
+            .select("id, company_name, city, state, status, sub_phase, updated_at, is_pilot, complementary_sale, fleet_size, implemented_fleet, manager:team_members!projects_manager_id_fkey(id, full_name)")
             .order("updated_at", { ascending: true })
             .limit(limit);
           if (status) q = q.eq("status", status);

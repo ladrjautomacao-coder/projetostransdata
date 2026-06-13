@@ -356,6 +356,18 @@ export default function ProjectDetail() {
         await (supabase.from("project_equipments" as any) as any).insert(eqRowsToInsert);
       }
 
+      // Update solution features
+      await (supabase.from("project_solution_features" as any) as any).delete().eq("project_id", id);
+      const validFeatures = selectedFeatures.filter(fid => {
+        const f = solutionFeatures.find(x => x.id === fid);
+        return f && selectedSolutions.includes(f.solution_id);
+      });
+      if (validFeatures.length > 0) {
+        await (supabase.from("project_solution_features" as any) as any).insert(
+          validFeatures.map(fid => ({ project_id: id, solution_feature_id: fid }))
+        );
+      }
+
       if (changes.length > 0) {
         await supabase.from("project_history").insert({
           project_id: id,

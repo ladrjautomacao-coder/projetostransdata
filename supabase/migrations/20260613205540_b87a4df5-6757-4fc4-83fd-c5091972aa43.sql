@@ -1,0 +1,1 @@
+GRANT SELECT ON public.team_members TO authenticated; GRANT ALL ON public.team_members TO service_role;

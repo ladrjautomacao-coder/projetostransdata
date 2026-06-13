@@ -13,10 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 const ENDPOINT = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/project-assistant`;
 
 const SUGGESTIONS = [
-  "Quais projetos estão críticos (parados há mais de 30 dias)?",
-  "Me dê um resumo dos KPIs atuais.",
-  "Projetos em homologação no momento.",
-  "Última atualização do projeto…",
+  "Listar a última atualização do projeto",
 ];
 
 export function AssistantChat({ onClose }: { onClose?: () => void }) {
@@ -100,7 +97,7 @@ function AssistantChatInner({ token, onClose }: { token: string; onClose?: () =>
         {messages.length === 0 && (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Olá! Pergunte sobre qualquer projeto. Posso trazer a última atualização do Acompanhamento, listar projetos por filtro e dar um panorama geral.
+              Olá! Posso informar a <strong>última atualização</strong> de um projeto. Clique na opção abaixo para começar.
             </p>
             <div className="flex flex-wrap gap-2">
               {SUGGESTIONS.map(s => (
@@ -115,7 +112,7 @@ function AssistantChatInner({ token, onClose }: { token: string; onClose?: () =>
         )}
 
         {messages.map(m => (
-          <MessageBubble key={m.id} message={m} />
+          <MessageBubble key={m.id} message={m} onAsk={(q) => handleSend(q)} />
         ))}
 
         {status === "submitted" && (
@@ -148,7 +145,7 @@ function AssistantChatInner({ token, onClose }: { token: string; onClose?: () =>
   );
 }
 
-function MessageBubble({ message }: { message: UIMessage }) {
+function MessageBubble({ message, onAsk }: { message: UIMessage; onAsk?: (q: string) => void }) {
   const isUser = message.role === "user";
   const textParts = message.parts.filter(p => p.type === "text") as Array<{ type: "text"; text: string }>;
   const toolParts = message.parts.filter(p => p.type.startsWith("tool-"));
@@ -175,9 +172,21 @@ function MessageBubble({ message }: { message: UIMessage }) {
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
-                a: ({ href, children }) => href?.startsWith("/")
-                  ? <Link to={href} className="text-primary font-medium hover:underline">{children}</Link>
-                  : <a href={href} target="_blank" rel="noreferrer" className="text-primary font-medium hover:underline">{children}</a>,
+                a: ({ href, children }) => {
+                  if (href?.startsWith("#ask:")) {
+                    const q = decodeURIComponent(href.slice(5));
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => onAsk?.(q)}
+                        className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-medium px-2.5 py-0.5 text-xs my-0.5 transition-colors"
+                      >{children}</button>
+                    );
+                  }
+                  return href?.startsWith("/")
+                    ? <Link to={href} className="text-primary font-medium hover:underline">{children}</Link>
+                    : <a href={href} target="_blank" rel="noreferrer" className="text-primary font-medium hover:underline">{children}</a>;
+                },
                 table: ({ children }) => (
                   <div className="my-3 overflow-x-auto rounded-lg border border-border/70">
                     <table className="w-full border-collapse text-xs">{children}</table>

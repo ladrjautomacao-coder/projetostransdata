@@ -1,50 +1,37 @@
 ## Objetivo
 
-Transformar o card **Soluções / Escopo** em uma lista de soluções flegáveis (checkbox), igual ao padrão de "Equipamentos" — porém **sem quantidade**. A solução **AtlasMob** terá sub-características também flegáveis, exibidas fixas na visualização do projeto.
+Restringir a movimentação de cards no Kanban (`/projetos/gestao`): cada gerente só pode arrastar/mover cards de **projetos em que ele é o gerente vinculado** (`projects.manager_id`). Outros cards ficam apenas visíveis (somente leitura para o gerente, sem arrastar).
 
-## Soluções (checkbox)
+Regras:
+- **Admin** (e qualquer usuário com role `admin`) → acesso irrestrito, move qualquer card.
+- **Gerente de projetos** → move só os cards cujo `manager_id` corresponde ao seu próprio `team_member.id` (vínculo via email).
+- **Demais usuários** → somente visualização (não movem nada).
+- Filtro de gerente no Kanban continua igual; mudar o filtro apenas muda o que está visível, não muda quem pode mover.
 
-1. Bilhetagem
-2. Its (legado)
-3. Gestão de frota
-4. Biometria facial
-5. Carrier
-6. Telemetria
-7. ATM
-8. Carteira Google
-9. Pix por aproximação
-10. AtlasMob *(ao marcar, abre sub-opções)*
+## Como identificar o gerente logado
 
-### Sub-opções do AtlasMob (múltipla escolha)
-- Personalizado
-- Informativo ao usuário
-- Cadastro e recadastro
-- Carteira digital
+- Buscar em `team_members` o registro cujo `email = auth.user.email` e `role = 'gerente_projetos'`.
+- Guardar o `currentManagerId` (`string | null`) num estado/contexto local da página.
+- `canEditCard(project)` = `isAdmin || project.manager_id === currentManagerId`.
 
-## Banco de dados
+## Mudanças
 
-1. **Seed `solutions`**: desativar (`active=false`) tudo fora da lista e inserir/ativar essas 10.
-2. **Nova tabela `solution_features`** (catálogo de sub-características):
-   - `solution_id` (FK → solutions), `name`, `sort_order`, `active`
-3. **Nova tabela `project_solution_features`** (junção):
-   - `project_id`, `solution_feature_id`
-4. Seed das 4 features do AtlasMob.
-5. GRANTs + RLS no mesmo padrão de `project_equipments` / `project_solutions`.
+### Backend
+- Incluir `manager_id` no `select` de `loadProjects` em `src/pages/ProjectManagement.tsx` (hoje só vem `manager.full_name`), para alimentar a verificação no frontend.
+- **RLS em `projects` (defesa em profundidade)**: criar policy `UPDATE` que permita atualizar somente quando `has_role(auth.uid(),'admin')` **ou** `manager_id IN (select id from team_members where email = auth.email())`. Manter as policies de `SELECT` como estão (todos enxergam).
 
-## Frontend
+### Frontend — `src/pages/ProjectManagement.tsx`
+- Carregar `currentManagerId` e `isAdmin` no mount.
+- No `onDragEnd`, ignorar (com `toast` "Você só pode mover seus próprios projetos") se `canEditCard(project)` for falso.
+- Passar `canEdit` para cada `<KanbanCard>`.
 
-### `src/pages/NewProject.tsx`
-- Substituir o input atual de Soluções por **lista de checkboxes** (de `solutions` ativas, ordenadas).
-- Ao marcar **AtlasMob**, renderizar logo abaixo um bloco com as 4 features em checkbox.
-- Estados: `selectedSolutions: string[]`, `selectedFeatures: string[]`.
-- No submit: gravar em `project_solutions` e `project_solution_features`.
+### Frontend — `src/components/kanban/KanbanCard.tsx`
+- Receber prop `canEdit: boolean`.
+- Repassar para `<Draggable isDragDisabled={!canEdit}>`.
+- Ajustar visual: quando `!canEdit`, trocar `cursor-grab` por `cursor-default`, reduzir hover/sombra de arraste e (opcional) ícone de cadeado discreto no canto do card para indicar "somente leitura".
+- Clique no card continua abrindo o detalhe normalmente.
 
-### `src/pages/ProjectDetail.tsx`
-- **Edição**: mesmas checkboxes + sub-opções carregadas.
-- **Visualização**: badges das soluções; quando AtlasMob estiver marcada, exibir as features escolhidas fixas ao lado (ex.: `AtlasMob — Personalizado, Carteira digital`).
-- Save com delete-and-reinsert (igual `project_equipments`).
-- Incluir no histórico ("Soluções" e "Características AtlasMob").
-
-## Fora de escopo
-- Não alterar `project_solutions` existente — só adicionar a nova tabela de features.
-- Não tocar em Equipamentos, Produtos ou outros cards.
+### Fora de escopo
+- Permissão de edição na página de detalhe do projeto (não foi pedido nesta etapa).
+- Mudar o filtro de gerente do Kanban.
+- Restringir SELECT de projetos por gerente.

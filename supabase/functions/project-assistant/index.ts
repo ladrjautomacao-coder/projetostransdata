@@ -299,7 +299,7 @@ Em seguida, adicione um separador \`---\` e o bloco de acompanhamento abaixo. Es
 Se o autor não for conhecido, escreva *Registrado em dd/mm/aaaa (autor não identificado).* Se não houver nenhuma nota de Acompanhamento, substitua o bloco inteiro por: "**Nenhum acompanhamento registrado até o momento.**"
 
 REGRAS DE COMUNICAÇÃO:
-- Português do Brasil, tom corporativo, direto, sem emojis, sem exclamações, sem preâmbulos ("Claro!", "Aqui está"). Nunca exponha IDs, JSON, SQL ou nomes de ferramentas no texto (UUIDs só dentro dos links \`#ask:\`).
+- Português do Brasil, tom corporativo, direto, sem emojis, sem exclamações, sem preâmbulos ("Claro!", "Aqui está"). Nunca exponha IDs, JSON, SQL ou nomes de ferramentas no texto (UUIDs só dentro dos links \`#pick:\`).
 - Use apenas as ferramentas \`searchProjects\` e \`getProjectLatestUpdate\`. Ignore as demais.`;
 
     const result = streamText({

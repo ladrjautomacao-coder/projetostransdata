@@ -156,30 +156,38 @@ function MessageBubble({ message }: { message: UIMessage }) {
 
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
-      <div className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 text-sm shadow-sm ${
-        isUser ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted rounded-bl-sm"
-      }`}>
+      <div className={`${isUser ? "max-w-[85%] bg-primary text-primary-foreground rounded-2xl rounded-br-sm px-3.5 py-2.5" : "w-full bg-card border border-border/60 rounded-2xl rounded-bl-sm px-4 py-3"} text-sm shadow-sm`}>
         {!isUser && toolParts.length > 0 && (
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wider">
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-2 uppercase tracking-wider">
             <Wrench className="h-3 w-3" /> consultando dados…
           </div>
         )}
         {text && (
           <div className={`prose prose-sm max-w-none break-words
-            prose-p:my-2 prose-headings:mt-3 prose-headings:mb-1.5 prose-headings:font-semibold
-            prose-h1:text-base prose-h2:text-sm prose-h3:text-sm
-            prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-li:marker:text-primary
-            prose-strong:font-semibold
-            prose-hr:my-3
-            prose-table:my-2 prose-table:text-xs prose-th:px-2 prose-th:py-1 prose-td:px-2 prose-td:py-1
-            prose-th:border prose-td:border prose-th:bg-primary/10
-            ${isUser ? "prose-invert" : "dark:prose-invert"}`}>
+            prose-p:my-2 prose-p:leading-relaxed
+            prose-headings:mt-4 prose-headings:mb-2 prose-headings:font-semibold prose-headings:text-foreground
+            prose-h1:text-base prose-h2:text-[15px] prose-h3:text-[13px] prose-h3:uppercase prose-h3:tracking-wider prose-h3:text-primary
+            prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-li:marker:text-primary
+            prose-strong:font-semibold prose-strong:text-foreground
+            prose-hr:my-4 prose-hr:border-border/60
+            prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline
+            ${isUser ? "prose-invert prose-headings:text-primary-foreground prose-strong:text-primary-foreground" : "dark:prose-invert"}`}>
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
                 a: ({ href, children }) => href?.startsWith("/")
-                  ? <Link to={href} className="underline font-medium">{children}</Link>
-                  : <a href={href} target="_blank" rel="noreferrer" className="underline">{children}</a>,
+                  ? <Link to={href} className="text-primary font-medium hover:underline">{children}</Link>
+                  : <a href={href} target="_blank" rel="noreferrer" className="text-primary font-medium hover:underline">{children}</a>,
+                table: ({ children }) => (
+                  <div className="my-3 overflow-x-auto rounded-lg border border-border/70">
+                    <table className="w-full border-collapse text-xs">{children}</table>
+                  </div>
+                ),
+                thead: ({ children }) => <thead className="bg-primary/10">{children}</thead>,
+                th: ({ children }) => <th className="px-3 py-2 text-left font-semibold text-foreground border-b border-border/70 whitespace-nowrap">{children}</th>,
+                td: ({ children }) => <td className="px-3 py-2 align-top border-b border-border/40 last:border-b-0">{children}</td>,
+                tr: ({ children }) => <tr className="even:bg-muted/40">{children}</tr>,
+                code: ({ children }) => <code className="px-1 py-0.5 rounded bg-muted text-[0.85em] font-mono">{children}</code>,
               }}
             >{text}</ReactMarkdown>
           </div>

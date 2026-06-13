@@ -145,7 +145,7 @@ function AssistantChatInner({ token, onClose }: { token: string; onClose?: () =>
   );
 }
 
-function MessageBubble({ message }: { message: UIMessage }) {
+function MessageBubble({ message, onAsk }: { message: UIMessage; onAsk?: (q: string) => void }) {
   const isUser = message.role === "user";
   const textParts = message.parts.filter(p => p.type === "text") as Array<{ type: "text"; text: string }>;
   const toolParts = message.parts.filter(p => p.type.startsWith("tool-"));
@@ -172,9 +172,21 @@ function MessageBubble({ message }: { message: UIMessage }) {
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
-                a: ({ href, children }) => href?.startsWith("/")
-                  ? <Link to={href} className="text-primary font-medium hover:underline">{children}</Link>
-                  : <a href={href} target="_blank" rel="noreferrer" className="text-primary font-medium hover:underline">{children}</a>,
+                a: ({ href, children }) => {
+                  if (href?.startsWith("#ask:")) {
+                    const q = decodeURIComponent(href.slice(5));
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => onAsk?.(q)}
+                        className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-medium px-2.5 py-0.5 text-xs my-0.5 transition-colors"
+                      >{children}</button>
+                    );
+                  }
+                  return href?.startsWith("/")
+                    ? <Link to={href} className="text-primary font-medium hover:underline">{children}</Link>
+                    : <a href={href} target="_blank" rel="noreferrer" className="text-primary font-medium hover:underline">{children}</a>;
+                },
                 table: ({ children }) => (
                   <div className="my-3 overflow-x-auto rounded-lg border border-border/70">
                     <table className="w-full border-collapse text-xs">{children}</table>

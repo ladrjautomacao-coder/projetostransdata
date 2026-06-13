@@ -147,6 +147,12 @@ export default function ProjectDetail() {
       setSelectedEquipments(eqRows.map(r => r.id));
       setEquipmentQty(Object.fromEntries(eqRows.map(r => [r.id, String(r.quantity)])));
       setOriginalEquipments(eqRows);
+
+      // Load project solution features
+      const { data: psfData } = await (supabase.from("project_solution_features" as any) as any).select("solution_feature_id").eq("project_id", id);
+      const featIds = (psfData || []).map((p: any) => p.solution_feature_id);
+      setSelectedFeatures(featIds);
+      setOriginalFeatures(featIds);
     }
     setLoading(false);
   };

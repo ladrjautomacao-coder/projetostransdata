@@ -19,31 +19,43 @@ const SUGGESTIONS = [
 ];
 
 export function AssistantChat({ onClose }: { onClose?: () => void }) {
-  const { toast } = useToast();
   const [token, setToken] = useState<string | null>(null);
-  const [input, setInput] = useState("");
-  const [chatId, setChatId] = useState(() => crypto.randomUUID());
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setToken(data.session?.access_token ?? null));
   }, []);
 
-  const transport = useRef<DefaultChatTransport<UIMessage> | null>(null);
-  if (token && !transport.current) {
-    transport.current = new DefaultChatTransport({
+  if (!token) {
+    return (
+      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+        <Loader2 className="h-4 w-4 animate-spin mr-2" /> Carregando sessão…
+      </div>
+    );
+  }
+
+  return <AssistantChatInner token={token} onClose={onClose} />;
+}
+
+function AssistantChatInner({ token, onClose }: { token: string; onClose?: () => void }) {
+  const { toast } = useToast();
+  const [input, setInput] = useState("");
+  const [chatId, setChatId] = useState(() => crypto.randomUUID());
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const transport = useRef<DefaultChatTransport<UIMessage>>(
+    new DefaultChatTransport({
       api: ENDPOINT,
       headers: {
         Authorization: `Bearer ${token}`,
         apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
       },
-    });
-  }
+    })
+  );
 
   const { messages, sendMessage, status, setMessages } = useChat({
     id: chatId,
-    transport: transport.current ?? new DefaultChatTransport({ api: ENDPOINT }),
+    transport: transport.current,
     onError: (err) => toast({ title: "Erro no assistente", description: err.message, variant: "destructive" }),
   });
 
@@ -57,7 +69,7 @@ export function AssistantChat({ onClose }: { onClose?: () => void }) {
 
   const handleSend = async (text?: string) => {
     const value = (text ?? input).trim();
-    if (!value || isBusy || !token) return;
+    if (!value || isBusy) return;
     setInput("");
     await sendMessage({ text: value });
   };
@@ -120,13 +132,13 @@ export function AssistantChat({ onClose }: { onClose?: () => void }) {
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
           }}
-          placeholder={token ? "Pergunte algo… (Enter envia, Shift+Enter quebra linha)" : "Carregando sessão…"}
+          placeholder="Pergunte algo… (Enter envia, Shift+Enter quebra linha)"
           rows={2}
-          disabled={!token || isBusy}
+          disabled={isBusy}
           className="resize-none text-sm"
         />
         <div className="flex justify-end">
-          <Button size="sm" onClick={() => handleSend()} disabled={!input.trim() || isBusy || !token}>
+          <Button size="sm" onClick={() => handleSend()} disabled={!input.trim() || isBusy}>
             <Send className="h-3.5 w-3.5 mr-1.5" /> Enviar
           </Button>
         </div>

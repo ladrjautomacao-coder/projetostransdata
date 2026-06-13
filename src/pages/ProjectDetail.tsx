@@ -84,6 +84,10 @@ export default function ProjectDetail() {
   const [allSolutions, setAllSolutions] = useState<{ id: string; name: string }[]>([]);
   const [allIntegrations, setAllIntegrations] = useState<{ id: string; name: string }[]>([]);
   const [selectedIntegrations, setSelectedIntegrations] = useState<string[]>([]);
+  const [allEquipments, setAllEquipments] = useState<{ id: string; name: string }[]>([]);
+  const [selectedEquipments, setSelectedEquipments] = useState<string[]>([]);
+  const [equipmentQty, setEquipmentQty] = useState<Record<string, string>>({});
+  const [originalEquipments, setOriginalEquipments] = useState<{ id: string; quantity: number }[]>([]);
 
   const implEndDate = useMemo(() => {
     if (contractDate && implDeadlineDays && parseInt(implDeadlineDays) > 0) return addDays(contractDate, parseInt(implDeadlineDays));
@@ -133,6 +137,13 @@ export default function ProjectDetail() {
       const intIds = piData?.map((pi: any) => pi.integration_id) || [];
       setSelectedIntegrations(intIds);
       setProject((prev: any) => ({ ...prev, _integrationIds: intIds }));
+
+      // Load project equipments
+      const { data: peData } = await (supabase.from("project_equipments" as any) as any).select("equipment_type_id, quantity").eq("project_id", id);
+      const eqRows: { id: string; quantity: number }[] = (peData || []).map((p: any) => ({ id: p.equipment_type_id, quantity: p.quantity }));
+      setSelectedEquipments(eqRows.map(r => r.id));
+      setEquipmentQty(Object.fromEntries(eqRows.map(r => [r.id, String(r.quantity)])));
+      setOriginalEquipments(eqRows);
     }
     setLoading(false);
   };
@@ -197,6 +208,7 @@ export default function ProjectDetail() {
     supabase.from("project_types").select("id, name").eq("active", true).then(({ data }) => setProjectTypes(data || []));
     supabase.from("solutions").select("id, name").eq("active", true).then(({ data }) => setAllSolutions(data || []));
     supabase.from("integrations").select("id, name").eq("active", true).then(({ data }) => setAllIntegrations(data || []));
+    (supabase.from("equipment_types" as any) as any).select("id, name").eq("active", true).order("sort_order").then(({ data }: any) => setAllEquipments(data || []));
   }, [id]);
 
   const buildChanges = () => {
@@ -252,6 +264,16 @@ export default function ProjectDetail() {
     const oldIntNames = oldIntIds.map((iid: string) => allIntegrations.find(i => i.id === iid)?.name).filter(Boolean).sort().join(", ") || "—";
     add("Integrações", oldIntNames, currentIntNames);
 
+    // Equipment changes
+    const fmtEq = (rows: { id: string; quantity: number }[]) =>
+      rows.map(r => `${allEquipments.find(e => e.id === r.id)?.name || "?"} (${r.quantity})`).sort().join(", ") || "—";
+    const oldEqStr = fmtEq(originalEquipments);
+    const newEqRows = selectedEquipments
+      .map(eid => ({ id: eid, quantity: parseInt(equipmentQty[eid] || "0") || 0 }))
+      .filter(r => r.quantity > 0);
+    const newEqStr = fmtEq(newEqRows);
+    add("Equipamentos", oldEqStr, newEqStr);
+
     return changes;
   };
 
@@ -303,6 +325,15 @@ export default function ProjectDetail() {
       await supabase.from("project_integrations").delete().eq("project_id", id);
       if (selectedIntegrations.length > 0) {
         await supabase.from("project_integrations").insert(selectedIntegrations.map(iid => ({ project_id: id, integration_id: iid })));
+      }
+
+      // Update equipments
+      await (supabase.from("project_equipments" as any) as any).delete().eq("project_id", id);
+      const eqRowsToInsert = selectedEquipments
+        .map(eid => ({ project_id: id, equipment_type_id: eid, quantity: parseInt(equipmentQty[eid] || "0") || 0 }))
+        .filter(r => r.quantity > 0);
+      if (eqRowsToInsert.length > 0) {
+        await (supabase.from("project_equipments" as any) as any).insert(eqRowsToInsert);
       }
 
       if (changes.length > 0) {
@@ -749,6 +780,40 @@ export default function ProjectDetail() {
                     </div>
                   ))}
                 </div>
+                <Separator />
+                <Label className="text-xs text-muted-foreground">Equipamentos</Label>
+                <div className="grid gap-2">
+                  {allEquipments.map(eq => {
+                    const checked = selectedEquipments.includes(eq.id);
+                    return (
+                      <div key={eq.id} className="flex items-center gap-2 border rounded-md p-2">
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={c => {
+                            if (c) {
+                              setSelectedEquipments(prev => [...prev, eq.id]);
+                              setEquipmentQty(prev => ({ ...prev, [eq.id]: prev[eq.id] || "1" }));
+                            } else {
+                              setSelectedEquipments(prev => prev.filter(x => x !== eq.id));
+                            }
+                          }}
+                        />
+                        <span className="text-sm flex-1">{eq.name}</span>
+                        {checked && (
+                          <Input
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={equipmentQty[eq.id] || ""}
+                            onChange={e => setEquipmentQty(prev => ({ ...prev, [eq.id]: e.target.value }))}
+                            placeholder="Qtd"
+                            className="w-20 h-8"
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </>
             ) : (
               <>
@@ -773,6 +838,18 @@ export default function ProjectDetail() {
                           return name ? <Badge key={iid} variant="outline">{name}</Badge> : null;
                         })
                       : <span className="text-sm text-muted-foreground">Nenhuma</span>}
+                  </div>
+                </div>
+                <Separator />
+                <div>
+                  <span className="text-xs text-muted-foreground">Equipamentos</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {originalEquipments.length > 0
+                      ? originalEquipments.map(r => {
+                          const name = allEquipments.find(e => e.id === r.id)?.name;
+                          return name ? <Badge key={r.id} variant="secondary">{name} · {r.quantity}</Badge> : null;
+                        })
+                      : <span className="text-sm text-muted-foreground">Nenhum</span>}
                   </div>
                 </div>
               </>

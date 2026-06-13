@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      equipment_types: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       integrations: {
         Row: {
           active: boolean
@@ -123,6 +147,45 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "project_attachments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_equipments: {
+        Row: {
+          created_at: string
+          equipment_type_id: string
+          id: string
+          project_id: string
+          quantity: number
+        }
+        Insert: {
+          created_at?: string
+          equipment_type_id: string
+          id?: string
+          project_id: string
+          quantity?: number
+        }
+        Update: {
+          created_at?: string
+          equipment_type_id?: string
+          id?: string
+          project_id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_equipments_equipment_type_id_fkey"
+            columns: ["equipment_type_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_equipments_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"

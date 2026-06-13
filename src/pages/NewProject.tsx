@@ -88,6 +88,9 @@ export default function NewProject() {
   const [projectTypes, setProjectTypes] = useState<{ id: string; name: string }[]>([]);
   const [solutions, setSolutions] = useState<{ id: string; name: string }[]>([]);
   const [integrations, setIntegrations] = useState<{ id: string; name: string }[]>([]);
+  const [equipmentTypes, setEquipmentTypes] = useState<{ id: string; name: string }[]>([]);
+  const [selectedEquipments, setSelectedEquipments] = useState<string[]>([]);
+  const [equipmentQty, setEquipmentQty] = useState<Record<string, string>>({});
 
   useEffect(() => {
     supabase.from("team_members").select("id, full_name").eq("role", "executivo_vendas").eq("active", true).then(({ data }) => setExecutives(data || []));
@@ -96,6 +99,7 @@ export default function NewProject() {
     supabase.from("project_types").select("id, name").eq("active", true).then(({ data }) => setProjectTypes(data || []));
     supabase.from("solutions").select("id, name").eq("active", true).then(({ data }) => setSolutions(data || []));
     supabase.from("integrations").select("id, name").eq("active", true).then(({ data }) => setIntegrations(data || []));
+    (supabase.from("equipment_types" as any) as any).select("id, name").eq("active", true).order("sort_order").then(({ data }: any) => setEquipmentTypes(data || []));
   }, []);
 
   // Datas calculadas
@@ -190,6 +194,14 @@ export default function NewProject() {
       // Integrações
       if (selectedIntegrations.length > 0) {
         await supabase.from("project_integrations").insert(selectedIntegrations.map(iid => ({ project_id: project.id, integration_id: iid })));
+      }
+
+      // Equipamentos
+      const equipmentRows = selectedEquipments
+        .map(eid => ({ project_id: project.id, equipment_type_id: eid, quantity: parseInt(equipmentQty[eid] || "0") || 0 }))
+        .filter(r => r.quantity > 0);
+      if (equipmentRows.length > 0) {
+        await (supabase.from("project_equipments" as any) as any).insert(equipmentRows);
       }
 
       // Histórico
@@ -376,6 +388,54 @@ export default function NewProject() {
             )}
           </CardContent>
         </Card>
+
+        {/* === SEÇÃO: EQUIPAMENTOS === */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Equipamentos</CardTitle>
+            <CardDescription>Marque os equipamentos contratados e informe a quantidade</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {equipmentTypes.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhum equipamento cadastrado.</p>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {equipmentTypes.map(eq => {
+                  const checked = selectedEquipments.includes(eq.id);
+                  return (
+                    <div key={eq.id} className="flex items-center gap-3 border rounded-md p-2">
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={c => {
+                          if (c) {
+                            setSelectedEquipments(prev => [...prev, eq.id]);
+                            setEquipmentQty(prev => ({ ...prev, [eq.id]: prev[eq.id] || "1" }));
+                          } else {
+                            setSelectedEquipments(prev => prev.filter(x => x !== eq.id));
+                          }
+                        }}
+                      />
+                      <span className="text-sm flex-1">{eq.name}</span>
+                      {checked && (
+                        <Input
+                          type="number"
+                          min={1}
+                          step={1}
+                          value={equipmentQty[eq.id] || ""}
+                          onChange={e => setEquipmentQty(prev => ({ ...prev, [eq.id]: e.target.value }))}
+                          placeholder="Qtd"
+                          className="w-24 h-8"
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+
 
         {/* === SEÇÃO: PRAZOS === */}
         <Card>

@@ -36,16 +36,22 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: { headers: { Authorization: `Bearer ${jwt}` } },
     });
 
-    const { data: userData } = await supabase.auth.getUser(jwt);
+    const { data: userData } = await authClient.auth.getUser(jwt);
     if (!userData?.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Service-role client: o assistente tem acesso TOTAL aos dados (bypass RLS).
+    // Validação de permissão já foi feita acima via super_admin role.
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
 
     const { data: roleRow } = await supabase
       .from("user_roles")

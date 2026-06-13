@@ -780,6 +780,40 @@ export default function ProjectDetail() {
                     </div>
                   ))}
                 </div>
+                <Separator />
+                <Label className="text-xs text-muted-foreground">Equipamentos</Label>
+                <div className="grid gap-2">
+                  {allEquipments.map(eq => {
+                    const checked = selectedEquipments.includes(eq.id);
+                    return (
+                      <div key={eq.id} className="flex items-center gap-2 border rounded-md p-2">
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={c => {
+                            if (c) {
+                              setSelectedEquipments(prev => [...prev, eq.id]);
+                              setEquipmentQty(prev => ({ ...prev, [eq.id]: prev[eq.id] || "1" }));
+                            } else {
+                              setSelectedEquipments(prev => prev.filter(x => x !== eq.id));
+                            }
+                          }}
+                        />
+                        <span className="text-sm flex-1">{eq.name}</span>
+                        {checked && (
+                          <Input
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={equipmentQty[eq.id] || ""}
+                            onChange={e => setEquipmentQty(prev => ({ ...prev, [eq.id]: e.target.value }))}
+                            placeholder="Qtd"
+                            className="w-20 h-8"
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </>
             ) : (
               <>
@@ -804,6 +838,18 @@ export default function ProjectDetail() {
                           return name ? <Badge key={iid} variant="outline">{name}</Badge> : null;
                         })
                       : <span className="text-sm text-muted-foreground">Nenhuma</span>}
+                  </div>
+                </div>
+                <Separator />
+                <div>
+                  <span className="text-xs text-muted-foreground">Equipamentos</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {originalEquipments.length > 0
+                      ? originalEquipments.map(r => {
+                          const name = allEquipments.find(e => e.id === r.id)?.name;
+                          return name ? <Badge key={r.id} variant="secondary">{name} · {r.quantity}</Badge> : null;
+                        })
+                      : <span className="text-sm text-muted-foreground">Nenhum</span>}
                   </div>
                 </div>
               </>

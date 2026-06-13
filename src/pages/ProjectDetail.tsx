@@ -88,6 +88,9 @@ export default function ProjectDetail() {
   const [selectedEquipments, setSelectedEquipments] = useState<string[]>([]);
   const [equipmentQty, setEquipmentQty] = useState<Record<string, string>>({});
   const [originalEquipments, setOriginalEquipments] = useState<{ id: string; quantity: number }[]>([]);
+  const [solutionFeatures, setSolutionFeatures] = useState<{ id: string; solution_id: string; name: string }[]>([]);
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const [originalFeatures, setOriginalFeatures] = useState<string[]>([]);
 
   const implEndDate = useMemo(() => {
     if (contractDate && implDeadlineDays && parseInt(implDeadlineDays) > 0) return addDays(contractDate, parseInt(implDeadlineDays));
@@ -144,6 +147,12 @@ export default function ProjectDetail() {
       setSelectedEquipments(eqRows.map(r => r.id));
       setEquipmentQty(Object.fromEntries(eqRows.map(r => [r.id, String(r.quantity)])));
       setOriginalEquipments(eqRows);
+
+      // Load project solution features
+      const { data: psfData } = await (supabase.from("project_solution_features" as any) as any).select("solution_feature_id").eq("project_id", id);
+      const featIds = (psfData || []).map((p: any) => p.solution_feature_id);
+      setSelectedFeatures(featIds);
+      setOriginalFeatures(featIds);
     }
     setLoading(false);
   };
@@ -209,6 +218,7 @@ export default function ProjectDetail() {
     supabase.from("solutions").select("id, name").eq("active", true).then(({ data }) => setAllSolutions(data || []));
     supabase.from("integrations").select("id, name").eq("active", true).then(({ data }) => setAllIntegrations(data || []));
     (supabase.from("equipment_types" as any) as any).select("id, name").eq("active", true).order("sort_order").then(({ data }: any) => setAllEquipments(data || []));
+    (supabase.from("solution_features" as any) as any).select("id, solution_id, name").eq("active", true).order("sort_order").then(({ data }: any) => setSolutionFeatures(data || []));
   }, [id]);
 
   const buildChanges = () => {
@@ -274,6 +284,16 @@ export default function ProjectDetail() {
     const newEqStr = fmtEq(newEqRows);
     add("Equipamentos", oldEqStr, newEqStr);
 
+    // Features (sub-características de soluções, ex.: AtlasMob)
+    const fmtFeat = (ids: string[]) =>
+      ids.map(fid => {
+        const f = solutionFeatures.find(x => x.id === fid);
+        if (!f) return null;
+        const sol = allSolutions.find(s => s.id === f.solution_id)?.name || "?";
+        return `${sol} → ${f.name}`;
+      }).filter(Boolean).sort().join(", ") || "—";
+    add("Características de Soluções", fmtFeat(originalFeatures), fmtFeat(selectedFeatures));
+
     return changes;
   };
 
@@ -334,6 +354,18 @@ export default function ProjectDetail() {
         .filter(r => r.quantity > 0);
       if (eqRowsToInsert.length > 0) {
         await (supabase.from("project_equipments" as any) as any).insert(eqRowsToInsert);
+      }
+
+      // Update solution features
+      await (supabase.from("project_solution_features" as any) as any).delete().eq("project_id", id);
+      const validFeatures = selectedFeatures.filter(fid => {
+        const f = solutionFeatures.find(x => x.id === fid);
+        return f && selectedSolutions.includes(f.solution_id);
+      });
+      if (validFeatures.length > 0) {
+        await (supabase.from("project_solution_features" as any) as any).insert(
+          validFeatures.map(fid => ({ project_id: id, solution_feature_id: fid }))
+        );
       }
 
       if (changes.length > 0) {
@@ -762,13 +794,43 @@ export default function ProjectDetail() {
                 </div>
                 <Separator />
                 <Label className="text-xs text-muted-foreground">Soluções</Label>
-                <div className="grid gap-1">
-                  {allSolutions.map(s => (
-                    <div key={s.id} className="flex items-center gap-2">
-                      <Checkbox checked={selectedSolutions.includes(s.id)} onCheckedChange={c => setSelectedSolutions(prev => c ? [...prev, s.id] : prev.filter(x => x !== s.id))} />
-                      <span className="text-sm">{s.name}</span>
-                    </div>
-                  ))}
+                <div className="space-y-3">
+                  <div className="grid gap-1">
+                    {allSolutions.map(s => (
+                      <div key={s.id} className="flex items-center gap-2">
+                        <Checkbox
+                          checked={selectedSolutions.includes(s.id)}
+                          onCheckedChange={c => {
+                            setSelectedSolutions(prev => c ? [...prev, s.id] : prev.filter(x => x !== s.id));
+                            if (!c) {
+                              const featureIds = solutionFeatures.filter(f => f.solution_id === s.id).map(f => f.id);
+                              setSelectedFeatures(prev => prev.filter(fid => !featureIds.includes(fid)));
+                            }
+                          }}
+                        />
+                        <span className="text-sm">{s.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {allSolutions.filter(s => selectedSolutions.includes(s.id) && solutionFeatures.some(f => f.solution_id === s.id)).map(s => {
+                    const feats = solutionFeatures.filter(f => f.solution_id === s.id);
+                    return (
+                      <div key={s.id} className="border rounded-md p-3 bg-muted/30">
+                        <Label className="text-xs text-muted-foreground mb-2 block">Características de {s.name}</Label>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {feats.map(f => (
+                            <div key={f.id} className="flex items-center gap-2">
+                              <Checkbox
+                                checked={selectedFeatures.includes(f.id)}
+                                onCheckedChange={c => setSelectedFeatures(prev => c ? [...prev, f.id] : prev.filter(x => x !== f.id))}
+                              />
+                              <span className="text-sm">{f.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
                 <Separator />
                 <Label className="text-xs text-muted-foreground">Equipamentos</Label>
@@ -812,9 +874,21 @@ export default function ProjectDetail() {
                 <Separator />
                 <div>
                   <span className="text-xs text-muted-foreground">Soluções</span>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {solutionNames.length > 0
-                      ? solutionNames.map((name: string, i: number) => <Badge key={i} variant="default">{name}</Badge>)
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {(project.project_solutions || []).length > 0
+                      ? (project.project_solutions as any[]).map((ps: any) => {
+                          const sid = ps.solution?.id || ps.solution_id;
+                          const sname = ps.solution?.name || "?";
+                          const feats = solutionFeatures
+                            .filter(f => f.solution_id === sid && originalFeatures.includes(f.id))
+                            .map(f => f.name);
+                          return (
+                            <Badge key={sid} variant="default" className="whitespace-normal">
+                              {sname}
+                              {feats.length > 0 && <span className="ml-1 opacity-90">— {feats.join(", ")}</span>}
+                            </Badge>
+                          );
+                        })
                       : <span className="text-sm text-muted-foreground">Nenhuma</span>}
                   </div>
                 </div>

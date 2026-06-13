@@ -1,40 +1,50 @@
-## Mudanças solicitadas
+## Objetivo
 
-### 1. Bloquear caracteres especiais no campo "Cidade"
-- Em `src/pages/NewProject.tsx` e `src/pages/ProjectDetail.tsx`, alterar o `onChange` do input de Cidade para sanitizar em tempo real, permitindo apenas: letras (incluindo acentuadas), espaços, hífen e apóstrofo (ex.: "Mogi das Cruzes", "Embu-Guaçu", "Santa Bárbara d'Oeste").
-- Regex aplicada: `/[^A-Za-zÀ-ÿ\s'-]/g` → removidos no momento da digitação.
-- Sem mudança de schema; validação puramente client-side.
+Transformar o card **Soluções / Escopo** em uma lista de soluções flegáveis (checkbox), igual ao padrão de "Equipamentos" — porém **sem quantidade**. A solução **AtlasMob** terá sub-características também flegáveis, exibidas fixas na visualização do projeto.
 
-### 2. Popular "Tipo do Projeto" com as 6 opções fixas
-Inserir via dados (não schema) na tabela `project_types` os registros abaixo, mantendo eles ativos. Antes de inserir, desativar (`active = false`) os tipos existentes que não estão na lista, para o select exibir somente os corretos:
+## Soluções (checkbox)
 
-- Implantação Data Center (DAT)
-- Implantação Locação (PIL)
-- Implantação Piloto (PIP)
-- Implantação Venda (PIV)
-- Venda Complementar (VCP)
-- Serviços (SER)
+1. Bilhetagem
+2. Its (legado)
+3. Gestão de frota
+4. Biometria facial
+5. Carrier
+6. Telemetria
+7. ATM
+8. Carteira Google
+9. Pix por aproximação
+10. AtlasMob *(ao marcar, abre sub-opções)*
 
-A tela de cadastro já lê `project_types` dinamicamente, então nenhuma alteração de código é necessária para o select.
+### Sub-opções do AtlasMob (múltipla escolha)
+- Personalizado
+- Informativo ao usuário
+- Cadastro e recadastro
+- Carteira digital
 
-### 3. Novo campo "Projeto Executivo" (data)
-- **Migração** adicionando coluna `executive_project_date date` (nullable) em `public.projects`.
-- **Cadastro** (`src/pages/NewProject.tsx`): adicionar estado `executiveProjectDate` e renderizar um `<DatePicker label="Projeto Executivo" .../>` na seção "Projeto", seguindo o padrão visual dos demais campos de data (mesmo componente Popover/Calendar já usado). Incluir o valor no `insert` enviado ao Supabase.
-- **Detalhe/edição** (`src/pages/ProjectDetail.tsx`): carregar o campo, exibir/editar com o mesmo `DatePicker`, incluir no `update` e no diff de histórico ("Projeto Executivo").
-- Campo opcional — sem validação obrigatória.
+## Banco de dados
 
-## Detalhes técnicos
+1. **Seed `solutions`**: desativar (`active=false`) tudo fora da lista e inserir/ativar essas 10.
+2. **Nova tabela `solution_features`** (catálogo de sub-características):
+   - `solution_id` (FK → solutions), `name`, `sort_order`, `active`
+3. **Nova tabela `project_solution_features`** (junção):
+   - `project_id`, `solution_feature_id`
+4. Seed das 4 features do AtlasMob.
+5. GRANTs + RLS no mesmo padrão de `project_equipments` / `project_solutions`.
 
-Sanitização da cidade (helper inline):
-```ts
-const sanitizeCity = (v: string) => v.replace(/[^A-Za-zÀ-ÿ\s'-]/g, "");
-// <Input value={city} onChange={e => setCity(sanitizeCity(e.target.value))} ... />
-```
+## Frontend
 
-Migração SQL:
-```sql
-ALTER TABLE public.projects
-  ADD COLUMN executive_project_date date;
-```
+### `src/pages/NewProject.tsx`
+- Substituir o input atual de Soluções por **lista de checkboxes** (de `solutions` ativas, ordenadas).
+- Ao marcar **AtlasMob**, renderizar logo abaixo um bloco com as 4 features em checkbox.
+- Estados: `selectedSolutions: string[]`, `selectedFeatures: string[]`.
+- No submit: gravar em `project_solutions` e `project_solution_features`.
 
-Seed dos tipos de projeto (via tool de dados): desativar os atuais fora da lista e fazer upsert por `name` dos 6 itens com `active = true`.
+### `src/pages/ProjectDetail.tsx`
+- **Edição**: mesmas checkboxes + sub-opções carregadas.
+- **Visualização**: badges das soluções; quando AtlasMob estiver marcada, exibir as features escolhidas fixas ao lado (ex.: `AtlasMob — Personalizado, Carteira digital`).
+- Save com delete-and-reinsert (igual `project_equipments`).
+- Incluir no histórico ("Soluções" e "Características AtlasMob").
+
+## Fora de escopo
+- Não alterar `project_solutions` existente — só adicionar a nova tabela de features.
+- Não tocar em Equipamentos, Produtos ou outros cards.

@@ -91,6 +91,8 @@ export default function NewProject() {
   const [equipmentTypes, setEquipmentTypes] = useState<{ id: string; name: string }[]>([]);
   const [selectedEquipments, setSelectedEquipments] = useState<string[]>([]);
   const [equipmentQty, setEquipmentQty] = useState<Record<string, string>>({});
+  const [solutionFeatures, setSolutionFeatures] = useState<{ id: string; solution_id: string; name: string }[]>([]);
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
 
   useEffect(() => {
     supabase.from("team_members").select("id, full_name").eq("role", "executivo_vendas").eq("active", true).then(({ data }) => setExecutives(data || []));
@@ -100,6 +102,7 @@ export default function NewProject() {
     supabase.from("solutions").select("id, name").eq("active", true).then(({ data }) => setSolutions(data || []));
     supabase.from("integrations").select("id, name").eq("active", true).then(({ data }) => setIntegrations(data || []));
     (supabase.from("equipment_types" as any) as any).select("id, name").eq("active", true).order("sort_order").then(({ data }: any) => setEquipmentTypes(data || []));
+    (supabase.from("solution_features" as any) as any).select("id, solution_id, name").eq("active", true).order("sort_order").then(({ data }: any) => setSolutionFeatures(data || []));
   }, []);
 
   // Datas calculadas
@@ -189,6 +192,17 @@ export default function NewProject() {
       // Soluções
       if (selectedSolutions.length > 0) {
         await supabase.from("project_solutions").insert(selectedSolutions.map(sid => ({ project_id: project.id, solution_id: sid })));
+      }
+
+      // Sub-características de Soluções (ex.: AtlasMob)
+      const featureRows = selectedFeatures
+        .filter(fid => {
+          const f = solutionFeatures.find(x => x.id === fid);
+          return f && selectedSolutions.includes(f.solution_id);
+        })
+        .map(fid => ({ project_id: project.id, solution_feature_id: fid }));
+      if (featureRows.length > 0) {
+        await (supabase.from("project_solution_features" as any) as any).insert(featureRows);
       }
 
       // Integrações
@@ -344,18 +358,45 @@ export default function NewProject() {
               {solutions.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Nenhuma solução cadastrada.</p>
               ) : (
-                <div className="grid gap-2 sm:grid-cols-3">
-                  {solutions.map(s => (
-                    <div key={s.id} className="flex items-center gap-2">
-                      <Checkbox
-                        checked={selectedSolutions.includes(s.id)}
-                        onCheckedChange={checked => {
-                          setSelectedSolutions(prev => checked ? [...prev, s.id] : prev.filter(x => x !== s.id));
-                        }}
-                      />
-                      <span className="text-sm">{s.name}</span>
-                    </div>
-                  ))}
+                <div className="space-y-3">
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {solutions.map(s => (
+                      <div key={s.id} className="flex items-center gap-2">
+                        <Checkbox
+                          checked={selectedSolutions.includes(s.id)}
+                          onCheckedChange={checked => {
+                            setSelectedSolutions(prev => checked ? [...prev, s.id] : prev.filter(x => x !== s.id));
+                            if (!checked) {
+                              const featureIds = solutionFeatures.filter(f => f.solution_id === s.id).map(f => f.id);
+                              setSelectedFeatures(prev => prev.filter(fid => !featureIds.includes(fid)));
+                            }
+                          }}
+                        />
+                        <span className="text-sm">{s.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {solutions.filter(s => selectedSolutions.includes(s.id) && solutionFeatures.some(f => f.solution_id === s.id)).map(s => {
+                    const feats = solutionFeatures.filter(f => f.solution_id === s.id);
+                    return (
+                      <div key={s.id} className="border rounded-md p-3 bg-muted/30">
+                        <Label className="text-xs text-muted-foreground mb-2 block">Características de {s.name}</Label>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {feats.map(f => (
+                            <div key={f.id} className="flex items-center gap-2">
+                              <Checkbox
+                                checked={selectedFeatures.includes(f.id)}
+                                onCheckedChange={checked => {
+                                  setSelectedFeatures(prev => checked ? [...prev, f.id] : prev.filter(x => x !== f.id));
+                                }}
+                              />
+                              <span className="text-sm">{f.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

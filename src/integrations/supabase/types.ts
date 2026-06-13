@@ -329,6 +329,42 @@ export type Database = {
           },
         ]
       }
+      project_solution_features: {
+        Row: {
+          created_at: string
+          id: string
+          project_id: string
+          solution_feature_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          project_id: string
+          solution_feature_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          project_id?: string
+          solution_feature_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_solution_features_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_solution_features_solution_feature_id_fkey"
+            columns: ["solution_feature_id"]
+            isOneToOne: false
+            referencedRelation: "solution_features"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_solutions: {
         Row: {
           id: string
@@ -500,6 +536,41 @@ export type Database = {
             columns: ["project_type_id"]
             isOneToOne: false
             referencedRelation: "project_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      solution_features: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          solution_id: string
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          solution_id: string
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          solution_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solution_features_solution_id_fkey"
+            columns: ["solution_id"]
+            isOneToOne: false
+            referencedRelation: "solutions"
             referencedColumns: ["id"]
           },
         ]

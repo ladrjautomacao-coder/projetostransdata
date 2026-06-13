@@ -341,9 +341,14 @@ export default function UserManagement() {
                   : <>Deseja bloquear o acesso de <strong>{confirmAction?.user.full_name}</strong> ao sistema?</>
               )}
               {confirmAction?.type === "toggle_role" && (
-                confirmAction.user.role === "admin"
+                confirmAction.user.role !== "user"
                   ? <>Deseja remover o papel de administrador de <strong>{confirmAction.user.full_name}</strong>?</>
                   : <>Deseja tornar <strong>{confirmAction.user.full_name}</strong> um administrador do sistema?</>
+              )}
+              {confirmAction?.type === "toggle_super" && (
+                confirmAction.user.role === "super_admin"
+                  ? <>Deseja remover o papel de Super Admin de <strong>{confirmAction.user.full_name}</strong>? Ele perderá acesso ao Assistente de IA.</>
+                  : <>Deseja tornar <strong>{confirmAction.user.full_name}</strong> um Super Admin? Ele terá acesso ao Assistente de IA dos projetos.</>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>

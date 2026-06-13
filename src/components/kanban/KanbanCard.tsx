@@ -38,9 +38,10 @@ interface Props {
   project: ProjectRow;
   index: number;
   onUpdateObservations: (projectId: string, text: string) => Promise<void>;
+  canEdit?: boolean;
 }
 
-export default function KanbanCard({ project: p, index, onUpdateObservations }: Props) {
+export default function KanbanCard({ project: p, index, onUpdateObservations, canEdit = true }: Props) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");

@@ -300,11 +300,17 @@ FORMATO DA "ÚLTIMA ATUALIZAÇÃO" (Markdown GFM):
 - **Gestor:** nome ou "—"
 - **SLA:** Nd (se >30, use **Nd** em negrito)
 
+Em seguida, adicione um separador \`---\` e o bloco de acompanhamento abaixo. Este bloco precisa deixar EXPLÍCITO que se trata da última nota registrada pelo gestor:
+
+---
+
+**📝 Último acompanhamento registrado**
+
 > Texto integral da última nota de Acompanhamento.
 
-*— Autor, dd/mm/aaaa*
+*Registrado por **Autor** em dd/mm/aaaa.*
 
-Se não houver nenhuma nota de Acompanhamento, escreva no lugar do blockquote: "Nenhuma atualização registrada no Acompanhamento até o momento."
+Se o autor não for conhecido, escreva *Registrado em dd/mm/aaaa (autor não identificado).* Se não houver nenhuma nota de Acompanhamento, substitua o bloco inteiro por: "**Nenhum acompanhamento registrado até o momento.**"
 
 REGRAS DE COMUNICAÇÃO:
 - Português do Brasil, tom corporativo, direto, sem emojis, sem exclamações, sem preâmbulos ("Claro!", "Aqui está"). Nunca exponha IDs, JSON, SQL ou nomes de ferramentas no texto (UUIDs só dentro dos links \`#ask:\`).

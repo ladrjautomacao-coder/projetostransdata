@@ -173,8 +173,10 @@ function MessageBubble({ message, onAsk }: { message: UIMessage; onAsk?: (q: str
               remarkPlugins={[remarkGfm]}
               components={{
                 a: ({ href, children }) => {
-                  if (href?.startsWith("#ask:")) {
-                    const q = decodeURIComponent(href.slice(5));
+                  if (href?.startsWith("#pick:") || href?.startsWith("#ask:")) {
+                    const isPick = href.startsWith("#pick:");
+                    const raw = decodeURIComponent(href.slice(isPick ? 6 : 5));
+                    const q = isPick ? `Última atualização do projeto ${raw}` : raw;
                     return (
                       <button
                         type="button"

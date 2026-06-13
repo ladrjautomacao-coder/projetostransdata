@@ -271,9 +271,9 @@ FLUXO OBRIGATÓRIO:
 3) Avalie o resultado:
    - **0 resultados:** responda "Nenhum projeto encontrado para \\"<termo>\\". Tente outro nome ou cidade." E pare.
    - **1 resultado:** chame imediatamente \`getProjectLatestUpdate\` com o id retornado e apresente a última atualização (formato abaixo).
-   - **2+ resultados:** NÃO chame \`getProjectLatestUpdate\`. Liste as opções como bullets clicáveis e peça para o usuário escolher. Use EXATAMENTE este formato em cada bullet:
-     \`- [Nome da Empresa — Cidade/UF](#ask:Última atualização do projeto <UUID>)\`
-     (substitua <UUID> pelo id real do projeto). Acima da lista, escreva: "Encontrei mais de um projeto. Selecione:".
+   - **2+ resultados:** NÃO chame \`getProjectLatestUpdate\`. Liste as opções como bullets clicáveis e peça para o usuário escolher. Use EXATAMENTE este formato em cada bullet (o href NÃO pode conter espaços):
+     \`- [Nome da Empresa — Cidade/UF](#pick:<UUID>)\`
+     (substitua <UUID> pelo id real do projeto). Acima da lista, escreva: "Encontrei mais de um projeto. Selecione qual deseja consultar:".
 
 4) Quando a mensagem do usuário começar com "Última atualização do projeto " seguida de um UUID, extraia o UUID e chame \`getProjectLatestUpdate\` direto com ele.
 
@@ -299,7 +299,7 @@ Em seguida, adicione um separador \`---\` e o bloco de acompanhamento abaixo. Es
 Se o autor não for conhecido, escreva *Registrado em dd/mm/aaaa (autor não identificado).* Se não houver nenhuma nota de Acompanhamento, substitua o bloco inteiro por: "**Nenhum acompanhamento registrado até o momento.**"
 
 REGRAS DE COMUNICAÇÃO:
-- Português do Brasil, tom corporativo, direto, sem emojis, sem exclamações, sem preâmbulos ("Claro!", "Aqui está"). Nunca exponha IDs, JSON, SQL ou nomes de ferramentas no texto (UUIDs só dentro dos links \`#ask:\`).
+- Português do Brasil, tom corporativo, direto, sem emojis, sem exclamações, sem preâmbulos ("Claro!", "Aqui está"). Nunca exponha IDs, JSON, SQL ou nomes de ferramentas no texto (UUIDs só dentro dos links \`#pick:\`).
 - Use apenas as ferramentas \`searchProjects\` e \`getProjectLatestUpdate\`. Ignore as demais.`;
 
     const result = streamText({

@@ -88,6 +88,9 @@ export default function ProjectDetail() {
   const [selectedEquipments, setSelectedEquipments] = useState<string[]>([]);
   const [equipmentQty, setEquipmentQty] = useState<Record<string, string>>({});
   const [originalEquipments, setOriginalEquipments] = useState<{ id: string; quantity: number }[]>([]);
+  const [solutionFeatures, setSolutionFeatures] = useState<{ id: string; solution_id: string; name: string }[]>([]);
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const [originalFeatures, setOriginalFeatures] = useState<string[]>([]);
 
   const implEndDate = useMemo(() => {
     if (contractDate && implDeadlineDays && parseInt(implDeadlineDays) > 0) return addDays(contractDate, parseInt(implDeadlineDays));

@@ -6,6 +6,7 @@ import { createLovableAiGatewayProvider } from "../_shared/ai-gateway.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 
 const PHASE_LABELS: Record<string, string> = {
@@ -35,16 +36,22 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: { headers: { Authorization: `Bearer ${jwt}` } },
     });
 
-    const { data: userData } = await supabase.auth.getUser(jwt);
+    const { data: userData } = await authClient.auth.getUser(jwt);
     if (!userData?.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Service-role client: o assistente tem acesso TOTAL aos dados (bypass RLS).
+    // Validação de permissão já foi feita acima via super_admin role.
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
 
     const { data: roleRow } = await supabase
       .from("user_roles")

@@ -65,12 +65,17 @@ function AssistantChatInner({ token, onClose }: { token: string; onClose?: () =>
 
   const isBusy = status === "submitted" || status === "streaming";
 
-  const handleSend = async (text?: string) => {
+  // Mapeia o texto enviado ao modelo -> rótulo amigável exibido na bolha do usuário
+  const displayMap = useRef<Map<string, string>>(new Map());
+
+  const handleSend = async (text?: string, displayLabel?: string) => {
     const value = (text ?? input).trim();
     if (!value || isBusy) return;
+    if (displayLabel) displayMap.current.set(value, displayLabel);
     setInput("");
     await sendMessage({ text: value });
   };
+
 
   const handleReset = () => {
     setMessages([]);
@@ -112,8 +117,15 @@ function AssistantChatInner({ token, onClose }: { token: string; onClose?: () =>
         )}
 
         {messages.map(m => (
-          <MessageBubble key={m.id} message={m} onAsk={(q) => handleSend(q)} />
+          <MessageBubble
+            key={m.id}
+            message={m}
+            displayMap={displayMap.current}
+            onAsk={(q, label) => { void handleSend(q, label); }}
+          />
         ))}
+
+
 
         {status === "submitted" && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -145,11 +157,14 @@ function AssistantChatInner({ token, onClose }: { token: string; onClose?: () =>
   );
 }
 
-function MessageBubble({ message, onAsk }: { message: UIMessage; onAsk?: (q: string) => void }) {
+function MessageBubble({ message, onAsk, displayMap }: { message: UIMessage; onAsk?: (q: string, label?: string) => void; displayMap?: Map<string, string> }) {
   const isUser = message.role === "user";
   const textParts = message.parts.filter(p => p.type === "text") as Array<{ type: "text"; text: string }>;
   const toolParts = message.parts.filter(p => p.type.startsWith("tool-"));
-  const text = textParts.map(p => p.text).join("");
+  const rawText = textParts.map(p => p.text).join("");
+  // Para mensagens do usuário, troca a query crua (com UUID) por rótulo amigável quando disponível
+  const text = isUser && displayMap?.get(rawText) ? displayMap.get(rawText)! : rawText;
+
 
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
@@ -177,14 +192,20 @@ function MessageBubble({ message, onAsk }: { message: UIMessage; onAsk?: (q: str
                     const isPick = href.startsWith("#pick:");
                     const raw = decodeURIComponent(href.slice(isPick ? 6 : 5));
                     const q = isPick ? `Última atualização do projeto ${raw}` : raw;
+                    const label = typeof children === "string"
+                      ? children
+                      : Array.isArray(children)
+                        ? children.map(c => (typeof c === "string" ? c : "")).join("")
+                        : undefined;
                     return (
                       <button
                         type="button"
-                        onClick={() => onAsk?.(q)}
+                        onClick={() => onAsk?.(q, label ? `Ver última atualização — ${label}` : "Ver última atualização")}
                         className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-medium px-2.5 py-0.5 text-xs my-0.5 transition-colors"
                       >{children}</button>
                     );
                   }
+
                   return href?.startsWith("/")
                     ? <Link to={href} className="text-primary font-medium hover:underline">{children}</Link>
                     : <a href={href} target="_blank" rel="noreferrer" className="text-primary font-medium hover:underline">{children}</a>;

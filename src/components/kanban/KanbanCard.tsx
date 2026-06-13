@@ -134,6 +134,16 @@ export default function KanbanCard({ project: p, index, onUpdateObservations, ca
               <div className="flex items-start gap-2">
                 <Building2 className={`h-3.5 w-3.5 text-primary mt-0.5 shrink-0 ${sla ? "ml-10" : ""}`} />
                 <span className="text-sm font-semibold leading-tight flex-1">{p.company_name}</span>
+                {!canEdit && (
+                  <TooltipProvider delayDuration={150}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Lock className="h-3 w-3 text-muted-foreground shrink-0 mt-1" onClick={e => e.stopPropagation()} />
+                      </TooltipTrigger>
+                      <TooltipContent side="left" className="text-xs">Somente leitura — projeto de outro gerente</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
                 <div className="flex flex-col gap-1 items-end shrink-0">
                   {p.is_pilot && (
                     <Badge className="bg-amber-500 text-white hover:bg-amber-600 text-[10px] h-4 px-1.5">Piloto</Badge>

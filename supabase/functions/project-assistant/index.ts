@@ -291,7 +291,6 @@ FORMATO DA "ÚLTIMA ATUALIZAÇÃO" (Markdown GFM):
 - **Cidade:** Cidade/UF
 - **Status:** Fase · Sub-fase (capitalizado: Planejamento, Execução, Homologação, Implementado, Suspenso)
 - **Gestor:** nome ou "—"
-- **SLA:** Nd (se >30, use **Nd** em negrito)
 
 Em seguida, adicione um separador \`---\` e o bloco de acompanhamento abaixo. Este bloco precisa deixar EXPLÍCITO que se trata da última nota registrada pelo gestor:
 

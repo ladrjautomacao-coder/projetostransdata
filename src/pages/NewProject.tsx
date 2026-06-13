@@ -194,6 +194,17 @@ export default function NewProject() {
         await supabase.from("project_solutions").insert(selectedSolutions.map(sid => ({ project_id: project.id, solution_id: sid })));
       }
 
+      // Sub-características de Soluções (ex.: AtlasMob)
+      const featureRows = selectedFeatures
+        .filter(fid => {
+          const f = solutionFeatures.find(x => x.id === fid);
+          return f && selectedSolutions.includes(f.solution_id);
+        })
+        .map(fid => ({ project_id: project.id, solution_feature_id: fid }));
+      if (featureRows.length > 0) {
+        await (supabase.from("project_solution_features" as any) as any).insert(featureRows);
+      }
+
       // Integrações
       if (selectedIntegrations.length > 0) {
         await supabase.from("project_integrations").insert(selectedIntegrations.map(iid => ({ project_id: project.id, integration_id: iid })));

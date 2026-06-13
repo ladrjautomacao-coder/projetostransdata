@@ -682,6 +682,7 @@ export default function ProjectDetail() {
                 <DateField label="Contratação" date={contractDate} onSelect={d => d && setContractDate(d)} />
                 <DateField label="D-zero" date={dZeroDate} onSelect={setDZeroDate} />
                 <DateField label="Handover" date={handoverDate} onSelect={setHandoverDate} />
+                <DateField label="Projeto Executivo" date={executiveProjectDate} onSelect={setExecutiveProjectDate} />
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Status</Label>
                   <Select value={status} onValueChange={v => setStatus(v as ProjectStatus)}>

@@ -316,6 +316,7 @@ export default function NewProject() {
             <DatePicker label="Data de Contratação" date={contractDate} onSelect={setContractDate} required />
             <DatePicker label="Data D-zero" date={dZeroDate} onSelect={setDZeroDate} />
             <DatePicker label="Data Handover" date={handoverDate} onSelect={setHandoverDate} />
+            <DatePicker label="Projeto Executivo" date={executiveProjectDate} onSelect={setExecutiveProjectDate} />
           </CardContent>
         </Card>
 

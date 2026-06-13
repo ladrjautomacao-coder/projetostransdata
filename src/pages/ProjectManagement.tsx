@@ -217,7 +217,7 @@ export default function ProjectManagement() {
         });
       }
     }
-  }, [projects]);
+  }, [projects, canEditProject]);
 
 
   const onUpdateObservations = useCallback(async (projectId: string, newText: string) => {

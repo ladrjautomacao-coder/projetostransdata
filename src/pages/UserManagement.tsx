@@ -200,6 +200,11 @@ export default function UserManagement() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold text-sm truncate">{user.full_name}</span>
+                        {user.role === "super_admin" && (
+                          <Badge className="text-[10px] px-1.5 py-0 bg-accent text-accent-foreground gap-0.5">
+                            <Sparkles className="h-2.5 w-2.5" /> Super Admin
+                          </Badge>
+                        )}
                         {user.role === "admin" && (
                           <Badge variant="default" className="text-[10px] px-1.5 py-0">Admin</Badge>
                         )}

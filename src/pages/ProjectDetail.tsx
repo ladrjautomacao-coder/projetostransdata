@@ -659,7 +659,7 @@ export default function ProjectDetail() {
               <>
                 <div className="space-y-1"><Label className="text-xs text-muted-foreground">Empresa</Label><Input value={companyName} onChange={e => setCompanyName(e.target.value)} /></div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1"><Label className="text-xs text-muted-foreground">Cidade</Label><Input value={city} onChange={e => setCity(e.target.value)} /></div>
+                  <div className="space-y-1"><Label className="text-xs text-muted-foreground">Cidade</Label><Input value={city} onChange={e => setCity(e.target.value.replace(/[^A-Za-zÀ-ÿ\s'-]/g, ""))} /></div>
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">Estado</Label>
                     <Select value={state} onValueChange={v => setState(v as BrazilianState)}>

@@ -794,13 +794,43 @@ export default function ProjectDetail() {
                 </div>
                 <Separator />
                 <Label className="text-xs text-muted-foreground">Soluções</Label>
-                <div className="grid gap-1">
-                  {allSolutions.map(s => (
-                    <div key={s.id} className="flex items-center gap-2">
-                      <Checkbox checked={selectedSolutions.includes(s.id)} onCheckedChange={c => setSelectedSolutions(prev => c ? [...prev, s.id] : prev.filter(x => x !== s.id))} />
-                      <span className="text-sm">{s.name}</span>
-                    </div>
-                  ))}
+                <div className="space-y-3">
+                  <div className="grid gap-1">
+                    {allSolutions.map(s => (
+                      <div key={s.id} className="flex items-center gap-2">
+                        <Checkbox
+                          checked={selectedSolutions.includes(s.id)}
+                          onCheckedChange={c => {
+                            setSelectedSolutions(prev => c ? [...prev, s.id] : prev.filter(x => x !== s.id));
+                            if (!c) {
+                              const featureIds = solutionFeatures.filter(f => f.solution_id === s.id).map(f => f.id);
+                              setSelectedFeatures(prev => prev.filter(fid => !featureIds.includes(fid)));
+                            }
+                          }}
+                        />
+                        <span className="text-sm">{s.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {allSolutions.filter(s => selectedSolutions.includes(s.id) && solutionFeatures.some(f => f.solution_id === s.id)).map(s => {
+                    const feats = solutionFeatures.filter(f => f.solution_id === s.id);
+                    return (
+                      <div key={s.id} className="border rounded-md p-3 bg-muted/30">
+                        <Label className="text-xs text-muted-foreground mb-2 block">Características de {s.name}</Label>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {feats.map(f => (
+                            <div key={f.id} className="flex items-center gap-2">
+                              <Checkbox
+                                checked={selectedFeatures.includes(f.id)}
+                                onCheckedChange={c => setSelectedFeatures(prev => c ? [...prev, f.id] : prev.filter(x => x !== f.id))}
+                              />
+                              <span className="text-sm">{f.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
                 <Separator />
                 <Label className="text-xs text-muted-foreground">Equipamentos</Label>

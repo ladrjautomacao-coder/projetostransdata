@@ -9,6 +9,7 @@ interface AuthContextType {
   profile: { full_name: string; avatar_url: string | null } | null;
   loading: boolean;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   signOut: () => Promise<void>;
 }
 

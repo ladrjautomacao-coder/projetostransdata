@@ -222,6 +222,7 @@ Deno.serve(async (req) => {
             gestor: p.manager?.full_name ?? null,
             piloto: p.is_pilot,
             venda_complementar: p.complementary_sale,
+            frota: { contratada: p.fleet_size ?? 0, implementada: p.implemented_fleet ?? 0 },
             sla: slaInfo(p.updated_at),
           }));
           if (minDaysStalled !== undefined) rows = rows.filter(r => r.sla.days >= minDaysStalled);

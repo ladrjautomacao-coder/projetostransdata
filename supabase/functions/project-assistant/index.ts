@@ -100,14 +100,14 @@ Deno.serve(async (req) => {
       }),
 
       getProjectLatestUpdate: tool({
-        description: "Retorna a última nota de Acompanhamento do projeto, junto com fase, gestor e SLA (dias parado).",
+        description: "Retorna a última nota de Acompanhamento do projeto, junto com fase e gestor.",
         inputSchema: z.object({
           projectId: z.string().uuid(),
         }),
         execute: async ({ projectId }) => {
           const [{ data: p }, { data: notes }] = await Promise.all([
             supabase.from("projects")
-              .select("company_name, city, state, status, sub_phase, updated_at, d_zero_date, is_pilot, complementary_sale, manager:team_members!projects_manager_id_fkey(full_name)")
+              .select("company_name, city, state, status, sub_phase, d_zero_date, is_pilot, complementary_sale, manager:team_members!projects_manager_id_fkey(full_name)")
               .eq("id", projectId).maybeSingle(),
             supabase.from("project_notes")
               .select("content, created_at, created_by")
@@ -129,7 +129,6 @@ Deno.serve(async (req) => {
             d_zero: (p as any).d_zero_date,
             piloto: (p as any).is_pilot,
             venda_complementar: (p as any).complementary_sale,
-            sla: slaInfo((p as any).updated_at),
             ultima_atualizacao: lastNote ? {
               data: lastNote.created_at,
               autor: authorName,

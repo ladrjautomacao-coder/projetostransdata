@@ -91,6 +91,8 @@ export default function NewProject() {
   const [equipmentTypes, setEquipmentTypes] = useState<{ id: string; name: string }[]>([]);
   const [selectedEquipments, setSelectedEquipments] = useState<string[]>([]);
   const [equipmentQty, setEquipmentQty] = useState<Record<string, string>>({});
+  const [solutionFeatures, setSolutionFeatures] = useState<{ id: string; solution_id: string; name: string }[]>([]);
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
 
   useEffect(() => {
     supabase.from("team_members").select("id, full_name").eq("role", "executivo_vendas").eq("active", true).then(({ data }) => setExecutives(data || []));
@@ -100,6 +102,7 @@ export default function NewProject() {
     supabase.from("solutions").select("id, name").eq("active", true).then(({ data }) => setSolutions(data || []));
     supabase.from("integrations").select("id, name").eq("active", true).then(({ data }) => setIntegrations(data || []));
     (supabase.from("equipment_types" as any) as any).select("id, name").eq("active", true).order("sort_order").then(({ data }: any) => setEquipmentTypes(data || []));
+    (supabase.from("solution_features" as any) as any).select("id, solution_id, name").eq("active", true).order("sort_order").then(({ data }: any) => setSolutionFeatures(data || []));
   }, []);
 
   // Datas calculadas

@@ -88,6 +88,7 @@ export interface ProjectRow {
   updated_at: string;
   executive: { full_name: string } | null;
   manager: { full_name: string } | null;
+  manager_id: string | null;
   project_solutions: { solution: { name: string } | null }[];
   project_integrations: { integration: { name: string } | null }[];
 }

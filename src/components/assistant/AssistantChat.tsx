@@ -65,12 +65,17 @@ function AssistantChatInner({ token, onClose }: { token: string; onClose?: () =>
 
   const isBusy = status === "submitted" || status === "streaming";
 
-  const handleSend = async (text?: string) => {
+  // Mapeia o texto enviado ao modelo -> rótulo amigável exibido na bolha do usuário
+  const displayMap = useRef<Map<string, string>>(new Map());
+
+  const handleSend = async (text?: string, displayLabel?: string) => {
     const value = (text ?? input).trim();
     if (!value || isBusy) return;
+    if (displayLabel) displayMap.current.set(value, displayLabel);
     setInput("");
     await sendMessage({ text: value });
   };
+
 
   const handleReset = () => {
     setMessages([]);

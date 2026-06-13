@@ -13,10 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 const ENDPOINT = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/project-assistant`;
 
 const SUGGESTIONS = [
-  "Quais projetos estão críticos (parados há mais de 30 dias)?",
-  "Me dê um resumo dos KPIs atuais.",
-  "Projetos em homologação no momento.",
-  "Última atualização do projeto…",
+  "Listar a última atualização do projeto",
 ];
 
 export function AssistantChat({ onClose }: { onClose?: () => void }) {

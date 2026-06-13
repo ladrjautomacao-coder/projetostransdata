@@ -264,6 +264,16 @@ export default function ProjectDetail() {
     const oldIntNames = oldIntIds.map((iid: string) => allIntegrations.find(i => i.id === iid)?.name).filter(Boolean).sort().join(", ") || "—";
     add("Integrações", oldIntNames, currentIntNames);
 
+    // Equipment changes
+    const fmtEq = (rows: { id: string; quantity: number }[]) =>
+      rows.map(r => `${allEquipments.find(e => e.id === r.id)?.name || "?"} (${r.quantity})`).sort().join(", ") || "—";
+    const oldEqStr = fmtEq(originalEquipments);
+    const newEqRows = selectedEquipments
+      .map(eid => ({ id: eid, quantity: parseInt(equipmentQty[eid] || "0") || 0 }))
+      .filter(r => r.quantity > 0);
+    const newEqStr = fmtEq(newEqRows);
+    add("Equipamentos", oldEqStr, newEqStr);
+
     return changes;
   };
 

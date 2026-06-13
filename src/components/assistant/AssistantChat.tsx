@@ -165,8 +165,17 @@ function MessageBubble({ message }: { message: UIMessage }) {
           </div>
         )}
         {text && (
-          <div className={`prose prose-sm max-w-none ${isUser ? "prose-invert" : "dark:prose-invert"}`}>
+          <div className={`prose prose-sm max-w-none break-words
+            prose-p:my-2 prose-headings:mt-3 prose-headings:mb-1.5 prose-headings:font-semibold
+            prose-h1:text-base prose-h2:text-sm prose-h3:text-sm
+            prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-li:marker:text-primary
+            prose-strong:font-semibold
+            prose-hr:my-3
+            prose-table:my-2 prose-table:text-xs prose-th:px-2 prose-th:py-1 prose-td:px-2 prose-td:py-1
+            prose-th:border prose-td:border prose-th:bg-primary/10
+            ${isUser ? "prose-invert" : "dark:prose-invert"}`}>
             <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
               components={{
                 a: ({ href, children }) => href?.startsWith("/")
                   ? <Link to={href} className="underline font-medium">{children}</Link>

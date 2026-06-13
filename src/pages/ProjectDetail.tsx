@@ -84,6 +84,10 @@ export default function ProjectDetail() {
   const [allSolutions, setAllSolutions] = useState<{ id: string; name: string }[]>([]);
   const [allIntegrations, setAllIntegrations] = useState<{ id: string; name: string }[]>([]);
   const [selectedIntegrations, setSelectedIntegrations] = useState<string[]>([]);
+  const [allEquipments, setAllEquipments] = useState<{ id: string; name: string }[]>([]);
+  const [selectedEquipments, setSelectedEquipments] = useState<string[]>([]);
+  const [equipmentQty, setEquipmentQty] = useState<Record<string, string>>({});
+  const [originalEquipments, setOriginalEquipments] = useState<{ id: string; quantity: number }[]>([]);
 
   const implEndDate = useMemo(() => {
     if (contractDate && implDeadlineDays && parseInt(implDeadlineDays) > 0) return addDays(contractDate, parseInt(implDeadlineDays));

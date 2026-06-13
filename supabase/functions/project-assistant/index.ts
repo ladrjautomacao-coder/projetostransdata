@@ -17,12 +17,6 @@ const PHASE_LABELS: Record<string, string> = {
   suspenso: "Suspenso/Outros",
 };
 
-function slaInfo(updatedAt: string | null) {
-  if (!updatedAt) return { days: 0, level: "n/a" };
-  const days = Math.max(0, Math.floor((Date.now() - new Date(updatedAt).getTime()) / 86_400_000));
-  const level = days <= 7 ? "em_dia" : days <= 15 ? "atencao" : days <= 30 ? "atrasado" : "critico";
-  return { days, level };
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -95,20 +89,19 @@ Deno.serve(async (req) => {
             fase: PHASE_LABELS[p.status] ?? p.status,
             sub_fase: p.sub_phase,
             gestor: p.manager?.full_name ?? null,
-            sla: slaInfo(p.updated_at),
           }));
         },
       }),
 
       getProjectLatestUpdate: tool({
-        description: "Retorna a última nota de Acompanhamento do projeto, junto com fase, gestor e SLA (dias parado).",
+        description: "Retorna a última nota de Acompanhamento do projeto, junto com fase e gestor.",
         inputSchema: z.object({
           projectId: z.string().uuid(),
         }),
         execute: async ({ projectId }) => {
           const [{ data: p }, { data: notes }] = await Promise.all([
             supabase.from("projects")
-              .select("company_name, city, state, status, sub_phase, updated_at, d_zero_date, is_pilot, complementary_sale, manager:team_members!projects_manager_id_fkey(full_name)")
+              .select("company_name, city, state, status, sub_phase, d_zero_date, is_pilot, complementary_sale, manager:team_members!projects_manager_id_fkey(full_name)")
               .eq("id", projectId).maybeSingle(),
             supabase.from("project_notes")
               .select("content, created_at, created_by")
@@ -130,7 +123,6 @@ Deno.serve(async (req) => {
             d_zero: (p as any).d_zero_date,
             piloto: (p as any).is_pilot,
             venda_complementar: (p as any).complementary_sale,
-            sla: slaInfo((p as any).updated_at),
             ultima_atualizacao: lastNote ? {
               data: lastNote.created_at,
               autor: authorName,
@@ -188,26 +180,24 @@ Deno.serve(async (req) => {
             venda_complementar: x.complementary_sale,
             solucoes: x.project_solutions?.map((s: any) => s.solution?.name).filter(Boolean) ?? [],
             integracoes: x.project_integrations?.map((i: any) => i.integration?.name).filter(Boolean) ?? [],
-            sla: slaInfo(x.updated_at),
             observacoes: x.observations,
           };
         },
       }),
 
       listProjectsByFilter: tool({
-        description: "Lista projetos com filtros combináveis. Use para perguntas como 'projetos críticos', 'projetos do gestor X', 'projetos em homologação', 'parados há mais de N dias'.",
+        description: "Lista projetos com filtros combináveis. Use para perguntas como 'projetos do gestor X', 'projetos em homologação'.",
         inputSchema: z.object({
           status: z.enum(["planejamento", "execucao", "homologacao", "encerrado", "suspenso"]).optional(),
           managerName: z.string().optional().describe("Nome (parcial) do gestor"),
-          minDaysStalled: z.number().int().min(0).optional().describe("Apenas projetos parados há pelo menos N dias"),
           isPilot: z.boolean().optional(),
           complementarySale: z.boolean().optional(),
           limit: z.number().int().min(1).max(50).default(20),
         }),
-        execute: async ({ status, managerName, minDaysStalled, isPilot, complementarySale, limit }) => {
+        execute: async ({ status, managerName, isPilot, complementarySale, limit }) => {
           let q = supabase
             .from("projects")
-            .select("id, company_name, city, state, status, sub_phase, updated_at, is_pilot, complementary_sale, fleet_size, implemented_fleet, manager:team_members!projects_manager_id_fkey(id, full_name)")
+            .select("id, company_name, city, state, status, sub_phase, is_pilot, complementary_sale, fleet_size, implemented_fleet, manager:team_members!projects_manager_id_fkey(id, full_name)")
             .order("updated_at", { ascending: true })
             .limit(limit);
           if (status) q = q.eq("status", status);
@@ -220,7 +210,7 @@ Deno.serve(async (req) => {
             q = q.in("manager_id", ids);
           }
           const { data } = await q;
-          let rows = (data ?? []).map((p: any) => ({
+          return (data ?? []).map((p: any) => ({
             id: p.id,
             empresa: p.company_name,
             cidade: `${p.city}/${p.state}`,
@@ -230,10 +220,7 @@ Deno.serve(async (req) => {
             piloto: p.is_pilot,
             venda_complementar: p.complementary_sale,
             frota: { contratada: p.fleet_size ?? 0, implementada: p.implemented_fleet ?? 0 },
-            sla: slaInfo(p.updated_at),
           }));
-          if (minDaysStalled !== undefined) rows = rows.filter(r => r.sla.days >= minDaysStalled);
-          return rows;
         },
       }),
 
@@ -298,7 +285,6 @@ FORMATO DA "ÚLTIMA ATUALIZAÇÃO" (Markdown GFM):
 - **Cidade:** Cidade/UF
 - **Status:** Fase · Sub-fase (capitalizado: Planejamento, Execução, Homologação, Implementado, Suspenso)
 - **Gestor:** nome ou "—"
-- **SLA:** Nd (se >30, use **Nd** em negrito)
 
 Em seguida, adicione um separador \`---\` e o bloco de acompanhamento abaixo. Este bloco precisa deixar EXPLÍCITO que se trata da última nota registrada pelo gestor:
 

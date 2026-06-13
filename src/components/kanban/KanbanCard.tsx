@@ -74,7 +74,7 @@ export default function KanbanCard({ project: p, index, onUpdateObservations, ca
         : "";
 
   return (
-    <Draggable draggableId={p.id} index={index}>
+    <Draggable draggableId={p.id} index={index} isDragDisabled={!canEdit}>
       {(dragProvided, dragSnapshot) => (
         <div
           ref={dragProvided.innerRef}
@@ -82,7 +82,7 @@ export default function KanbanCard({ project: p, index, onUpdateObservations, ca
           {...dragProvided.dragHandleProps}
         >
           <Card
-            className={`relative cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow border-border/40 bg-card overflow-hidden ${dragSnapshot.isDragging ? "shadow-lg ring-2 ring-primary/20" : ""} ${borderClass}`}
+            className={`relative ${canEdit ? "cursor-grab active:cursor-grabbing hover:shadow-md" : "cursor-pointer opacity-90"} transition-shadow border-border/40 bg-card overflow-hidden ${dragSnapshot.isDragging ? "shadow-lg ring-2 ring-primary/20" : ""} ${borderClass}`}
             onClick={() => !dragSnapshot.isDragging && !open && navigate(`/projetos/${p.id}`, { state: { from: "/projetos/gestao" } })}
           >
             {sla && (

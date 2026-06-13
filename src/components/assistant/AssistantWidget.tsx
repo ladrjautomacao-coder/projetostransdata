@@ -5,10 +5,11 @@ import { AssistantChat } from "./AssistantChat";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function AssistantWidget() {
-  const { user } = useAuth();
+  const { user, isSuperAdmin } = useAuth();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    if (!isSuperAdmin) return;
     const onKey = (e: KeyboardEvent) => {
       if ((e.key === "j" || e.key === "J") && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
@@ -17,9 +18,9 @@ export function AssistantWidget() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [isSuperAdmin]);
 
-  if (!user) return null;
+  if (!user || !isSuperAdmin) return null;
 
   return (
     <>

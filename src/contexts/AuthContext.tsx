@@ -9,6 +9,7 @@ interface AuthContextType {
   profile: { full_name: string; avatar_url: string | null } | null;
   loading: boolean;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -22,26 +23,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<{ full_name: string; avatar_url: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const requestIdRef = useRef(0);
 
   const resetUserData = () => {
     setProfile(null);
     setIsAdmin(false);
+    setIsSuperAdmin(false);
   };
 
   const loadUserData = async (userId: string) => {
     const requestId = ++requestIdRef.current;
     resetUserData();
 
-    const [{ data: profileData }, { data: roleData }] = await Promise.all([
+    const [{ data: profileData }, { data: rolesData }] = await Promise.all([
       supabase.from("profiles").select("full_name, avatar_url").eq("user_id", userId).maybeSingle(),
-      supabase.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle(),
+      supabase.from("user_roles").select("role").eq("user_id", userId),
     ]);
 
     if (requestId !== requestIdRef.current) return;
 
+    const roles = (rolesData ?? []).map(r => r.role);
     setProfile(profileData ?? null);
-    setIsAdmin(!!roleData);
+    setIsAdmin(roles.includes("admin") || roles.includes("super_admin"));
+    setIsSuperAdmin(roles.includes("super_admin"));
   };
 
   useEffect(() => {
@@ -86,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, profile, loading, isAdmin, signOut }}>
+    <AuthContext.Provider value={{ session, user, profile, loading, isAdmin, isSuperAdmin, signOut }}>
       {children}
     </AuthContext.Provider>
   );

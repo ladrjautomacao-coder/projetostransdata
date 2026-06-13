@@ -157,11 +157,14 @@ function AssistantChatInner({ token, onClose }: { token: string; onClose?: () =>
   );
 }
 
-function MessageBubble({ message, onAsk }: { message: UIMessage; onAsk?: (q: string) => void }) {
+function MessageBubble({ message, onAsk, displayMap }: { message: UIMessage; onAsk?: (q: string, label?: string) => void; displayMap?: Map<string, string> }) {
   const isUser = message.role === "user";
   const textParts = message.parts.filter(p => p.type === "text") as Array<{ type: "text"; text: string }>;
   const toolParts = message.parts.filter(p => p.type.startsWith("tool-"));
-  const text = textParts.map(p => p.text).join("");
+  const rawText = textParts.map(p => p.text).join("");
+  // Para mensagens do usuário, troca a query crua (com UUID) por rótulo amigável quando disponível
+  const text = isUser && displayMap?.get(rawText) ? displayMap.get(rawText)! : rawText;
+
 
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>

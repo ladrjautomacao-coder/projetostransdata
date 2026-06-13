@@ -280,6 +280,7 @@ export default function NewProject() {
               <Label>Cidade <span className="text-destructive">*</span></Label>
               <Input value={city} onChange={e => setCity(sanitizeCity(e.target.value))} placeholder="Ex.: São Paulo" required maxLength={100} />
               <HelperText>Apenas letras, espaços, hífen e apóstrofo</HelperText>
+            </div>
             <div className="space-y-2">
               <Label>Estado <span className="text-destructive">*</span></Label>
               <Select value={state || undefined} onValueChange={v => setState(v as BrazilianState)}>

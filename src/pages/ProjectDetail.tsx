@@ -276,6 +276,7 @@ export default function ProjectDetail() {
         contract_date: contractDate ? format(contractDate, "yyyy-MM-dd") : project.contract_date,
         d_zero_date: dZeroDate ? format(dZeroDate, "yyyy-MM-dd") : null,
         handover_date: handoverDate ? format(handoverDate, "yyyy-MM-dd") : null,
+        executive_project_date: executiveProjectDate ? format(executiveProjectDate, "yyyy-MM-dd") : null,
         executive_id: executiveId || null, manager_id: managerId || null, status,
         project_type_id: projectTypeId || null,
         fleet_size: fleet,

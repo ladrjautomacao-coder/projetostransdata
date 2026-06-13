@@ -69,7 +69,7 @@ function AssistantChatInner({ token, onClose }: { token: string; onClose?: () =>
 
   const handleSend = async (text?: string) => {
     const value = (text ?? input).trim();
-    if (!value || isBusy || !token) return;
+    if (!value || isBusy) return;
     setInput("");
     await sendMessage({ text: value });
   };

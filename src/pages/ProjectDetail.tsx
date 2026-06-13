@@ -795,9 +795,9 @@ export default function ProjectDetail() {
                 <Separator />
                 <Label className="text-xs text-muted-foreground">Soluções</Label>
                 <div className="space-y-3">
-                  <div className="grid gap-1">
+                  <div className="grid gap-3 sm:grid-cols-2">
                     {allSolutions.map(s => (
-                      <div key={s.id} className="flex items-center gap-2">
+                      <div key={s.id} className="flex items-center gap-3 border rounded-md p-2">
                         <Checkbox
                           checked={selectedSolutions.includes(s.id)}
                           onCheckedChange={c => {
@@ -808,7 +808,7 @@ export default function ProjectDetail() {
                             }
                           }}
                         />
-                        <span className="text-sm">{s.name}</span>
+                        <span className="text-sm flex-1">{s.name}</span>
                       </div>
                     ))}
                   </div>

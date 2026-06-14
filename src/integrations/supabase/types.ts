@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          key: string
+          label: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+          value_type: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          key: string
+          label: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+          value_type?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          key?: string
+          label?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+          value_type?: string
+        }
+        Relationships: []
+      }
       equipment_types: {
         Row: {
           active: boolean

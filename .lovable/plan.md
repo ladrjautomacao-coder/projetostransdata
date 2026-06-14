@@ -1,120 +1,155 @@
-## Visão Geral
 
-Criar um **assistente conversacional (chatbot) com IA** acessível por widget flutuante em todas as páginas do sistema. O bot entende perguntas em linguagem natural sobre projetos e responde consultando dados reais (acompanhamento, status, fase, gestor, SLA, frota, etc.), respeitando o RLS já existente.
+# Configurações do Sistema — Inventário + Plano
 
-Exemplos de perguntas suportadas:
-- *"Qual a última atualização do projeto Viação Cidade Verde?"*
-- *"Quais projetos estão parados há mais de 15 dias?"*
-- *"Quantos projetos do João estão em homologação?"*
-- *"Me dê um resumo dos projetos críticos esta semana."*
-- *"O que devo priorizar no projeto Expresso Azul?"*
+## Parte 1 — Inventário de tudo que existe hoje
+
+Mapeei **14 categorias** de regras, SLAs, enums, validações e parâmetros visuais. Resumo executivo abaixo (lista completa com `arquivo:linha` está consolidada e pronta para virar documentação).
+
+### 1. SLAs e thresholds (HOJE 100% hardcoded)
+
+| Regra | Valor atual | Onde |
+|---|---|---|
+| Heat map Kanban — Verde | ≤ 7 dias sem atualização | `KanbanCard.tsx` |
+| Heat map Kanban — Amarelo | 8–15 dias | `KanbanCard.tsx` |
+| Heat map Kanban — Laranja | 16–30 dias | `KanbanCard.tsx` |
+| Heat map Kanban — Vermelho | > 30 dias | `KanbanCard.tsx` |
+| Alerta "D-zero vencendo" | janela ≤ 7 dias | `AlertsBell.tsx` |
+| Alerta "Parado" | > 30 dias sem `updated_at` | `AlertsBell.tsx` |
+| KPI "Críticos" no AI | > 30 dias (duplicado) | `project-assistant` |
+| Polling da central de alertas | 60 s | `AlertsBell.tsx` |
+
+### 2. Kanban — fases, sub-fases e regras
+- 5 fases fixas (enum DB): `comercial`, `planejamento`, `implantacao`, `encerrado`, `suspenso`.
+- Sub-fases hardcoded: 5 em Comercial, 6 em Planejamento, 3 em Suspenso. **Implantação e Encerrado sem sub-fases.**
+- Regra `reached_implemented`: card que passou por Encerrado mantém esse status para Dashboard mesmo se voltar.
+- Movimentação: admin move tudo; gerente só move se `manager_id` for seu; demais leitura.
+- Cores das colunas e dos badges SLA fixas em Tailwind.
+
+### 3. Central de alertas — 4 categorias fixas
+`returned`, `dzero (≤7d)`, `stuck (>30d)`, `no_manager`. Limite de 8 itens visíveis por categoria.
+
+### 4. Enums de banco (imutáveis sem migration)
+- `project_status` (5 valores)
+- `app_role`: `admin`, `super_admin`, `user`
+- `brazilian_state`: 27 siglas
+- Categorias de anexo (hardcoded no front): `contrato`, `proposta`, `ata`, `outros`
+- Roles de equipe (front): só `executivo_vendas` e `gerente_projetos`
+
+### 5. Catálogos
+| Catálogo | Tabela | Tem tela admin? |
+|---|---|---|
+| Soluções | `solutions` | ✅ |
+| Produtos | `products` | ✅ |
+| Equipe | `team_members` | ✅ |
+| Usuários/roles | `user_roles` | ✅ |
+| **Features de solução** | `solution_features` | ❌ só via DB |
+| **Tipos de projeto** | `project_types` | ❌ só via DB |
+| **Integrações** | `integrations` | ❌ só via DB |
+| **Tipos de equipamento** | `equipment_types` | ❌ só via DB |
+
+### 6. RBAC — pontos de verificação
+9 lugares checam papéis (rotas admin, botões "Novo Projeto", "Kanban", delete, edit, command palette, sidebar, AI assistant exige `super_admin`, promoção a super_admin).
+
+### 7. Validações de campo (formulários)
+Limites maxLength e min em ~15 campos (nome empresa 200, cidade 100/regex, frota ≥1, info piloto 2000, observações Kanban 500, notas sem limite, etc.). Calendar entre 2015–2035.
+
+### 8. Dashboard
+- 4 KPIs fixos, 6 gráficos fixos.
+- Ordem dos gráficos **já é personalizável** (drag-and-drop, `localStorage`).
+- Cores dos gráficos: 5 cores de status + 8 cores de produto, hardcoded.
+- Top estados limitado a 10.
+
+### 9. AI Assistant
+- Modelo `google/gemini-3-flash-preview`, exige `super_admin`.
+- Limites: 15 projetos por busca, 5–20 notas, 50 steps.
+- **Bug pendente:** o prompt menciona fases `execucao` e `homologacao` que não existem no banco.
+
+### 10. Identidade visual
+Cores, fontes (Rajdhani / Space Grotesk), efeitos glow, grid tech, animações — todos em `index.css`.
+
+### 11. Storage
+- Bucket `project-attachments`: sem limite de upload no front; URL assinada 60s (preview) / 300s (download).
+- Bucket `manuals`: público.
+
+### 12. Outros parâmetros mágicos
+Toast 1.000.000 ms, durações de animação, larguras de popover, etc.
 
 ---
 
-## Arquitetura
+## Parte 2 — Proposta: o que vira configurável
+
+Para comercialização, sugiro **3 níveis**:
+
+### Nível A — Tela "Configurações" (admin, edita pela UI) 🔴 PRIORITÁRIO
+Itens de alto impacto operacional, valores simples:
+
+1. **SLA do Kanban** — 3 sliders (verde→amarelo, amarelo→laranja, laranja→vermelho).
+2. **Alerta D-zero** — janela em dias (default 7).
+3. **Alerta "parado"** — dias sem atualização (default 30).
+4. **Polling da central de alertas** — segundos (default 60).
+5. **Categorias de anexo** — CRUD simples.
+6. **Roles de equipe** — CRUD (hoje só 2 fixos).
+7. **Expiração das URLs de anexo** — preview / download.
+8. **Validações de formulário** — limites de caracteres de campos-chave.
+
+### Nível B — Novas telas de catálogo (admin) 🟠 RÁPIDO
+Tabelas que já existem mas não têm UI:
+
+9. **Tipos de projeto** (CRUD)
+10. **Integrações** (CRUD)
+11. **Tipos de equipamento** (CRUD)
+12. **Features de solução** (CRUD vinculado à solução)
+
+### Nível C — Customização por cliente (white-label) 🟡 ESTRATÉGICO
+Para vender o sistema a outras empresas:
+
+13. **Identidade visual** — primary, accent, sidebar (HSL), logo, nome do produto.
+14. **Sub-fases do Kanban** — labels e ordem por fase (precisa virar tabela `kanban_subphases`).
+15. **Dashboard** — quais KPIs/gráficos exibir.
+
+### Nível D — Mantém hardcoded (não vale o esforço)
+- Enums de banco (`project_status`, `app_role`, `brazilian_state`).
+- Cores dos gráficos.
+- Limites internos do AI (steps, busca).
+- Durações de animação.
+- Regra `reached_implemented` (regra de negócio crítica, não parâmetro).
+- Matriz RBAC (segurança).
+
+---
+
+## Parte 3 — Arquitetura proposta (técnica)
 
 ```text
-[Widget Flutuante (React)] 
-        │  useChat (AI SDK)
-        ▼
-[Edge Function: project-assistant]
-        │  streamText + tools (AI SDK)
-        ▼
-[Lovable AI Gateway → Gemini 3 Flash]
-        │  tool calls
-        ▼
-[Supabase: queries via service role + filtro RLS por user JWT]
+Tabela única: public.app_settings
+  ├── key         text PK         ex: "sla.kanban.green_max_days"
+  ├── value       jsonb           ex: 7 ou {"r":124,"g":58,...}
+  ├── category    text            "sla" | "alerts" | "branding" | "validation"
+  ├── label       text            "SLA Verde (dias)"
+  ├── description text
+  ├── updated_by  uuid
+  └── updated_at  timestamptz
+
++ função  public.get_setting(key, default)  SECURITY DEFINER
++ hook    useSettings()  carrega tudo 1x e cacheia
++ tela    /admin/configuracoes  agrupada por category
++ RLS     SELECT autenticado, UPDATE admin
 ```
 
-- **Frontend:** widget flutuante (`AssistantWidget.tsx`) montado no `AppLayout`, com botão circular no canto inferior direito que abre um painel de chat.
-- **Backend:** Edge Function `project-assistant` que usa AI SDK + Lovable AI Gateway. As respostas chegam em **streaming** (tokens conforme gerados).
-- **Tool calling:** o modelo decide quando consultar o banco através de ferramentas tipadas (Zod).
-- **Sessão:** sem persistência — conversa vive apenas em memória do React; ao recarregar, começa nova.
-- **Permissões:** a Edge Function valida o JWT do usuário e usa o token dele para consultar o banco — assim o RLS já configurado decide o que ele pode ver.
+Vantagens:
+- Uma tabela cobre tudo (escalável).
+- Frontend lê via hook único.
+- Defaults no código garantem fallback se a chave não existir.
+
+Catálogos do Nível B ficam em suas próprias tabelas (já existem) — só faltam telas CRUD.
 
 ---
 
-## Ferramentas do agente (tools)
+## Próximo passo
 
-O agente chama essas funções conforme a pergunta:
+Me confirme:
 
-| Tool | Para quê |
-|---|---|
-| `searchProjects(query)` | Buscar projetos por nome/cidade/gestor (fuzzy) |
-| `getProjectLatestUpdate(projectId)` | Última nota de Acompanhamento + status, fase, SLA |
-| `getProjectDetails(projectId)` | Dados completos: gestor, frota, integrações, soluções, datas |
-| `listProjectsByFilter({ status, managerId, daysStalled, isPilot, ... })` | Listas filtradas |
-| `getProjectHistory(projectId, limit)` | Últimas N notas de acompanhamento |
-| `getDashboardKpis({ period })` | KPIs agregados (totais, distribuição, críticos) |
+1. **Quais níveis (A, B, C) vamos atacar agora?** Sugiro começar por **A + B** (impacto imediato + telas que faltam) e deixar **C (white-label)** para uma onda seguinte.
+2. **Algum item da lista A que você quer remover ou adicionar?**
+3. **White-label (nível C) é prioridade comercial agora ou pode esperar?**
 
-Cada tool retorna JSON enxuto para não estourar o contexto do modelo.
-
----
-
-## UX do Widget
-
-- **Botão flutuante** com ícone de Sparkles + tooltip "Assistente Transdata" (canto inferior direito, z-index alto, oculto na rota `/login`).
-- **Painel** (`Sheet` lateral à direita, 400px no desktop / fullscreen no mobile) com:
-  - Header: avatar do bot + "Assistente Transdata" + botão fechar.
-  - Lista de mensagens com markdown renderizado (`react-markdown`).
-  - Estado vazio com 3-4 chips de sugestões prontas ("Projetos críticos", "Atualização do projeto…", etc.).
-  - Indicador de digitação enquanto `status === "submitted"`.
-  - Quando o bot menciona projetos, renderiza links clicáveis que navegam para `/projetos/:id`.
-  - Input fixo no rodapé com botão de enviar (desabilitado durante streaming).
-  - Botão "Nova conversa" para limpar mensagens.
-- **Atalho:** `Ctrl + J` para abrir/fechar.
-
----
-
-## Detalhes Técnicos
-
-**Stack de IA**
-- AI SDK (`ai`, `@ai-sdk/react`) + `@ai-sdk/openai-compatible` apontando para Lovable AI Gateway.
-- Modelo padrão: `google/gemini-3-flash-preview` (rápido e barato, ótimo para function calling).
-- `streamText` com `tools`, `stopWhen: stepCountIs(50)`, `toUIMessageStreamResponse`.
-
-**Edge Function `supabase/functions/project-assistant/index.ts`**
-1. CORS + valida JWT do usuário (`Authorization: Bearer ...`).
-2. Cria cliente Supabase com esse token (RLS aplicado).
-3. Constrói system prompt em português com: data atual, papel do usuário, contexto da Transdata, regras de fases/SLA do Kanban.
-4. Define tools com `inputSchema: z.object(...)` e `execute` que consulta as tabelas `projects`, `project_notes`, `team_members`, `project_solutions`, etc.
-5. Retorna `result.toUIMessageStreamResponse({ headers: corsHeaders })`.
-6. Sem `verify_jwt` no `config.toml` (Lovable padrão já é `false`); JWT é validado manualmente no código.
-
-**Frontend**
-- Novo arquivo `src/components/assistant/AssistantWidget.tsx` — botão + Sheet.
-- Novo arquivo `src/components/assistant/AssistantChat.tsx` — `useChat` com `DefaultChatTransport` apontando para `${VITE_SUPABASE_URL}/functions/v1/project-assistant`, header `Authorization` com o JWT do usuário logado (via `supabase.auth.getSession()`).
-- Renderização via `message.parts`, com markdown + detecção de tool-calls para mostrar "Consultando dados…" enquanto o agente executa ferramentas.
-- Montado uma vez em `AppLayout` (oculto se não estiver autenticado).
-- Adicionar dependências: `ai`, `@ai-sdk/react`, `@ai-sdk/openai-compatible`, `zod` (já presente), `react-markdown`.
-
-**Segurança**
-- Edge Function nunca usa service role; sempre o JWT do usuário → RLS garante isolamento.
-- Sem persistência → nenhum dado sensível guardado em banco a partir do chat.
-- `LOVABLE_API_KEY` permanece server-side (já existe).
-
----
-
-## Custos
-
-- Gemini 3 Flash via Lovable AI Gateway: cobrado por requisição dos créditos do workspace. Conversas curtas (~1k tokens) são baratas; perguntas com listas grandes consomem mais.
-- Sem custo de armazenamento (sem persistência).
-
----
-
-## Fora de escopo (fica para depois, se desejar)
-
-- Histórico persistente de conversas / threads.
-- Bot via WhatsApp / Telegram / e-mail.
-- Bot escrever no banco (ex.: registrar acompanhamento por chat) — neste momento será **somente leitura**.
-- Voz (speech-to-text).
-
----
-
-## Entregáveis
-
-1. Edge Function `project-assistant` com 6 tools tipadas.
-2. Componentes `AssistantWidget` + `AssistantChat`.
-3. Integração no `AppLayout` com atalho `Ctrl+J`.
-4. Documentação no Manual do Sistema (`/manual`) explicando como usar.
-5. Atualização do PRD (`docs/PRD.md`) com a nova seção "Assistente IA".
+Quando aprovar, gero o plano de implementação detalhado por onda.

@@ -135,10 +135,11 @@ function enforceSlaOrder(settings: AppSettings): AppSettings {
  * Retorna o valor validado (já transformado) ou um erro descritivo.
  * Use antes de salvar no banco para impedir lixo.
  */
-export function validateSettingValue(
-  key: string,
-  rawValue: unknown,
-): { ok: true; value: unknown } | { ok: false; error: string } {
+export type SettingValidationResult =
+  | { ok: true; value: unknown }
+  | { ok: false; error: string };
+
+export function validateSettingValue(key: string, rawValue: unknown): SettingValidationResult {
   const spec = KEY_SPEC[key];
   if (!spec) return { ok: false, error: `Chave desconhecida: ${key}` };
   const result = spec.schema.safeParse(rawValue);

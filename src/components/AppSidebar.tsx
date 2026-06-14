@@ -1,4 +1,4 @@
-import { FolderKanban, LayoutDashboard, HardHat, BookOpen, BookOpenCheck, Users, Package, LogOut, Signal, ShieldCheck } from "lucide-react";
+import { FolderKanban, LayoutDashboard, HardHat, BookOpen, BookOpenCheck, Users, Package, LogOut, Signal, ShieldCheck, Settings } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -17,6 +17,7 @@ const mainItems = [
 const adminItems = [
   { title: "Equipe", url: "/admin/equipe", icon: Users, adminOnly: true },
   { title: "Usuários", url: "/admin/usuarios", icon: ShieldCheck, adminOnly: true },
+  { title: "Configurações", url: "/admin/configuracoes", icon: Settings, adminOnly: true },
   { title: "Manual do Sistema", url: "/manual", icon: BookOpenCheck, adminOnly: false },
 ];
 

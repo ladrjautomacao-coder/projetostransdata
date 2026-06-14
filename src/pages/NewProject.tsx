@@ -302,11 +302,11 @@ export default function NewProject() {
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2 space-y-2">
               <Label>Nome da Empresa <span className="text-destructive">*</span></Label>
-              <Input value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Ex.: TransMobile Ltda." required maxLength={200} />
+              <Input value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Ex.: TransMobile Ltda." required maxLength={settings.companyNameMax} />
             </div>
             <div className="space-y-2">
               <Label>Cidade <span className="text-destructive">*</span></Label>
-              <Input value={city} onChange={e => setCity(sanitizeCity(e.target.value))} placeholder="Ex.: São Paulo" required maxLength={100} />
+              <Input value={city} onChange={e => setCity(sanitizeCity(e.target.value))} placeholder="Ex.: São Paulo" required maxLength={settings.cityMax} />
               <HelperText>Apenas letras, espaços, hífen e apóstrofo</HelperText>
             </div>
             <div className="space-y-2">
@@ -546,7 +546,7 @@ export default function NewProject() {
                   onChange={e => setPilotInfo(e.target.value)}
                   placeholder="Descreva informações relevantes sobre o piloto..."
                   rows={3}
-                  maxLength={2000}
+                  maxLength={settings.pilotInfoMax}
                 />
               </div>
             )}

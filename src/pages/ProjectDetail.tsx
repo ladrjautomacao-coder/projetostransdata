@@ -460,7 +460,7 @@ export default function ProjectDetail() {
   };
 
   const handleDownload = async (att: any) => {
-    const { data } = await supabase.storage.from("project-attachments").createSignedUrl(att.file_path, 60);
+    const { data } = await supabase.storage.from("project-attachments").createSignedUrl(att.file_path, settings.downloadUrlTtl);
     if (data?.signedUrl) {
       const a = document.createElement("a");
       a.href = data.signedUrl;
@@ -471,7 +471,7 @@ export default function ProjectDetail() {
   };
 
   const handlePreview = async (att: any) => {
-    const { data } = await supabase.storage.from("project-attachments").createSignedUrl(att.file_path, 300);
+    const { data } = await supabase.storage.from("project-attachments").createSignedUrl(att.file_path, settings.previewUrlTtl);
     if (data?.signedUrl) {
       setPreviewName(att.file_name);
       setPreviewUrl(data.signedUrl);
@@ -963,7 +963,7 @@ export default function ProjectDetail() {
                 {isPilot && (
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">Informação Adicional</Label>
-                    <Textarea value={pilotInfo} onChange={e => setPilotInfo(e.target.value)} rows={3} maxLength={2000} />
+                    <Textarea value={pilotInfo} onChange={e => setPilotInfo(e.target.value)} rows={3} maxLength={settings.pilotInfoMax} />
                   </div>
                 )}
               </>

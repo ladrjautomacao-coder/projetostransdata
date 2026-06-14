@@ -19,6 +19,7 @@ import { ptBR } from "date-fns/locale";
 import { CalendarIcon, ArrowLeft, Save, Info, Upload, FileText, X } from "lucide-react";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
+import { useSettings } from "@/contexts/SettingsContext";
 
 type BrazilianState = Database["public"]["Enums"]["brazilian_state"];
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
@@ -36,6 +37,7 @@ const statusLabels: Record<ProjectStatus, string> = {
 export default function NewProject() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { settings } = useSettings();
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
 

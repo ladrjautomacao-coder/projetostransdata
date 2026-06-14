@@ -10,16 +10,19 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Building2, MapPin, Calendar, Users, Pencil, Clock, Lock } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import type { ProjectRow } from "@/pages/ProjectManagement";
+import { useSettings } from "@/contexts/SettingsContext";
 
 const fmtDate = (d: string | null) => d ? format(new Date(d + "T00:00:00"), "dd/MM/yyyy") : "—";
 
 type SLALevel = "green" | "yellow" | "orange" | "red";
-function getSLA(updatedAt: string): { level: SLALevel; days: number } {
-  const days = Math.max(0, differenceInDays(new Date(), new Date(updatedAt)));
-  if (days <= 7) return { level: "green", days };
-  if (days <= 15) return { level: "yellow", days };
-  if (days <= 30) return { level: "orange", days };
-  return { level: "red", days };
+function makeGetSLA(green: number, yellow: number, orange: number) {
+  return (updatedAt: string): { level: SLALevel; days: number } => {
+    const days = Math.max(0, differenceInDays(new Date(), new Date(updatedAt)));
+    if (days <= green) return { level: "green", days };
+    if (days <= yellow) return { level: "yellow", days };
+    if (days <= orange) return { level: "orange", days };
+    return { level: "red", days };
+  };
 }
 const SLA_BAR: Record<SLALevel, string> = {
   green: "bg-emerald-500",
@@ -43,6 +46,8 @@ interface Props {
 
 export default function KanbanCard({ project: p, index, onUpdateObservations, canEdit = true }: Props) {
   const navigate = useNavigate();
+  const { settings } = useSettings();
+  const getSLA = makeGetSLA(settings.slaGreenMaxDays, settings.slaYellowMaxDays, settings.slaOrangeMaxDays);
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
@@ -178,7 +183,7 @@ export default function KanbanCard({ project: p, index, onUpdateObservations, ca
                         value={note}
                         onChange={e => setNote(e.target.value)}
                         placeholder="Registre o andamento atual..."
-                        maxLength={500}
+                        maxLength={settings.kanbanNoteMax}
                         rows={3}
                         className="text-sm"
                       />

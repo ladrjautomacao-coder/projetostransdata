@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { differenceInDays, format } from "date-fns";
+import { useSettings } from "@/contexts/SettingsContext";
 
 interface AlertProject {
   id: string;
@@ -32,6 +33,7 @@ const CATEGORY_META: Record<Category, { label: string; icon: typeof Bell; color:
 export function AlertsBell() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { settings } = useSettings();
   const [open, setOpen] = useState(false);
   const [projects, setProjects] = useState<AlertProject[]>([]);
   const storageKey = user ? `alerts:seen:${user.id}` : "alerts:seen:anon";
@@ -63,9 +65,9 @@ export function AlertsBell() {
       if (mounted && data) setProjects(data as AlertProject[]);
     };
     load();
-    const i = setInterval(load, 60_000);
+    const i = setInterval(load, Math.max(5, settings.pollingSeconds) * 1000);
     return () => { mounted = false; clearInterval(i); };
-  }, []);
+  }, [settings.pollingSeconds]);
 
   const grouped = useMemo(() => {
     const today = new Date();
@@ -75,15 +77,15 @@ export function AlertsBell() {
       if (p.d_zero_date) {
         const dz = new Date(p.d_zero_date + "T00:00:00");
         const diff = differenceInDays(dz, today);
-        if (diff >= 0 && diff <= 7) result.dzero.push(p);
+        if (diff >= 0 && diff <= settings.dzeroWindowDays) result.dzero.push(p);
       }
-      if (p.updated_at && differenceInDays(today, new Date(p.updated_at)) > 30 && p.status !== "suspenso") {
+      if (p.updated_at && differenceInDays(today, new Date(p.updated_at)) > settings.stuckDays && p.status !== "suspenso") {
         result.stuck.push(p);
       }
       if (!p.manager_id) result.no_manager.push(p);
     }
     return result;
-  }, [projects]);
+  }, [projects, settings.dzeroWindowDays, settings.stuckDays]);
 
   const activeKeys = useMemo(() => {
     const keys: string[] = [];

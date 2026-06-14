@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useSettings } from "@/contexts/SettingsContext";
+import { useSettings, validateSettingValue } from "@/contexts/SettingsContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,10 +52,16 @@ export default function SystemSettings() {
   useEffect(() => { load(); }, []);
 
   const save = async (key: string) => {
+    const check = validateSettingValue(key, draft[key]);
+    if (check.ok !== true) {
+      toast({ title: "Valor inválido", description: check.error, variant: "destructive" });
+      return;
+    }
+    const validValue = check.value;
     setSaving(key);
     const { error } = await (supabase as any)
       .from("app_settings")
-      .update({ value: draft[key] })
+      .update({ value: validValue })
       .eq("key", key);
     if (error) toast({ title: "Erro", description: error.message, variant: "destructive" });
     else {

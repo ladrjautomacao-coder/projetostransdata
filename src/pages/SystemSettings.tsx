@@ -53,14 +53,15 @@ export default function SystemSettings() {
 
   const save = async (key: string) => {
     const check = validateSettingValue(key, draft[key]);
-    if (!check.ok) {
+    if (check.ok !== true) {
       toast({ title: "Valor inválido", description: check.error, variant: "destructive" });
       return;
     }
+    const validValue = check.value;
     setSaving(key);
     const { error } = await (supabase as any)
       .from("app_settings")
-      .update({ value: check.value })
+      .update({ value: validValue })
       .eq("key", key);
     if (error) toast({ title: "Erro", description: error.message, variant: "destructive" });
     else {

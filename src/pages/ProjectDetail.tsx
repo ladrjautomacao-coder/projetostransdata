@@ -23,6 +23,7 @@ import { format, addDays } from "date-fns";
 import { ArrowLeft, Edit2, Save, X, CalendarIcon, Upload, FileText, Trash2, Info, Download, Eye, PlusCircle, RefreshCw, User } from "lucide-react";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
+import { useSettings } from "@/contexts/SettingsContext";
 
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 type BrazilianState = Database["public"]["Enums"]["brazilian_state"];
@@ -37,6 +38,7 @@ export default function ProjectDetail() {
   const location = useLocation();
   const backPath = (location.state as any)?.from || "/projetos/lista";
   const { user, isAdmin } = useAuth();
+  const { settings } = useSettings();
   const { toast } = useToast();
   const [project, setProject] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);

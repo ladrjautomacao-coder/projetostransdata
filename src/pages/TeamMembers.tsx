@@ -11,20 +11,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Trash2 } from "lucide-react";
-
-const roleLabels: Record<string, string> = {
-  executivo_vendas: "Executivo de Vendas",
-  gerente_projetos: "Gerente de Projetos",
-};
+import { useSettings } from "@/contexts/SettingsContext";
 
 export default function TeamMembers() {
   const { toast } = useToast();
+  const { settings } = useSettings();
+  const roleLabels = Object.fromEntries(settings.teamRoles.map(r => [r.value, r.label]));
   const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("executivo_vendas");
+  const [role, setRole] = useState(settings.teamRoles[0]?.value || "executivo_vendas");
   const [submitting, setSubmitting] = useState(false);
 
   const load = async () => {
@@ -67,8 +65,9 @@ export default function TeamMembers() {
                 <Select value={role} onValueChange={setRole}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="executivo_vendas">Executivo de Vendas</SelectItem>
-                    <SelectItem value="gerente_projetos">Gerente de Projetos</SelectItem>
+                    {settings.teamRoles.map(r => (
+                      <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

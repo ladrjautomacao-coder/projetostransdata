@@ -46,6 +46,8 @@ interface Props {
 
 export default function KanbanCard({ project: p, index, onUpdateObservations, canEdit = true }: Props) {
   const navigate = useNavigate();
+  const { settings } = useSettings();
+  const getSLA = makeGetSLA(settings.slaGreenMaxDays, settings.slaYellowMaxDays, settings.slaOrangeMaxDays);
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
@@ -181,7 +183,7 @@ export default function KanbanCard({ project: p, index, onUpdateObservations, ca
                         value={note}
                         onChange={e => setNote(e.target.value)}
                         placeholder="Registre o andamento atual..."
-                        maxLength={500}
+                        maxLength={settings.kanbanNoteMax}
                         rows={3}
                         className="text-sm"
                       />

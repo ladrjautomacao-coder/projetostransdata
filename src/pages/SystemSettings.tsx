@@ -105,7 +105,14 @@ export default function SystemSettings() {
               <Card key={r.key}>
                 <CardHeader>
                   <CardTitle className="text-base">{r.label}</CardTitle>
-                  {r.description && <CardDescription>{r.description}</CardDescription>}
+                  {r.description && (
+                    <CardDescription className="whitespace-pre-line leading-relaxed">
+                      {r.description}
+                    </CardDescription>
+                  )}
+                  <div className="text-xs text-muted-foreground/80 pt-1 font-mono">
+                    chave: {r.key}
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {r.value_type === "number" ? (

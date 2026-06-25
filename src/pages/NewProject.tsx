@@ -346,6 +346,13 @@ export default function NewProject() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="sm:col-span-2 space-y-2">
+              <Label>Código do Projeto</Label>
+              <Input value={codePreview || ""} readOnly placeholder="Será gerado automaticamente ao salvar" className="font-mono bg-muted/40" />
+              <HelperText>
+                Formato: <span className="font-mono">1 + Tipo + Cidade + Sequencial</span>. Os 5 últimos dígitos (sequencial) são atribuídos no momento do cadastro.
+              </HelperText>
+            </div>
             <div className="space-y-2">
               <Label>Frota Contratada <span className="text-destructive">*</span></Label>
               <Input

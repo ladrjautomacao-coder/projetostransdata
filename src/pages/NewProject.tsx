@@ -122,6 +122,23 @@ export default function NewProject() {
     return null;
   }, [contractDate, contractualDeadlineDays]);
 
+  // Prévia do código do projeto
+  const [codePreview, setCodePreview] = useState<string>("");
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      if (!city || !state || !projectTypeId) { setCodePreview(""); return; }
+      try {
+        const { data, error } = await (supabase as any).rpc("preview_project_code", {
+          p_city: city, p_state: state, p_project_type_id: projectTypeId,
+        });
+        if (!cancelled && !error) setCodePreview(data || "");
+      } catch { /* ignore */ }
+    };
+    const t = setTimeout(run, 250);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [city, state, projectTypeId]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

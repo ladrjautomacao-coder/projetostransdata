@@ -50,6 +50,33 @@ export type Database = {
         }
         Relationships: []
       }
+      city_codes: {
+        Row: {
+          city: string
+          city_norm: string
+          code: string
+          created_at: string
+          id: string
+          state: string
+        }
+        Insert: {
+          city: string
+          city_norm: string
+          code: string
+          created_at?: string
+          id?: string
+          state: string
+        }
+        Update: {
+          city?: string
+          city_norm?: string
+          code?: string
+          created_at?: string
+          id?: string
+          state?: string
+        }
+        Relationships: []
+      }
       equipment_types: {
         Row: {
           active: boolean
@@ -437,18 +464,21 @@ export type Database = {
       project_types: {
         Row: {
           active: boolean
+          code: string
           created_at: string
           id: string
           name: string
         }
         Insert: {
           active?: boolean
+          code: string
           created_at?: string
           id?: string
           name: string
         }
         Update: {
           active?: boolean
+          code?: string
           created_at?: string
           id?: string
           name?: string
@@ -480,6 +510,7 @@ export type Database = {
           manager_id: string | null
           observations: string | null
           pilot_info: string | null
+          project_code: string | null
           project_type_id: string | null
           reached_implemented: boolean
           reached_implemented_at: string | null
@@ -512,6 +543,7 @@ export type Database = {
           manager_id?: string | null
           observations?: string | null
           pilot_info?: string | null
+          project_code?: string | null
           project_type_id?: string | null
           reached_implemented?: boolean
           reached_implemented_at?: string | null
@@ -544,6 +576,7 @@ export type Database = {
           manager_id?: string | null
           observations?: string | null
           pilot_info?: string | null
+          project_code?: string | null
           project_type_id?: string | null
           reached_implemented?: boolean
           reached_implemented_at?: string | null
@@ -682,6 +715,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _compute_city_sigla: {
+        Args: { p_city: string; p_persist: boolean; p_state: string }
+        Returns: string
+      }
       admin_get_team_emails: {
         Args: never
         Returns: {
@@ -693,6 +730,10 @@ export type Database = {
         }[]
       }
       current_user_email: { Args: never; Returns: string }
+      generate_project_code: {
+        Args: { p_city: string; p_project_type_id: string; p_state: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -700,6 +741,16 @@ export type Database = {
         }
         Returns: boolean
       }
+      norm_text: { Args: { p: string }; Returns: string }
+      preview_project_code: {
+        Args: { p_city: string; p_project_type_id: string; p_state: string }
+        Returns: string
+      }
+      resolve_city_code: {
+        Args: { p_city: string; p_state: string }
+        Returns: string
+      }
+      unaccent: { Args: { "": string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "user" | "super_admin"

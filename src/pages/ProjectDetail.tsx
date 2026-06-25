@@ -579,7 +579,14 @@ export default function ProjectDetail() {
       </Button>
 
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{project.company_name}</h1>
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-bold">{project.company_name}</h1>
+          {project.project_code && (
+            <span className="font-mono text-xs px-2 py-1 rounded bg-muted text-muted-foreground w-fit">
+              Código: {project.project_code}
+            </span>
+          )}
+        </div>
         {editing ? (
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => setEditing(false)}><X className="mr-1 h-4 w-4" /> Cancelar</Button>

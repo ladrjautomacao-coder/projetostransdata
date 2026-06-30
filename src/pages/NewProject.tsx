@@ -203,6 +203,8 @@ export default function NewProject() {
         created_by: user?.id || null,
         project_type_id: projectTypeId,
         fleet_size: fleet,
+        fleet_urbano: urbano,
+        fleet_seccionado: seccionado,
         implementation_deadline_days: implDays,
         contractual_deadline_days: contrDays,
         is_pilot: isPilot,

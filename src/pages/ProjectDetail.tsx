@@ -798,6 +798,7 @@ export default function ProjectDetail() {
                 <div><span className="text-xs text-muted-foreground">Localização</span><p>{project.city} / {project.state}</p></div>
                 <div><span className="text-xs text-muted-foreground">Tipo do Projeto</span><p>{projectTypeName}</p></div>
                 <div><span className="text-xs text-muted-foreground">Frota Contratada</span><p>{project.fleet_size ?? "—"} veículos</p></div>
+                <div><span className="text-xs text-muted-foreground">Sistema</span><p>Urbano: <strong>{(project as any).fleet_urbano ?? 0}</strong> · Seccionado: <strong>{(project as any).fleet_seccionado ?? 0}</strong></p></div>
                 <div><span className="text-xs text-muted-foreground">Contratação</span><p>{fmtDate(project.contract_date)}</p></div>
                 <div className="grid grid-cols-2 gap-3">
                   <div><span className="text-xs text-muted-foreground">D-zero</span><p>{fmtDate(project.d_zero_date)}</p></div>

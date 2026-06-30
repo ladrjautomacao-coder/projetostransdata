@@ -64,6 +64,8 @@ export default function ProjectDetail() {
   const [projectTypeId, setProjectTypeId] = useState("");
   const [selectedSolutions, setSelectedSolutions] = useState<string[]>([]);
   const [fleetSize, setFleetSize] = useState<string>("");
+  const [fleetUrbano, setFleetUrbano] = useState<string>("0");
+  const [fleetSeccionado, setFleetSeccionado] = useState<string>("0");
   const [implDeadlineDays, setImplDeadlineDays] = useState<string>("");
   const [contractualDeadlineDays, setContractualDeadlineDays] = useState<string>("");
   const [isPilot, setIsPilot] = useState(false);

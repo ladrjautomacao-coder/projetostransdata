@@ -386,6 +386,42 @@ export default function NewProject() {
           </CardContent>
         </Card>
 
+        {/* === SEÇÃO: SISTEMA === */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Sistema</CardTitle>
+            <CardDescription>Dimensione a frota por tipo de sistema. A soma deve ser igual à Frota Contratada.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const u = parseInt(fleetUrbano) || 0;
+              const s = parseInt(fleetSeccionado) || 0;
+              const f = parseInt(fleetSize) || 0;
+              const sum = u + s;
+              const ok = f > 0 && sum === f;
+              return (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-md border p-3 space-y-2">
+                      <Label>Urbano</Label>
+                      <Input type="number" min={0} step={1} value={fleetUrbano} onChange={e => setFleetUrbano(e.target.value)} placeholder="0" />
+                    </div>
+                    <div className="rounded-md border p-3 space-y-2">
+                      <Label>Seccionado</Label>
+                      <Input type="number" min={0} step={1} value={fleetSeccionado} onChange={e => setFleetSeccionado(e.target.value)} placeholder="0" />
+                    </div>
+                  </div>
+                  <div className={cn("text-sm font-medium", ok ? "text-emerald-600" : "text-destructive")}>
+                    Soma: {sum} / Frota Contratada: {f}
+                    {!ok && f > 0 && " — ajuste para que os valores coincidam"}
+                  </div>
+                </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
+
+
         {/* === SEÇÃO: SOLUÇÕES / ESCOPO === */}
         <Card>
           <CardHeader>

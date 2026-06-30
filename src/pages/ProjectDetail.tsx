@@ -761,6 +761,25 @@ export default function ProjectDetail() {
                   <Label className="text-xs text-muted-foreground">Frota Contratada</Label>
                   <Input type="number" min={1} step={1} value={fleetSize} onChange={e => setFleetSize(e.target.value)} />
                 </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Sistema · Urbano</Label>
+                  <Input type="number" min={0} step={1} value={fleetUrbano} onChange={e => setFleetUrbano(e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Sistema · Seccionado</Label>
+                  <Input type="number" min={0} step={1} value={fleetSeccionado} onChange={e => setFleetSeccionado(e.target.value)} />
+                </div>
+                {(() => {
+                  const u = parseInt(fleetUrbano) || 0;
+                  const s = parseInt(fleetSeccionado) || 0;
+                  const f = parseInt(fleetSize) || 0;
+                  const ok = f > 0 && u + s === f;
+                  return (
+                    <div className={cn("text-xs font-medium", ok ? "text-emerald-600" : "text-destructive")}>
+                      Soma Urbano + Seccionado: {u + s} / Frota Contratada: {f}
+                    </div>
+                  );
+                })()}
                 <DateField label="Contratação" date={contractDate} onSelect={d => d && setContractDate(d)} />
                 <DateField label="D-zero" date={dZeroDate} onSelect={setDZeroDate} />
                 <DateField label="Handover" date={handoverDate} onSelect={setHandoverDate} />

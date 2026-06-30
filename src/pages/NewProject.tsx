@@ -67,6 +67,8 @@ export default function NewProject() {
   const [installationClient, setInstallationClient] = useState<string>("0");
   const [complementarySale, setComplementarySale] = useState(false);
   const [complementaryFleet, setComplementaryFleet] = useState<string>("0");
+  const [fleetUrbano, setFleetUrbano] = useState<string>("0");
+  const [fleetSeccionado, setFleetSeccionado] = useState<string>("0");
 
   // Anexos por categoria
   const ATTACHMENT_CATEGORIES = [
@@ -160,6 +162,16 @@ export default function NewProject() {
       toast({ title: "Informe a Frota Contratada (mínimo 1)", variant: "destructive" });
       return;
     }
+    const urbano = parseInt(fleetUrbano) || 0;
+    const seccionado = parseInt(fleetSeccionado) || 0;
+    if (urbano < 0 || seccionado < 0) {
+      toast({ title: "Sistema: valores não podem ser negativos", variant: "destructive" });
+      return;
+    }
+    if (urbano + seccionado !== fleet) {
+      toast({ title: "A soma de Urbano e Seccionado deve ser igual à Frota Contratada", variant: "destructive" });
+      return;
+    }
     const implDays = parseInt(implDeadlineDays);
     if (!implDeadlineDays || isNaN(implDays) || implDays < 1) {
       toast({ title: "Informe o Prazo de Implantação", variant: "destructive" });
@@ -191,6 +203,8 @@ export default function NewProject() {
         created_by: user?.id || null,
         project_type_id: projectTypeId,
         fleet_size: fleet,
+        fleet_urbano: urbano,
+        fleet_seccionado: seccionado,
         implementation_deadline_days: implDays,
         contractual_deadline_days: contrDays,
         is_pilot: isPilot,
@@ -371,6 +385,42 @@ export default function NewProject() {
             <DatePicker label="Projeto Executivo" date={executiveProjectDate} onSelect={setExecutiveProjectDate} />
           </CardContent>
         </Card>
+
+        {/* === SEÇÃO: SISTEMA === */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Sistema</CardTitle>
+            <CardDescription>Dimensione a frota por tipo de sistema. A soma deve ser igual à Frota Contratada.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const u = parseInt(fleetUrbano) || 0;
+              const s = parseInt(fleetSeccionado) || 0;
+              const f = parseInt(fleetSize) || 0;
+              const sum = u + s;
+              const ok = f > 0 && sum === f;
+              return (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-md border p-3 space-y-2">
+                      <Label>Urbano</Label>
+                      <Input type="number" min={0} step={1} value={fleetUrbano} onChange={e => setFleetUrbano(e.target.value)} placeholder="0" />
+                    </div>
+                    <div className="rounded-md border p-3 space-y-2">
+                      <Label>Seccionado</Label>
+                      <Input type="number" min={0} step={1} value={fleetSeccionado} onChange={e => setFleetSeccionado(e.target.value)} placeholder="0" />
+                    </div>
+                  </div>
+                  <div className={cn("text-sm font-medium", ok ? "text-emerald-600" : "text-destructive")}>
+                    Soma: {sum} / Frota Contratada: {f}
+                    {!ok && f > 0 && " — ajuste para que os valores coincidam"}
+                  </div>
+                </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
+
 
         {/* === SEÇÃO: SOLUÇÕES / ESCOPO === */}
         <Card>

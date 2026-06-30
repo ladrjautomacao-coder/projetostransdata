@@ -64,6 +64,8 @@ export default function ProjectDetail() {
   const [projectTypeId, setProjectTypeId] = useState("");
   const [selectedSolutions, setSelectedSolutions] = useState<string[]>([]);
   const [fleetSize, setFleetSize] = useState<string>("");
+  const [fleetUrbano, setFleetUrbano] = useState<string>("0");
+  const [fleetSeccionado, setFleetSeccionado] = useState<string>("0");
   const [implDeadlineDays, setImplDeadlineDays] = useState<string>("");
   const [contractualDeadlineDays, setContractualDeadlineDays] = useState<string>("");
   const [isPilot, setIsPilot] = useState(false);
@@ -126,6 +128,8 @@ export default function ProjectDetail() {
       setProjectTypeId(data.project_type_id || "");
       setSelectedSolutions(data.project_solutions?.map((ps: any) => ps.solution_id) || []);
       setFleetSize(data.fleet_size?.toString() || "");
+      setFleetUrbano((data as any).fleet_urbano?.toString() || "0");
+      setFleetSeccionado((data as any).fleet_seccionado?.toString() || "0");
       setImplDeadlineDays(data.implementation_deadline_days?.toString() || "");
       setContractualDeadlineDays(data.contractual_deadline_days?.toString() || "");
       setIsPilot(data.is_pilot || false);
@@ -305,6 +309,10 @@ export default function ProjectDetail() {
     if (selectedSolutions.length === 0) { toast({ title: "Selecione pelo menos uma Solução", variant: "destructive" }); return; }
     const fleet = parseInt(fleetSize);
     if (!fleetSize || isNaN(fleet) || fleet < 1) { toast({ title: "Informe a Frota Contratada", variant: "destructive" }); return; }
+    const urbano = parseInt(fleetUrbano) || 0;
+    const seccionado = parseInt(fleetSeccionado) || 0;
+    if (urbano < 0 || seccionado < 0) { toast({ title: "Sistema: valores não podem ser negativos", variant: "destructive" }); return; }
+    if (urbano + seccionado !== fleet) { toast({ title: "A soma de Urbano e Seccionado deve ser igual à Frota Contratada", variant: "destructive" }); return; }
     const implDays = parseInt(implDeadlineDays);
     if (!implDeadlineDays || isNaN(implDays) || implDays < 1) { toast({ title: "Informe o Prazo de Implantação", variant: "destructive" }); return; }
     const contrDays = parseInt(contractualDeadlineDays);
@@ -324,6 +332,8 @@ export default function ProjectDetail() {
         executive_id: executiveId || null, manager_id: managerId || null, status,
         project_type_id: projectTypeId || null,
         fleet_size: fleet,
+        fleet_urbano: urbano,
+        fleet_seccionado: seccionado,
         implementation_deadline_days: implDays,
         contractual_deadline_days: contrDays,
         is_pilot: isPilot,
@@ -751,6 +761,25 @@ export default function ProjectDetail() {
                   <Label className="text-xs text-muted-foreground">Frota Contratada</Label>
                   <Input type="number" min={1} step={1} value={fleetSize} onChange={e => setFleetSize(e.target.value)} />
                 </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Sistema · Urbano</Label>
+                  <Input type="number" min={0} step={1} value={fleetUrbano} onChange={e => setFleetUrbano(e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Sistema · Seccionado</Label>
+                  <Input type="number" min={0} step={1} value={fleetSeccionado} onChange={e => setFleetSeccionado(e.target.value)} />
+                </div>
+                {(() => {
+                  const u = parseInt(fleetUrbano) || 0;
+                  const s = parseInt(fleetSeccionado) || 0;
+                  const f = parseInt(fleetSize) || 0;
+                  const ok = f > 0 && u + s === f;
+                  return (
+                    <div className={cn("text-xs font-medium", ok ? "text-emerald-600" : "text-destructive")}>
+                      Soma Urbano + Seccionado: {u + s} / Frota Contratada: {f}
+                    </div>
+                  );
+                })()}
                 <DateField label="Contratação" date={contractDate} onSelect={d => d && setContractDate(d)} />
                 <DateField label="D-zero" date={dZeroDate} onSelect={setDZeroDate} />
                 <DateField label="Handover" date={handoverDate} onSelect={setHandoverDate} />
@@ -769,6 +798,7 @@ export default function ProjectDetail() {
                 <div><span className="text-xs text-muted-foreground">Localização</span><p>{project.city} / {project.state}</p></div>
                 <div><span className="text-xs text-muted-foreground">Tipo do Projeto</span><p>{projectTypeName}</p></div>
                 <div><span className="text-xs text-muted-foreground">Frota Contratada</span><p>{project.fleet_size ?? "—"} veículos</p></div>
+                <div><span className="text-xs text-muted-foreground">Sistema</span><p>Urbano: <strong>{(project as any).fleet_urbano ?? 0}</strong> · Seccionado: <strong>{(project as any).fleet_seccionado ?? 0}</strong></p></div>
                 <div><span className="text-xs text-muted-foreground">Contratação</span><p>{fmtDate(project.contract_date)}</p></div>
                 <div className="grid grid-cols-2 gap-3">
                   <div><span className="text-xs text-muted-foreground">D-zero</span><p>{fmtDate(project.d_zero_date)}</p></div>

@@ -67,6 +67,8 @@ export default function NewProject() {
   const [installationClient, setInstallationClient] = useState<string>("0");
   const [complementarySale, setComplementarySale] = useState(false);
   const [complementaryFleet, setComplementaryFleet] = useState<string>("0");
+  const [fleetUrbano, setFleetUrbano] = useState<string>("0");
+  const [fleetSeccionado, setFleetSeccionado] = useState<string>("0");
 
   // Anexos por categoria
   const ATTACHMENT_CATEGORIES = [

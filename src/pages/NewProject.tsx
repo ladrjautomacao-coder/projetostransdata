@@ -162,6 +162,16 @@ export default function NewProject() {
       toast({ title: "Informe a Frota Contratada (mínimo 1)", variant: "destructive" });
       return;
     }
+    const urbano = parseInt(fleetUrbano) || 0;
+    const seccionado = parseInt(fleetSeccionado) || 0;
+    if (urbano < 0 || seccionado < 0) {
+      toast({ title: "Sistema: valores não podem ser negativos", variant: "destructive" });
+      return;
+    }
+    if (urbano + seccionado !== fleet) {
+      toast({ title: "A soma de Urbano e Seccionado deve ser igual à Frota Contratada", variant: "destructive" });
+      return;
+    }
     const implDays = parseInt(implDeadlineDays);
     if (!implDeadlineDays || isNaN(implDays) || implDays < 1) {
       toast({ title: "Informe o Prazo de Implantação", variant: "destructive" });

@@ -332,6 +332,8 @@ export default function ProjectDetail() {
         executive_id: executiveId || null, manager_id: managerId || null, status,
         project_type_id: projectTypeId || null,
         fleet_size: fleet,
+        fleet_urbano: urbano,
+        fleet_seccionado: seccionado,
         implementation_deadline_days: implDays,
         contractual_deadline_days: contrDays,
         is_pilot: isPilot,

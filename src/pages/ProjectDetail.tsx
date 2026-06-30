@@ -128,6 +128,8 @@ export default function ProjectDetail() {
       setProjectTypeId(data.project_type_id || "");
       setSelectedSolutions(data.project_solutions?.map((ps: any) => ps.solution_id) || []);
       setFleetSize(data.fleet_size?.toString() || "");
+      setFleetUrbano((data as any).fleet_urbano?.toString() || "0");
+      setFleetSeccionado((data as any).fleet_seccionado?.toString() || "0");
       setImplDeadlineDays(data.implementation_deadline_days?.toString() || "");
       setContractualDeadlineDays(data.contractual_deadline_days?.toString() || "");
       setIsPilot(data.is_pilot || false);

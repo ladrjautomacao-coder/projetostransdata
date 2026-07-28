@@ -260,31 +260,33 @@ export default function UserManagement() {
                     >
                       <KeyRound className="h-3.5 w-3.5 mr-1" /> Reset Senha
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className={`h-8 text-xs ${user.role !== "user" ? "border-amber-500/30 text-amber-600" : "border-blue-500/30 text-blue-600"}`}
+                    <Select
+                      value={user.role}
+                      onValueChange={(newRole) => {
+                        if (newRole === user.role) return;
+                        if (newRole === "super_admin" && !isSuperAdmin) {
+                          toast({ title: "Ação negada", description: "Apenas Super Admins podem conceder Super Admin.", variant: "destructive" });
+                          return;
+                        }
+                        executeAction("toggle_role", user.id, { role: newRole });
+                      }}
                       disabled={actionLoading === user.id}
-                      onClick={() => setConfirmAction({ type: "toggle_role", user })}
                     >
-                      {user.role !== "user" ? (
-                        <><ShieldAlert className="h-3.5 w-3.5 mr-1" /> Remover Admin</>
-                      ) : (
-                        <><Shield className="h-3.5 w-3.5 mr-1" /> Tornar Admin</>
-                      )}
-                    </Button>
-                    {isSuperAdmin && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className={`h-8 text-xs ${user.role === "super_admin" ? "border-accent/40 text-accent" : "border-accent/30 text-accent"}`}
-                        disabled={actionLoading === user.id}
-                        onClick={() => setConfirmAction({ type: "toggle_super", user })}
-                      >
-                        <Sparkles className="h-3.5 w-3.5 mr-1" />
-                        {user.role === "super_admin" ? "Remover Super" : "Tornar Super"}
-                      </Button>
-                    )}
+                      <SelectTrigger className="h-8 w-[170px] text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {AVAILABLE_ROLES.map(r => (
+                          <SelectItem
+                            key={r}
+                            value={r}
+                            disabled={r === "super_admin" && !isSuperAdmin}
+                          >
+                            {ROLE_LABELS[r]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <Button
                       variant="outline"
                       size="sm"

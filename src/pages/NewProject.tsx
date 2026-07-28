@@ -674,7 +674,7 @@ export default function NewProject() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Anexos</CardTitle>
-            <CardDescription>Anexe documentos relacionados ao projeto (máx. 20MB cada)</CardDescription>
+            <CardDescription>Anexe documentos relacionados ao projeto (máx. 100MB cada)</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             {ATTACHMENT_CATEGORIES.map(cat => {
@@ -682,9 +682,9 @@ export default function NewProject() {
               const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 const newFiles = e.target.files;
                 if (!newFiles) return;
-                const validFiles = Array.from(newFiles).filter(f => f.size <= 20 * 1024 * 1024);
+                const validFiles = Array.from(newFiles).filter(f => f.size <= 100 * 1024 * 1024);
                 if (validFiles.length < (newFiles?.length || 0)) {
-                  toast({ title: "Arquivos acima de 20MB foram ignorados", variant: "destructive" });
+                  toast({ title: "Arquivos acima de 100MB foram ignorados", variant: "destructive" });
                 }
                 setAttachmentFiles(prev => ({
                   ...prev,

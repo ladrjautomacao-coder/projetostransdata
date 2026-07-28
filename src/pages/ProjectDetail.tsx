@@ -806,6 +806,7 @@ export default function ProjectDetail() {
                 </div>
                 <div><span className="text-xs text-muted-foreground">Projeto Executivo</span><p>{fmtDate(project.executive_project_date)}</p></div>
                 <div><span className="text-xs text-muted-foreground">Status</span><p><Badge variant="outline">{statusLabels[project.status as ProjectStatus]}</Badge></p></div>
+                <div><span className="text-xs text-muted-foreground">Data e hora do cadastro</span><p>{project.created_at ? format(new Date(project.created_at), "dd/MM/yyyy 'às' HH:mm") : "—"}</p></div>
               </>
             )}
           </CardContent>

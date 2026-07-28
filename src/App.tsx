@@ -23,6 +23,7 @@ import Implantacao from "./pages/Implantacao";
 import AcervoTecnico from "./pages/AcervoTecnico";
 
 import UserManagement from "./pages/UserManagement";
+import PermissionsAdmin from "./pages/PermissionsAdmin";
 import SystemSettings from "./pages/SystemSettings";
 import SystemManual from "./pages/SystemManual";
 import NotFound from "./pages/NotFound";

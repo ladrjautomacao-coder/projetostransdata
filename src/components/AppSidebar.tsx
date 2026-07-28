@@ -47,6 +47,7 @@ export function AppSidebar() {
       </div>
 
       <SidebarContent>
+        {visibleProjects.length > 0 && (
         <SidebarGroup>
           <SidebarGroupLabel className="text-accent text-[11px] uppercase tracking-[0.22em] font-bold px-2 py-2">
             <BarChart3 className="h-3.5 w-3.5 mr-2 text-accent" />
@@ -54,7 +55,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {projectsModuleItems.map(item => (
+              {visibleProjects.map(item => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild>
                     <NavLink
@@ -72,7 +73,9 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        )}
 
+        {visibleImplant.length > 0 && (
         <SidebarGroup>
           <SidebarGroupLabel className="text-accent text-[11px] uppercase tracking-[0.22em] font-bold px-2 py-2">
             <BarChart3 className="h-3.5 w-3.5 mr-2 text-accent" />
@@ -80,7 +83,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {implantacaoModuleItems.map(item => (
+              {visibleImplant.map(item => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild>
                     <NavLink
@@ -97,6 +100,8 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        )}
+
 
         {visibleAdminItems.length > 0 && (
           <SidebarGroup>

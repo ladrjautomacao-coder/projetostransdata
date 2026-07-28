@@ -27,8 +27,15 @@ export default function TeamMembers() {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase.from("team_members").select("*").eq("active", true).order("full_name");
-    setMembers(data || []);
+    // Admins fetch full team incl. email via SECURITY DEFINER RPC (email column is
+    // no longer readable by non-admins directly). Non-admins fall back to public columns.
+    const { data: adminData, error: adminErr } = await supabase.rpc("admin_get_team_emails");
+    if (!adminErr && adminData) {
+      setMembers((adminData as any[]).filter(m => m.active).sort((a, b) => a.full_name.localeCompare(b.full_name)));
+    } else {
+      const { data } = await supabase.from("team_members").select("id, full_name, role, active").eq("active", true).order("full_name");
+      setMembers(data || []);
+    }
     setLoading(false);
   };
 

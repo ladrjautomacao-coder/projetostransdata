@@ -8,9 +8,12 @@ import {
 import { Button } from "@/components/ui/button";
 import logoTransdata from "@/assets/logo-transdata.png.asset.json";
 
-const mainItems = [
+const projectsModuleItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Projetos", url: "/projetos", icon: FolderKanban },
+];
+
+const implantacaoModuleItems = [
   { title: "Implantação", url: "/implantacao", icon: HardHat },
 ];
 
@@ -40,11 +43,11 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-[0.15em] font-semibold">
             <Signal className="h-3 w-3 mr-1.5 text-sidebar-primary" />
-            Principal
+            Módulo Projetos
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map(item => (
+              {projectsModuleItems.map(item => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild>
                     <NavLink
@@ -62,6 +65,32 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-[0.15em] font-semibold">
+            <Signal className="h-3 w-3 mr-1.5 text-sidebar-primary" />
+            Módulo Implantação
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {implantacaoModuleItems.map(item => (
+                <SidebarMenuItem key={item.url}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      className="hover:bg-sidebar-accent transition-all duration-200 group"
+                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium border-l-2 border-sidebar-primary"
+                    >
+                      <item.icon className="mr-2 h-4 w-4 group-hover:text-sidebar-primary transition-colors" />
+                      <span>{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
 
         {(() => {
           const visibleAdminItems = adminItems.filter(i => !i.adminOnly || isAdmin);

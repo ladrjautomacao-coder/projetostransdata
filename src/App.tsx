@@ -20,6 +20,7 @@ import ProjectManagement from "./pages/ProjectManagement";
 import TeamMembers from "./pages/TeamMembers";
 import Products from "./pages/Products";
 import Implantacao from "./pages/Implantacao";
+import Suporte from "./pages/Suporte";
 import AcervoTecnico from "./pages/AcervoTecnico";
 
 import UserManagement from "./pages/UserManagement";

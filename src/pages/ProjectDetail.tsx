@@ -432,8 +432,8 @@ export default function ProjectDetail() {
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList[i];
         setUploadProgress({ current: i + 1, total: fileList.length, fileName: file.name });
-        if (file.size > 20 * 1024 * 1024) {
-          toast({ title: `Arquivo "${file.name}" excede 20MB`, variant: "destructive" });
+        if (file.size > 100 * 1024 * 1024) {
+          toast({ title: `Arquivo "${file.name}" excede 100MB`, variant: "destructive" });
           continue;
         }
         const sanitizedName = file.name
@@ -1016,32 +1016,6 @@ export default function ProjectDetail() {
         </Card>
       </div>
 
-      {/* Instalação Embarcada */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-lg">Instalação Embarcada</CardTitle>
-          <CardDescription>Quantidade de instalações realizadas por cada responsável</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {editing ? (
-            <>
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Transmobile</Label>
-                <Input type="number" min={0} step={1} value={installationTransmobile} onChange={e => setInstallationTransmobile(e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Cliente</Label>
-                <Input type="number" min={0} step={1} value={installationClient} onChange={e => setInstallationClient(e.target.value)} />
-              </div>
-            </>
-          ) : (
-            <>
-              <div><span className="text-xs text-muted-foreground">Transmobile</span><p>{project.installation_transmobile ?? 0}</p></div>
-              <div><span className="text-xs text-muted-foreground">Cliente</span><p>{project.installation_client ?? 0}</p></div>
-            </>
-          )}
-        </CardContent>
-      </Card>
 
       {/* Venda Complementar */}
       <Card className="mb-6">
@@ -1093,7 +1067,7 @@ export default function ProjectDetail() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-lg">Anexos</CardTitle>
-          <CardDescription className="text-xs">Anexe documentos relacionados ao projeto (máx. 20MB cada)</CardDescription>
+          <CardDescription className="text-xs">Anexe documentos relacionados ao projeto (máx. 100MB cada)</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           {uploading && uploadProgress && (

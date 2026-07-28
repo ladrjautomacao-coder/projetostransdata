@@ -1190,13 +1190,72 @@ export default function ProjectDetail() {
             <div className="space-y-4">
               {history.map(h => {
                 const isCreated = h.change_type === "created";
-                const changes = h.new_values?.changes as { field: string; from?: string; to?: string }[] | undefined;
+                const isDeleted = h.change_type === "deleted";
+                const isStatus = h.change_type === "status_change";
+
+                // Formatação amigável
+                const FIELD_LABELS: Record<string, string> = {
+                  company_name: "Empresa", city: "Cidade", state: "UF",
+                  status: "Status", sub_phase: "Sub-fase",
+                  contract_date: "Data do contrato", d_zero_date: "Data D-zero",
+                  handover_date: "Data de handover", executive_project_date: "Data do projeto executivo",
+                  executive_id: "Executivo", manager_id: "Gerente de Projetos",
+                  project_type_id: "Tipo de Projeto", project_code: "Código do Projeto",
+                  fleet_size: "Frota Total", fleet_urbano: "Frota Urbano",
+                  fleet_seccionado: "Frota Seccionado", complementary_fleet: "Frota Complementar",
+                  implemented_fleet: "Frota Implementada",
+                  is_pilot: "Piloto", pilot_info: "Info do Piloto",
+                  complementary_sale: "Venda Complementar", observations: "Observações",
+                  implementation_deadline_days: "Prazo de Implantação (dias)",
+                  contractual_deadline_days: "Prazo Contratual (dias)",
+                  reached_implemented: "Atingiu Implementado",
+                };
+                const IGNORE = new Set(["id","created_at","updated_at","filled_by","created_by","reached_implemented_at"]);
+
+                const allSubs = Object.values(subPhasesByStatus).flat().filter(Boolean) as { id: string; label: string }[];
+                const fmtVal = (key: string, val: any): string => {
+                  if (val === null || val === undefined || val === "") return "—";
+                  if (key === "status") return statusLabels[val as ProjectStatus] || String(val);
+                  if (key === "sub_phase") return allSubs.find(s => s.id === val)?.label || String(val);
+                  if (key === "manager_id") return managers.find(m => m.id === val)?.full_name || "—";
+                  if (key === "executive_id") return executives.find(e => e.id === val)?.full_name || "—";
+                  if (key === "project_type_id") return projectTypes.find(t => t.id === val)?.name || "—";
+                  if (typeof val === "boolean") return val ? "Sim" : "Não";
+                  if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}/.test(val)) {
+                    try { return format(new Date(val.length > 10 ? val : val + "T00:00:00"), "dd/MM/yyyy"); } catch { return val; }
+                  }
+                  if (typeof val === "object") return JSON.stringify(val);
+                  return String(val);
+                };
+
+                let diffs: { label: string; from: string; to: string }[] = [];
+                // Formato antigo: new_values.changes = [{field,from,to}]
+                const legacyChanges = h.new_values?.changes as { field: string; from?: string; to?: string }[] | undefined;
+                if (legacyChanges && Array.isArray(legacyChanges)) {
+                  diffs = legacyChanges.map(c => ({ label: FIELD_LABELS[c.field] || c.field, from: c.from || "—", to: c.to || "—" }));
+                } else if (!isCreated && !isDeleted) {
+                  const oldV = (h.old_values || {}) as Record<string, any>;
+                  const newV = (h.new_values || {}) as Record<string, any>;
+                  const keys = new Set([...Object.keys(oldV), ...Object.keys(newV)]);
+                  keys.forEach(k => {
+                    if (IGNORE.has(k)) return;
+                    diffs.push({ label: FIELD_LABELS[k] || k, from: fmtVal(k, oldV[k]), to: fmtVal(k, newV[k]) });
+                  });
+                }
+
+                const badge = isCreated
+                  ? { icon: <PlusCircle className="h-4 w-4" />, text: "Criado", cls: "text-blue-600" }
+                  : isDeleted
+                    ? { icon: <Trash2 className="h-4 w-4" />, text: "Excluído", cls: "text-red-600" }
+                    : isStatus
+                      ? { icon: <RefreshCw className="h-4 w-4" />, text: "Mudança de Status", cls: "text-amber-600" }
+                      : { icon: <RefreshCw className="h-4 w-4" />, text: "Atualizado", cls: "text-green-600" };
+
                 return (
                   <div key={h.id} className="rounded-lg border bg-card p-4 space-y-2">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={cn("inline-flex items-center gap-1 text-sm font-semibold", isCreated ? "text-blue-600" : "text-green-600")}>
-                        {isCreated ? <PlusCircle className="h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
-                        {isCreated ? "Criado" : "Atualizado"}
+                      <span className={cn("inline-flex items-center gap-1 text-sm font-semibold", badge.cls)}>
+                        {badge.icon}{badge.text}
                       </span>
                       <span className="text-xs text-muted-foreground">·</span>
                       <span className="text-xs text-muted-foreground">{format(new Date(h.created_at), "dd/MM/yyyy HH:mm")}</span>
@@ -1207,24 +1266,27 @@ export default function ProjectDetail() {
                     </div>
                     {isCreated ? (
                       <p className="text-sm text-muted-foreground">Projeto cadastrado com os dados iniciais</p>
-                    ) : changes && changes.length > 0 ? (
+                    ) : isDeleted ? (
+                      <p className="text-sm text-muted-foreground">Projeto excluído</p>
+                    ) : diffs.length > 0 ? (
                       <div className="space-y-1 pt-1">
-                        {changes.map((c, i) => (
-                          <div key={i} className="text-sm flex items-start gap-1">
-                            <span className="font-medium text-muted-foreground min-w-[140px]">{c.field}:</span>
-                            <span className="text-destructive/70 line-through">{c.from || "—"}</span>
-                            <span className="text-muted-foreground mx-1">→</span>
-                            <span className="text-foreground font-medium">{c.to || "—"}</span>
+                        {diffs.map((c, i) => (
+                          <div key={i} className="text-sm flex flex-wrap items-start gap-x-2 gap-y-0.5">
+                            <span className="font-medium text-muted-foreground min-w-[160px]">{c.label}:</span>
+                            <span className="text-destructive/70 line-through">{c.from}</span>
+                            <span className="text-muted-foreground">→</span>
+                            <span className="text-foreground font-medium">{c.to}</span>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-muted-foreground">{h.new_values ? JSON.stringify(h.new_values) : "Sem detalhes"}</p>
+                      <p className="text-xs text-muted-foreground">Sem alterações detalhadas.</p>
                     )}
                   </div>
                 );
               })}
             </div>
+
           )}
         </CardContent>
       </Card>

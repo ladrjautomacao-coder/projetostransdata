@@ -432,8 +432,8 @@ export default function ProjectDetail() {
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList[i];
         setUploadProgress({ current: i + 1, total: fileList.length, fileName: file.name });
-        if (file.size > 20 * 1024 * 1024) {
-          toast({ title: `Arquivo "${file.name}" excede 20MB`, variant: "destructive" });
+        if (file.size > 100 * 1024 * 1024) {
+          toast({ title: `Arquivo "${file.name}" excede 100MB`, variant: "destructive" });
           continue;
         }
         const sanitizedName = file.name

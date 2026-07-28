@@ -223,7 +223,13 @@ export default function ProjectManagement() {
   const onUpdateObservations = useCallback(async (projectId: string, newText: string) => {
     const project = projects.find(p => p.id === projectId);
     const timestamp = format(new Date(), "dd/MM/yyyy HH:mm");
-    const entry = `[${timestamp}] ${newText}`;
+    // Buscar nome do autor
+    let authorName = user?.email || "Usuário";
+    if (user?.id) {
+      const { data: prof } = await supabase.from("profiles").select("full_name").eq("user_id", user.id).maybeSingle();
+      if (prof?.full_name) authorName = prof.full_name;
+    }
+    const entry = `[${timestamp} • ${authorName}] ${newText}`;
     const updated = project?.observations ? `${entry}\n${project.observations}` : entry;
 
     const { error } = await supabase.from("projects").update({ observations: updated }).eq("id", projectId);
@@ -233,7 +239,7 @@ export default function ProjectManagement() {
       toast.success("Acompanhamento registrado");
       setProjects(prev => prev.map(p => p.id === projectId ? { ...p, observations: updated } : p));
     }
-  }, [projects]);
+  }, [projects, user]);
 
   return (
     <div className="flex flex-col h-[calc(100vh-7rem)]">

@@ -140,12 +140,12 @@ export default function PermissionsAdmin() {
 
     // Fetch emails via edge fn (admin only)
     const { data: userList } = await supabase.functions.invoke("admin-users?action=list");
-    const emailMap = new Map((userList || []).map((u: any) => [u.id, u.email]));
+    const emailMap = new Map<string, string>((userList || []).map((u: any) => [u.id as string, (u.email as string) || ""]));
     const roleMap = new Map<string, string>();
     for (const r of roles || []) roleMap.set((r as any).user_id, (r as any).role);
     const rows: UserRow[] = (profiles || []).map((p: any) => ({
-      user_id: p.user_id,
-      full_name: p.full_name || "—",
+      user_id: p.user_id as string,
+      full_name: (p.full_name as string) || "—",
       email: emailMap.get(p.user_id) || "",
       role: roleMap.get(p.user_id) || "user",
     }));

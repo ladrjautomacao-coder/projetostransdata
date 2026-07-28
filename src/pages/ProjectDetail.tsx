@@ -1067,7 +1067,7 @@ export default function ProjectDetail() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-lg">Anexos</CardTitle>
-          <CardDescription className="text-xs">Anexe documentos relacionados ao projeto (máx. 20MB cada)</CardDescription>
+          <CardDescription className="text-xs">Anexe documentos relacionados ao projeto (máx. 100MB cada)</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           {uploading && uploadProgress && (

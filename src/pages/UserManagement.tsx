@@ -15,6 +15,8 @@ import {
   CheckCircle, XCircle, Trash2, KeyRound, Search, Shield, ShieldAlert,
   UserCheck, UserX, Mail, Clock, RefreshCw, Users, Sparkles,
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AVAILABLE_ROLES, ROLE_LABELS } from "@/lib/permissions";
 import { format, parseISO } from "date-fns";
 
 interface ManagedUser {

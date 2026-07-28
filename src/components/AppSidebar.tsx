@@ -8,9 +8,12 @@ import {
 import { Button } from "@/components/ui/button";
 import logoTransdata from "@/assets/logo-transdata.png.asset.json";
 
-const mainItems = [
+const projectsModuleItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Projetos", url: "/projetos", icon: FolderKanban },
+];
+
+const implantacaoModuleItems = [
   { title: "Implantação", url: "/implantacao", icon: HardHat },
 ];
 

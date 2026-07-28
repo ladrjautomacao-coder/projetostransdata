@@ -10,7 +10,7 @@ import logoTransdata from "@/assets/logo-transdata.png.asset.json";
 
 const projectsModuleItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Projetos", url: "/projetos", icon: FolderKanban },
+  { title: "Gestão de Projetos", url: "/projetos", icon: FolderKanban },
 ];
 
 const implantacaoModuleItems = [

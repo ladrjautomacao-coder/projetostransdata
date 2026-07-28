@@ -615,6 +615,30 @@ export type Database = {
           },
         ]
       }
+      role_presets: {
+        Row: {
+          created_at: string
+          permissions: Json
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          permissions?: Json
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          permissions?: Json
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       solution_features: {
         Row: {
           active: boolean
@@ -698,6 +722,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_permission_overrides: {
+        Row: {
+          created_at: string
+          permissions: Json
+          updated_at: string
+          updated_by: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          permissions?: Json
+          updated_at?: string
+          updated_by?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          permissions?: Json
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -741,7 +789,22 @@ export type Database = {
         Args: { p_city: string; p_project_type_id: string; p_state: string }
         Returns: string
       }
+      get_effective_permissions: { Args: { _user_id: string }; Returns: Json }
       get_my_manager_id: { Args: never; Returns: string }
+      get_primary_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      get_user_scope: { Args: { _user_id: string }; Returns: string }
+      has_permission: {
+        Args: {
+          _action: string
+          _module: string
+          _section?: string
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

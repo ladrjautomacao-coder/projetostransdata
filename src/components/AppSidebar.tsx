@@ -1,4 +1,4 @@
-import { FolderKanban, LayoutDashboard, HardHat, BookOpenCheck, Users, LogOut, Signal, ShieldCheck, Settings } from "lucide-react";
+import { FolderKanban, LayoutDashboard, HardHat, BookOpenCheck, Users, LogOut, BarChart3, ShieldCheck, Settings } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import {

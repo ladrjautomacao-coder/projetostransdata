@@ -110,8 +110,8 @@ export default function ProjectManagement() {
 
   useEffect(() => {
     if (!user?.email) { setCurrentManagerId(null); return; }
-    supabase.from("team_members").select("id").eq("email", user.email).eq("role", "gerente_projetos").eq("active", true).maybeSingle()
-      .then(({ data }) => setCurrentManagerId(data?.id || null));
+    supabase.rpc("get_my_manager_id")
+      .then(({ data }) => setCurrentManagerId((data as string | null) || null));
   }, [user?.email]);
 
   const loadProjects = useCallback(async () => {

@@ -735,11 +735,13 @@ export type Database = {
           role: string
         }[]
       }
+      can_write_project: { Args: { _project_id: string }; Returns: boolean }
       current_user_email: { Args: never; Returns: string }
       generate_project_code: {
         Args: { p_city: string; p_project_type_id: string; p_state: string }
         Returns: string
       }
+      get_my_manager_id: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

@@ -1,4 +1,4 @@
-import { FolderKanban, LayoutDashboard, HardHat, BookOpen, BookOpenCheck, Users, Package, LogOut, Signal, ShieldCheck, Settings } from "lucide-react";
+import { FolderKanban, LayoutDashboard, HardHat, BookOpenCheck, Users, LogOut, Signal, ShieldCheck, Settings } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -41,8 +41,8 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-[0.15em] font-semibold">
-            <Signal className="h-3 w-3 mr-1.5 text-sidebar-primary" />
+          <SidebarGroupLabel className="text-sidebar-primary text-[11px] uppercase tracking-[0.18em] font-bold bg-sidebar-primary/10 px-2 py-1 rounded border-l-2 border-sidebar-primary">
+            <Signal className="h-3.5 w-3.5 mr-2 text-sidebar-primary" />
             Módulo Projetos
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -53,10 +53,10 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       end={item.url === "/"}
-                      className="hover:bg-sidebar-accent transition-all duration-200 group"
+                      className="transition-all duration-200"
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-medium border-l-2 border-sidebar-primary"
                     >
-                      <item.icon className="mr-2 h-4 w-4 group-hover:text-sidebar-primary transition-colors" />
+                      <item.icon className="mr-2 h-4 w-4 group-hover/menu-item:text-sidebar-primary transition-colors" />
                       <span>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
@@ -67,8 +67,8 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-[0.15em] font-semibold">
-            <Signal className="h-3 w-3 mr-1.5 text-sidebar-primary" />
+          <SidebarGroupLabel className="text-sidebar-primary text-[11px] uppercase tracking-[0.18em] font-bold bg-sidebar-primary/10 px-2 py-1 rounded border-l-2 border-sidebar-primary">
+            <Signal className="h-3.5 w-3.5 mr-2 text-sidebar-primary" />
             Módulo Implantação
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -78,10 +78,10 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
-                      className="hover:bg-sidebar-accent transition-all duration-200 group"
+                      className="transition-all duration-200"
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-medium border-l-2 border-sidebar-primary"
                     >
-                      <item.icon className="mr-2 h-4 w-4 group-hover:text-sidebar-primary transition-colors" />
+                      <item.icon className="mr-2 h-4 w-4 group-hover/menu-item:text-sidebar-primary transition-colors" />
                       <span>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
@@ -91,14 +91,13 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-
         {(() => {
           const visibleAdminItems = adminItems.filter(i => !i.adminOnly || isAdmin);
           if (visibleAdminItems.length === 0) return null;
           return (
             <SidebarGroup>
-              <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-[0.15em] font-semibold">
-                <Signal className="h-3 w-3 mr-1.5 text-sidebar-primary" />
+              <SidebarGroupLabel className="text-sidebar-primary text-[11px] uppercase tracking-[0.18em] font-bold bg-sidebar-primary/10 px-2 py-1 rounded border-l-2 border-sidebar-primary">
+                <Signal className="h-3.5 w-3.5 mr-2 text-sidebar-primary" />
                 Administração
               </SidebarGroupLabel>
               <SidebarGroupContent>
@@ -108,10 +107,10 @@ export function AppSidebar() {
                       <SidebarMenuButton asChild>
                         <NavLink
                           to={item.url}
-                          className="hover:bg-sidebar-accent transition-all duration-200 group"
+                          className="transition-all duration-200"
                           activeClassName="bg-sidebar-accent text-sidebar-primary font-medium border-l-2 border-sidebar-primary"
                         >
-                          <item.icon className="mr-2 h-4 w-4 group-hover:text-sidebar-primary transition-colors" />
+                          <item.icon className="mr-2 h-4 w-4 group-hover/menu-item:text-sidebar-primary transition-colors" />
                           <span>{item.title}</span>
                         </NavLink>
                       </SidebarMenuButton>

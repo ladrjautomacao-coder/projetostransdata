@@ -159,7 +159,7 @@ Deno.serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        const allowed = ["user", "admin", "super_admin"];
+        const allowed = ["user", "admin", "super_admin", "gerente_projetos", "executivo", "comercial", "leitor"];
         const newRole = allowed.includes(body.role) ? body.role : "user";
         if (newRole === "super_admin" && !isSuperAdmin) {
           return new Response(JSON.stringify({ error: "Apenas Super Admins podem conceder o papel Super Admin" }), {

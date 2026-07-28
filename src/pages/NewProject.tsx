@@ -251,13 +251,7 @@ export default function NewProject() {
         await (supabase.from("project_equipments" as any) as any).insert(equipmentRows);
       }
 
-      // Histórico
-      await supabase.from("project_history").insert({
-        project_id: project.id,
-        change_type: "created",
-        changed_by: user?.id || null,
-        new_values: { company_name: companyName, city, state, status, fleet_size: fleet, is_pilot: isPilot },
-      });
+      // Histórico: registrado automaticamente por trigger no banco
 
       // Upload de anexos
       for (const cat of ATTACHMENT_CATEGORIES) {

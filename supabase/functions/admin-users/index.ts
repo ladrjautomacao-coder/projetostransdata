@@ -81,8 +81,8 @@ Deno.serve(async (req) => {
       const topRole = (uid: string) => {
         const set = roleMap.get(uid);
         if (!set) return "user";
-        if (set.has("super_admin")) return "super_admin";
-        if (set.has("admin")) return "admin";
+        const priority = ["super_admin", "admin", "gerente_projetos", "executivo", "comercial", "leitor", "user", "integration"];
+        for (const r of priority) if (set.has(r)) return r;
         return "user";
       };
 
@@ -159,7 +159,7 @@ Deno.serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        const allowed = ["user", "admin", "super_admin"];
+        const allowed = ["user", "admin", "super_admin", "gerente_projetos", "executivo", "comercial", "leitor"];
         const newRole = allowed.includes(body.role) ? body.role : "user";
         if (newRole === "super_admin" && !isSuperAdmin) {
           return new Response(JSON.stringify({ error: "Apenas Super Admins podem conceder o papel Super Admin" }), {

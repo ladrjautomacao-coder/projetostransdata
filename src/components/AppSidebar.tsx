@@ -1,6 +1,8 @@
-import { FolderKanban, LayoutDashboard, HardHat, BookOpenCheck, Users, LogOut, BarChart3, ShieldCheck, Settings } from "lucide-react";
+import { FolderKanban, LayoutDashboard, HardHat, BookOpenCheck, Users, LogOut, BarChart3, ShieldCheck, Settings, KeyRound } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
+import type { PermModule } from "@/lib/permissions";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter,
@@ -8,24 +10,29 @@ import {
 import { Button } from "@/components/ui/button";
 import logoTransdata from "@/assets/logo-transdata.png.asset.json";
 
-const projectsModuleItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Gestão de Projetos", url: "/projetos", icon: FolderKanban },
+const projectsModuleItems: { title: string; url: string; icon: any; module: PermModule }[] = [
+  { title: "Dashboard", url: "/", icon: LayoutDashboard, module: "dashboard" },
+  { title: "Gestão de Projetos", url: "/projetos", icon: FolderKanban, module: "projects" },
 ];
 
-const implantacaoModuleItems = [
-  { title: "Implantação", url: "/implantacao", icon: HardHat },
+const implantacaoModuleItems: { title: string; url: string; icon: any; module: PermModule }[] = [
+  { title: "Implantação", url: "/implantacao", icon: HardHat, module: "implantacao" },
 ];
 
-const adminItems = [
-  { title: "Equipe", url: "/admin/equipe", icon: Users, adminOnly: true },
-  { title: "Usuários", url: "/admin/usuarios", icon: ShieldCheck, adminOnly: true },
-  { title: "Configurações", url: "/admin/configuracoes", icon: Settings, adminOnly: true },
-  { title: "Manual do Sistema", url: "/manual", icon: BookOpenCheck, adminOnly: false },
+const adminItems: { title: string; url: string; icon: any; module: PermModule }[] = [
+  { title: "Equipe", url: "/admin/equipe", icon: Users, module: "admin_team" },
+  { title: "Usuários", url: "/admin/usuarios", icon: ShieldCheck, module: "admin_users" },
+  { title: "Permissões", url: "/admin/permissoes", icon: KeyRound, module: "admin_users" },
+  { title: "Configurações", url: "/admin/configuracoes", icon: Settings, module: "admin_settings" },
+  { title: "Manual do Sistema", url: "/manual", icon: BookOpenCheck, module: "admin_manual" },
 ];
 
 export function AppSidebar() {
-  const { signOut, profile, isAdmin } = useAuth();
+  const { signOut, profile } = useAuth();
+  const { can } = usePermissions();
+  const visibleProjects = projectsModuleItems.filter(i => can(i.module, "view"));
+  const visibleImplant = implantacaoModuleItems.filter(i => can(i.module, "view"));
+  const visibleAdminItems = adminItems.filter(i => can(i.module, "view"));
 
   return (
     <Sidebar className="border-r-0">
@@ -40,6 +47,7 @@ export function AppSidebar() {
       </div>
 
       <SidebarContent>
+        {visibleProjects.length > 0 && (
         <SidebarGroup>
           <SidebarGroupLabel className="text-accent text-[11px] uppercase tracking-[0.22em] font-bold px-2 py-2">
             <BarChart3 className="h-3.5 w-3.5 mr-2 text-accent" />
@@ -47,7 +55,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {projectsModuleItems.map(item => (
+              {visibleProjects.map(item => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild>
                     <NavLink
@@ -65,7 +73,9 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        )}
 
+        {visibleImplant.length > 0 && (
         <SidebarGroup>
           <SidebarGroupLabel className="text-accent text-[11px] uppercase tracking-[0.22em] font-bold px-2 py-2">
             <BarChart3 className="h-3.5 w-3.5 mr-2 text-accent" />
@@ -73,7 +83,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {implantacaoModuleItems.map(item => (
+              {visibleImplant.map(item => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild>
                     <NavLink
@@ -90,37 +100,35 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        )}
 
-        {(() => {
-          const visibleAdminItems = adminItems.filter(i => !i.adminOnly || isAdmin);
-          if (visibleAdminItems.length === 0) return null;
-          return (
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-accent text-[11px] uppercase tracking-[0.22em] font-bold px-2 py-2">
-                <BarChart3 className="h-3.5 w-3.5 mr-2 text-accent" />
-                Administração
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {visibleAdminItems.map(item => (
-                    <SidebarMenuItem key={item.url}>
-                      <SidebarMenuButton asChild>
-                        <NavLink
-                          to={item.url}
-                          className="transition-all duration-200"
-                          activeClassName="bg-sidebar-accent text-sidebar-primary font-medium border-l-2 border-sidebar-primary"
-                        >
-                          <item.icon className="mr-2 h-4 w-4 group-hover/menu-item:text-sidebar-primary transition-colors" />
-                          <span>{item.title}</span>
-                        </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          );
-        })()}
+
+        {visibleAdminItems.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-accent text-[11px] uppercase tracking-[0.22em] font-bold px-2 py-2">
+              <BarChart3 className="h-3.5 w-3.5 mr-2 text-accent" />
+              Administração
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {visibleAdminItems.map(item => (
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.url}
+                        className="transition-all duration-200"
+                        activeClassName="bg-sidebar-accent text-sidebar-primary font-medium border-l-2 border-sidebar-primary"
+                      >
+                        <item.icon className="mr-2 h-4 w-4 group-hover/menu-item:text-sidebar-primary transition-colors" />
+                        <span>{item.title}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       {/* Footer with tech divider */}

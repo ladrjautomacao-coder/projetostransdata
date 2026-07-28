@@ -380,15 +380,7 @@ export default function ProjectDetail() {
         );
       }
 
-      if (changes.length > 0) {
-        await supabase.from("project_history").insert({
-          project_id: id,
-          change_type: "updated",
-          changed_by: user?.id || null,
-          old_values: { changes: changes.map(c => ({ field: c.field, value: c.from })) },
-          new_values: { changes },
-        });
-      }
+      // Histórico registrado automaticamente por trigger no banco
 
       toast({ title: "Projeto atualizado!" });
       setEditing(false);

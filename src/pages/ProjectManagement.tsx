@@ -205,17 +205,7 @@ export default function ProjectManagement() {
         ? subPhasesByStatus[newStatus]?.find(sp => sp.id === newSubPhase)?.label || statusLabels[newStatus]
         : statusLabels[newStatus];
       toast.success(`Projeto movido para ${label}`);
-      // Registra mudança de status no histórico (para rastreabilidade na Linha do Tempo)
-      if (project.status !== newStatus) {
-        const { data: { user } } = await supabase.auth.getUser();
-        await supabase.from("project_history").insert({
-          project_id: draggableId,
-          change_type: "status_change",
-          changed_by: user?.id || null,
-          old_values: { status: project.status, sub_phase: project.sub_phase },
-          new_values: { status: newStatus, sub_phase: newSubPhase },
-        });
-      }
+      // Mudança de status registrada automaticamente por trigger no banco
     }
   }, [projects, canEditProject]);
 

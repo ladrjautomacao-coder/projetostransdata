@@ -1,4 +1,4 @@
-import { FolderKanban, LayoutDashboard, HardHat, BookOpenCheck, Users, LogOut, Signal, ShieldCheck, Settings } from "lucide-react";
+import { FolderKanban, LayoutDashboard, HardHat, BookOpenCheck, Users, LogOut, BarChart3, ShieldCheck, Settings } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -41,8 +41,8 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-primary text-[11px] uppercase tracking-[0.18em] font-bold bg-sidebar-primary/10 px-2 py-1 rounded border-l-2 border-sidebar-primary">
-            <Signal className="h-3.5 w-3.5 mr-2 text-sidebar-primary" />
+          <SidebarGroupLabel className="text-accent text-[11px] uppercase tracking-[0.22em] font-bold px-2 py-2">
+            <BarChart3 className="h-3.5 w-3.5 mr-2 text-accent" />
             Módulo Projetos
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -67,8 +67,8 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-primary text-[11px] uppercase tracking-[0.18em] font-bold bg-sidebar-primary/10 px-2 py-1 rounded border-l-2 border-sidebar-primary">
-            <Signal className="h-3.5 w-3.5 mr-2 text-sidebar-primary" />
+          <SidebarGroupLabel className="text-accent text-[11px] uppercase tracking-[0.22em] font-bold px-2 py-2">
+            <BarChart3 className="h-3.5 w-3.5 mr-2 text-accent" />
             Módulo Implantação
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -96,8 +96,8 @@ export function AppSidebar() {
           if (visibleAdminItems.length === 0) return null;
           return (
             <SidebarGroup>
-              <SidebarGroupLabel className="text-sidebar-primary text-[11px] uppercase tracking-[0.18em] font-bold bg-sidebar-primary/10 px-2 py-1 rounded border-l-2 border-sidebar-primary">
-                <Signal className="h-3.5 w-3.5 mr-2 text-sidebar-primary" />
+              <SidebarGroupLabel className="text-accent text-[11px] uppercase tracking-[0.22em] font-bold px-2 py-2">
+                <BarChart3 className="h-3.5 w-3.5 mr-2 text-accent" />
                 Administração
               </SidebarGroupLabel>
               <SidebarGroupContent>

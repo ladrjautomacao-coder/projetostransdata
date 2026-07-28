@@ -24,6 +24,7 @@ import { ArrowLeft, Edit2, Save, X, CalendarIcon, Upload, FileText, Trash2, Info
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { useSettings } from "@/contexts/SettingsContext";
+import { subPhasesByStatus } from "@/pages/ProjectManagement";
 
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 type BrazilianState = Database["public"]["Enums"]["brazilian_state"];

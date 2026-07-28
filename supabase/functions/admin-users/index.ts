@@ -81,8 +81,8 @@ Deno.serve(async (req) => {
       const topRole = (uid: string) => {
         const set = roleMap.get(uid);
         if (!set) return "user";
-        if (set.has("super_admin")) return "super_admin";
-        if (set.has("admin")) return "admin";
+        const priority = ["super_admin", "admin", "gerente_projetos", "executivo", "comercial", "leitor", "user", "integration"];
+        for (const r of priority) if (set.has(r)) return r;
         return "user";
       };
 

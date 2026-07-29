@@ -1,4 +1,4 @@
-import { FolderKanban, LayoutDashboard, HardHat, BookOpenCheck, Users, LogOut, BarChart3, ShieldCheck, Settings, KeyRound, LifeBuoy } from "lucide-react";
+import { FolderKanban, LayoutDashboard, HardHat, BookOpenCheck, Users, LogOut, BarChart3, ShieldCheck, Settings, KeyRound, LifeBuoy, Wallet } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -19,6 +19,10 @@ const implantacaoModuleItems: { title: string; url: string; icon: any; module: P
   { title: "Implantação", url: "/implantacao", icon: HardHat, module: "implantacao" },
 ];
 
+const financeiroModuleItems: { title: string; url: string; icon: any; module: PermModule }[] = [
+  { title: "Financeiro", url: "/financeiro", icon: Wallet, module: "financeiro" },
+];
+
 const adminItems: { title: string; url: string; icon: any; module: PermModule }[] = [
   { title: "Equipe", url: "/admin/equipe", icon: Users, module: "admin_team" },
   { title: "Usuários", url: "/admin/usuarios", icon: ShieldCheck, module: "admin_users" },
@@ -32,6 +36,7 @@ export function AppSidebar() {
   const { can } = usePermissions();
   const visibleProjects = projectsModuleItems.filter(i => can(i.module, "view"));
   const visibleImplant = implantacaoModuleItems.filter(i => can(i.module, "view"));
+  const visibleFinanceiro = financeiroModuleItems.filter(i => can(i.module, "view"));
   const visibleAdminItems = adminItems.filter(i => can(i.module, "view"));
 
   return (
@@ -84,6 +89,33 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {visibleImplant.map(item => (
+                <SidebarMenuItem key={item.url}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      className="transition-all duration-200"
+                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium border-l-2 border-sidebar-primary"
+                    >
+                      <item.icon className="mr-2 h-4 w-4 group-hover/menu-item:text-sidebar-primary transition-colors" />
+                      <span>{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        )}
+
+        {visibleFinanceiro.length > 0 && (
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-accent text-[11px] uppercase tracking-[0.22em] font-bold px-2 py-2">
+            <BarChart3 className="h-3.5 w-3.5 mr-2 text-accent" />
+            Módulo Financeiro
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {visibleFinanceiro.map(item => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild>
                     <NavLink

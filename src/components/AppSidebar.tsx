@@ -41,6 +41,7 @@ export function AppSidebar() {
   const visibleProjects = projectsModuleItems.filter(i => can(i.module, "view"));
   const visibleImplant = implantacaoModuleItems.filter(i => can(i.module, "view"));
   const visibleFinanceiro = financeiroModuleItems.filter(i => can(i.module, "view"));
+  const visibleSuporte = suporteModuleItems.filter(i => can(i.module, "view"));
   const visibleAdminItems = adminItems.filter(i => can(i.module, "view"));
 
   return (

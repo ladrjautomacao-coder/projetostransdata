@@ -23,6 +23,10 @@ const financeiroModuleItems: { title: string; url: string; icon: any; module: Pe
   { title: "Financeiro", url: "/financeiro", icon: Wallet, module: "financeiro" },
 ];
 
+const suporteModuleItems: { title: string; url: string; icon: any; module: PermModule }[] = [
+  { title: "Suporte Técnico", url: "/suporte", icon: LifeBuoy, module: "suporte" },
+];
+
 const adminItems: { title: string; url: string; icon: any; module: PermModule }[] = [
   { title: "Equipe", url: "/admin/equipe", icon: Users, module: "admin_team" },
   { title: "Usuários", url: "/admin/usuarios", icon: ShieldCheck, module: "admin_users" },

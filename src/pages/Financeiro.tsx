@@ -1,7 +1,7 @@
 import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const FINANCEIRO_URL = "https://datastudio.google.com/reporting/06aa5370-0f65-4c85-8e1f-dc3ce4ad5b6d/page/p_3pu0qo75td?s=qx9z6ubmuyI";
+const FINANCEIRO_URL = "https://to-do.microsoft.com/sharing?InvitationToken=cbYLmgc7BOYrhvapwakVBQnuMVQsw5cwUNYLozx5XLD2YvKaWS_X-GgYNerpbBLfA";
 
 export default function Financeiro() {
   return (

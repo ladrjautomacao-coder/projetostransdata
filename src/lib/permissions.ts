@@ -2,9 +2,10 @@ export const MODULES = [
   { key: "dashboard", label: "Dashboard", actions: ["view"] as const },
   { key: "projects", label: "Gestão de Projetos", actions: ["view", "create", "edit", "delete", "move_card"] as const },
   { key: "implantacao", label: "Implantação", actions: ["view"] as const },
+  { key: "suporte", label: "Suporte Técnico", actions: ["view"] as const },
   { key: "financeiro", label: "Financeiro", actions: ["view"] as const },
   { key: "admin_team", label: "Admin — Equipe", actions: ["view", "edit"] as const },
-  { key: "admin_users", label: "Admin — Usuários", actions: ["view", "edit"] as const },
+  { key: "admin_users", label: "Admin — Usuários / Permissões", actions: ["view", "edit"] as const },
   { key: "admin_settings", label: "Admin — Configurações", actions: ["view", "edit"] as const },
   { key: "admin_manual", label: "Manual do Sistema", actions: ["view"] as const },
 ] as const;

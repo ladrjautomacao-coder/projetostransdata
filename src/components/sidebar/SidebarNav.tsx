@@ -38,7 +38,7 @@ export function SidebarItem({ item }: { item: NavItem }) {
                 "ml-auto min-w-[20px] rounded-full px-1.5 py-0.5 text-center text-[10px] font-semibold leading-none",
                 "bg-sidebar-border text-sidebar-foreground/90",
                 "group-[.font-medium]/nav:bg-sidebar-primary group-[.font-medium]/nav:text-sidebar-primary-foreground",
-                "group-data-[collapsible=icon]/sidebar-wrapper:hidden",
+                "group-data-[collapsible=icon]:hidden",
               )}
             >
               {item.badge}

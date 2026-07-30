@@ -223,35 +223,35 @@ export default function VisaoComercial() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
-        <Card asChild className={kpiCardClass(showAll)}>
-          <button type="button" aria-pressed={showAll} onClick={selectTotal}>
-            <CardContent className="p-3">
-              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Total</p>
-              <p className="text-xl font-bold">{grandTotal}</p>
-            </CardContent>
-          </button>
-        </Card>
+        <button type="button" aria-pressed={showAll} onClick={selectTotal} className={kpiCardClass(showAll)}>
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Total</p>
+          <p className="text-xl font-bold">{grandTotal}</p>
+        </button>
         {kpis.map(k => (
-          <Card key={k.key} asChild className={kpiCardClass(filters.status === k.key)}>
-            <button type="button" aria-pressed={filters.status === k.key} onClick={() => selectStatus(k.key)}>
-              <CardContent className="p-3">
-                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{k.label}</p>
-                <p className="text-xl font-bold">{k.value}</p>
-              </CardContent>
-            </button>
-          </Card>
-        ))}
-        <Card asChild className={`bg-destructive/5 text-left transition-all hover:shadow-sm ${staleOnly ? "border-destructive ring-1 ring-destructive/40" : "border-destructive/40"}`}>
-          <button type="button" aria-pressed={staleOnly} onClick={toggleStale}>
-            <CardContent className="p-3">
-              <p className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-destructive">
-                <AlertTriangle className="h-3 w-3" /> +{staleDays} dias
-              </p>
-              <p className="text-xl font-bold text-destructive">{staleCount}</p>
-            </CardContent>
+          <button
+            key={k.key}
+            type="button"
+            aria-pressed={filters.status === k.key}
+            onClick={() => selectStatus(k.key)}
+            className={kpiCardClass(filters.status === k.key)}
+          >
+            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{k.label}</p>
+            <p className="text-xl font-bold">{k.value}</p>
           </button>
-        </Card>
+        ))}
+        <button
+          type="button"
+          aria-pressed={staleOnly}
+          onClick={toggleStale}
+          className={`rounded-lg border bg-destructive/5 p-3 text-left transition-all hover:shadow-sm ${staleOnly ? "border-destructive ring-1 ring-destructive/40" : "border-destructive/40"}`}
+        >
+          <p className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-destructive">
+            <AlertTriangle className="h-3 w-3" /> +{staleDays} dias
+          </p>
+          <p className="text-xl font-bold text-destructive">{staleCount}</p>
+        </button>
       </div>
+
 
 
       <div className="flex flex-col gap-4 lg:flex-row">

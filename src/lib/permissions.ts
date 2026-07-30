@@ -51,6 +51,7 @@ export const ROLE_LABELS: Record<string, string> = {
   implantacao: "Implantação",
   produtos: "Produtos",
   desenvolvimento: "Desenvolvimento",
+  user: "Usuário",
   integration: "Integração (API)",
 };
 

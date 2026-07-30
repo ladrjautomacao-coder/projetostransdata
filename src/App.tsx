@@ -17,6 +17,7 @@ import NewProject from "./pages/NewProject";
 import ProjectList from "./pages/ProjectList";
 import ProjectDetail from "./pages/ProjectDetail";
 import ProjectManagement from "./pages/ProjectManagement";
+import VisaoComercial from "./pages/VisaoComercial";
 import TeamMembers from "./pages/TeamMembers";
 import Products from "./pages/Products";
 import Implantacao from "./pages/Implantacao";

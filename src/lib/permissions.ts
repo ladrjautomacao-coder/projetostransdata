@@ -1,14 +1,23 @@
-export const MODULES = [
-  { key: "dashboard", label: "Dashboard", actions: ["view"] as const },
-  { key: "projects", label: "Gestão de Projetos", actions: ["view", "create", "edit", "delete", "move_card"] as const },
-  { key: "implantacao", label: "Implantação", actions: ["view"] as const },
-  { key: "suporte", label: "Suporte Técnico", actions: ["view"] as const },
-  { key: "financeiro", label: "Financeiro", actions: ["view"] as const },
-  { key: "admin_team", label: "Admin — Equipe", actions: ["view", "edit"] as const },
-  { key: "admin_users", label: "Admin — Usuários / Permissões", actions: ["view", "edit"] as const },
-  { key: "admin_settings", label: "Admin — Configurações", actions: ["view", "edit"] as const },
-  { key: "admin_manual", label: "Manual do Sistema", actions: ["view"] as const },
+export const MODULE_GROUPS = [
+  { key: "projetos", label: "Módulo Projetos" },
+  { key: "operacao", label: "Outros Módulos" },
+  { key: "admin", label: "Administração" },
 ] as const;
+
+export const MODULES = [
+  { key: "dashboard", label: "Dashboard", group: "projetos", actions: ["view"] as const },
+  { key: "projects", label: "Gestão de Projetos", group: "projetos", actions: ["view", "create", "edit", "delete", "move_card"] as const },
+  { key: "implantacao", label: "Implantação", group: "operacao", actions: ["view"] as const },
+  { key: "suporte", label: "Suporte Técnico", group: "operacao", actions: ["view"] as const },
+  { key: "financeiro", label: "Financeiro", group: "operacao", actions: ["view"] as const },
+  { key: "admin_team", label: "Admin — Equipe", group: "admin", actions: ["view", "edit"] as const },
+  { key: "admin_users", label: "Admin — Usuários / Permissões", group: "admin", actions: ["view", "edit"] as const },
+  { key: "admin_settings", label: "Admin — Configurações", group: "admin", actions: ["view", "edit"] as const },
+  { key: "admin_manual", label: "Manual do Sistema", group: "admin", actions: ["view"] as const },
+] as const;
+
+export const ALL_ACTIONS = ["view", "create", "edit", "delete", "move_card"] as const;
+
 
 export const SECTIONS = [
   { key: "identificacao", label: "Identificação" },

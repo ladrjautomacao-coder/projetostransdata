@@ -835,6 +835,13 @@ export type Database = {
         | "executivo"
         | "comercial"
         | "leitor"
+        | "diretoria"
+        | "projetos"
+        | "suporte_tecnico"
+        | "relacionamento"
+        | "implantacao"
+        | "produtos"
+        | "desenvolvimento"
       brazilian_state:
         | "AC"
         | "AL"
@@ -1005,6 +1012,13 @@ export const Constants = {
         "executivo",
         "comercial",
         "leitor",
+        "diretoria",
+        "projetos",
+        "suporte_tecnico",
+        "relacionamento",
+        "implantacao",
+        "produtos",
+        "desenvolvimento",
       ],
       brazilian_state: [
         "AC",

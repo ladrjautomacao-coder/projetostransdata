@@ -108,15 +108,16 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
 
   const cargoOptions = [
-    "Analista de projetos",
-    "Gerente de relacionamento",
-    "Head de relacionamento com o cliente",
-    "Gerente comercial",
-    "Coordenador de CS",
-    "Gerente de projetos",
-    "Diretor",
-    "CEO",
+    "Diretoria",
+    "Comercial",
+    "Projetos",
+    "Suporte técnico",
+    "Relacionamento",
+    "Implantação",
+    "Produtos",
+    "Desenvolvimento",
   ];
+
 
   if (loading) return null;
   if (session) return <Navigate to="/" replace />;
@@ -209,7 +210,7 @@ export default function Login() {
                     <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
                     <Select value={cargo} onValueChange={setCargo} required>
                       <SelectTrigger className="pl-10">
-                        <SelectValue placeholder="Selecione o cargo" />
+                        <SelectValue placeholder="Selecione a área" />
                       </SelectTrigger>
                       <SelectContent>
                         {cargoOptions.map(option => (

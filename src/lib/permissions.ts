@@ -43,17 +43,31 @@ export const ACTION_LABELS: Record<string, string> = {
 export const ROLE_LABELS: Record<string, string> = {
   super_admin: "Super Admin",
   admin: "Admin",
-  gerente_projetos: "Gerente de Projetos",
-  executivo: "Executivo",
+  diretoria: "Diretoria",
   comercial: "Comercial",
+  projetos: "Projetos",
+  suporte_tecnico: "Suporte Técnico",
+  relacionamento: "Relacionamento",
+  implantacao: "Implantação",
+  produtos: "Produtos",
+  desenvolvimento: "Desenvolvimento",
+  gerente_projetos: "Projetos (legado)",
+  executivo: "Diretoria (legado)",
   user: "Usuário (legado)",
-  leitor: "Leitor",
+  leitor: "Leitor (legado)",
   integration: "Integração (API)",
 };
 
-export const AVAILABLE_ROLES = [
-  "super_admin", "admin", "gerente_projetos", "executivo", "comercial", "leitor", "user", "integration",
+/** Áreas selecionáveis no cadastro e na matriz de permissões. */
+export const USER_AREAS = [
+  "diretoria", "comercial", "projetos", "suporte_tecnico",
+  "relacionamento", "implantacao", "produtos", "desenvolvimento",
 ] as const;
+
+export const AVAILABLE_ROLES = [
+  "super_admin", "admin", ...USER_AREAS, "gerente_projetos", "executivo", "leitor", "user", "integration",
+] as const;
+
 
 export type PermModule = typeof MODULES[number]["key"];
 export type PermAction = "view" | "create" | "edit" | "delete" | "move_card";

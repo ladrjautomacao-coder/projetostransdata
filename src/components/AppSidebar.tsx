@@ -89,7 +89,7 @@ export function AppSidebar({ badges = {} }: { badges?: SidebarBadges }) {
       <div className="relative overflow-hidden border-b border-sidebar-border px-3 py-4">
         <div className="absolute inset-0 bg-gradient-to-r from-sidebar-primary/5 to-transparent" />
         <div className="relative z-10 flex items-center gap-2.5">
-          <img src={logoTransdata.url} alt="AtlasMob" className="h-9 w-9 shrink-0 rounded-lg object-cover" />
+          <img src={logoTransdata.url} alt="AtlasMob" className="h-9 w-auto shrink-0 rounded-lg" />
           {!collapsed && (
             <>
               <div className="flex min-w-0 flex-col">

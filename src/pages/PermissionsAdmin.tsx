@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Fragment } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -117,8 +117,8 @@ function PermissionMatrix({
                 if (!mods.length) return null;
                 const groupPairs = mods.flatMap(modulePairs);
                 return (
-                  <>
-                    <tr key={g.key} className="border-t bg-muted/30">
+                  <Fragment key={g.key}>
+                    <tr className="border-t bg-muted/30">
                       <td className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                         {g.label}
                       </td>
@@ -160,7 +160,7 @@ function PermissionMatrix({
                         })}
                       </tr>
                     ))}
-                  </>
+                  </Fragment>
                 );
               })}
             </tbody>

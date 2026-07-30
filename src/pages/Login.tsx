@@ -108,15 +108,16 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
 
   const cargoOptions = [
-    "Analista de projetos",
-    "Gerente de relacionamento",
-    "Head de relacionamento com o cliente",
-    "Gerente comercial",
-    "Coordenador de CS",
-    "Gerente de projetos",
-    "Diretor",
-    "CEO",
+    "Diretoria",
+    "Comercial",
+    "Projetos",
+    "Suporte técnico",
+    "Relacionamento",
+    "Implantação",
+    "Produtos",
+    "Desenvolvimento",
   ];
+
 
   if (loading) return null;
   if (session) return <Navigate to="/" replace />;

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProjectFilters } from "@/contexts/ProjectFiltersContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";

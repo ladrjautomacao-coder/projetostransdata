@@ -53,7 +53,9 @@ const App = () => (
               
               <Route path="/projetos/gestao" element={<ProjectManagement />} />
               <Route path="/projetos/:id" element={<ProjectDetail />} />
+              <Route path="/comercial" element={<VisaoComercial />} />
               <Route path="/implantacao" element={<Implantacao />} />
+
               <Route path="/suporte" element={<Suporte />} />
               <Route path="/financeiro" element={<Financeiro />} />
               <Route path="/acervo" element={<AcervoTecnico />} />

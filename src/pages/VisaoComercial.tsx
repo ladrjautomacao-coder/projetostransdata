@@ -259,7 +259,7 @@ export default function VisaoComercial() {
           <KanbanFilters
             filters={filters}
             setFilter={setFilter}
-            clearFilters={() => { clearFilters(); setSearch(""); }}
+            clearFilters={() => { clearFilters(); setSearch(""); setShowAll(false); setStaleOnly(false); }}
             hasActiveFilters={hasActiveFilters}
             managers={managers}
             cities={cities}

@@ -207,7 +207,7 @@ function PermissionMatrix({
 export default function PermissionsAdmin() {
   const { toast } = useToast();
   const [presets, setPresets] = useState<Preset[]>([]);
-  const [selectedRole, setSelectedRole] = useState<string>("gerente_projetos");
+  const [selectedRole, setSelectedRole] = useState<string>("projetos");
   const [rolePerms, setRolePerms] = useState<PermissionsShape>({});
   const [saving, setSaving] = useState(false);
 

@@ -210,7 +210,7 @@ export default function Login() {
                     <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
                     <Select value={cargo} onValueChange={setCargo} required>
                       <SelectTrigger className="pl-10">
-                        <SelectValue placeholder="Selecione o cargo" />
+                        <SelectValue placeholder="Selecione a área" />
                       </SelectTrigger>
                       <SelectContent>
                         {cargoOptions.map(option => (

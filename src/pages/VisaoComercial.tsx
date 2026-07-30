@@ -51,6 +51,9 @@ export default function VisaoComercial() {
   const [statusCounts, setStatusCounts] = useState<Record<string, number>>({});
   const [staleCount, setStaleCount] = useState(0);
   const [grandTotal, setGrandTotal] = useState(0);
+  const [showAll, setShowAll] = useState(false);
+  const [staleOnly, setStaleOnly] = useState(false);
+
 
   const staleDays = settings.stuckDays ?? 30;
   const allowed = permsLoading || can("visao_comercial", "view");

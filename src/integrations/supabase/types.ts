@@ -813,6 +813,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      my_project_scope: { Args: never; Returns: string }
       norm_text: { Args: { p: string }; Returns: string }
       preview_project_code: {
         Args: { p_city: string; p_project_type_id: string; p_state: string }

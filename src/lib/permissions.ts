@@ -7,6 +7,7 @@ export const MODULE_GROUPS = [
 export const MODULES = [
   { key: "dashboard", label: "Dashboard", group: "projetos", actions: ["view"] as const },
   { key: "projects", label: "Gestão de Projetos", group: "projetos", actions: ["view", "create", "edit", "delete", "move_card"] as const },
+  { key: "visao_comercial", label: "Visão Comercial (leitura)", group: "projetos", actions: ["view"] as const },
   { key: "implantacao", label: "Implantação", group: "operacao", actions: ["view"] as const },
   { key: "suporte", label: "Suporte Técnico", group: "operacao", actions: ["view"] as const },
   { key: "financeiro", label: "Financeiro", group: "operacao", actions: ["view"] as const },

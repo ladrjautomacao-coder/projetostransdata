@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   FolderKanban, LayoutDashboard, HardHat, BookOpenCheck, Users, LogOut, ShieldCheck,
-  Settings, KeyRound, LifeBuoy, Wallet, ChevronsLeft, Search, MoreVertical, UserRound,
+  Settings, KeyRound, LifeBuoy, Wallet, ChevronsLeft, Search, MoreVertical, UserRound, Eye,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -43,6 +43,7 @@ export function AppSidebar({ badges = {} }: { badges?: SidebarBadges }) {
       items: [
         { title: "Dashboard", url: "/", icon: LayoutDashboard, module: "dashboard", end: true },
         { title: "Gestão de Projetos", url: "/projetos", icon: FolderKanban, module: "projects", badge: badges.projects },
+        { title: "Visão Comercial", url: "/comercial", icon: Eye, module: "visao_comercial" },
       ],
     },
     {

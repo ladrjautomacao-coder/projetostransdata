@@ -17,6 +17,7 @@ import NewProject from "./pages/NewProject";
 import ProjectList from "./pages/ProjectList";
 import ProjectDetail from "./pages/ProjectDetail";
 import ProjectManagement from "./pages/ProjectManagement";
+import VisaoComercial from "./pages/VisaoComercial";
 import TeamMembers from "./pages/TeamMembers";
 import Products from "./pages/Products";
 import Implantacao from "./pages/Implantacao";
@@ -52,7 +53,9 @@ const App = () => (
               
               <Route path="/projetos/gestao" element={<ProjectManagement />} />
               <Route path="/projetos/:id" element={<ProjectDetail />} />
+              <Route path="/comercial" element={<VisaoComercial />} />
               <Route path="/implantacao" element={<Implantacao />} />
+
               <Route path="/suporte" element={<Suporte />} />
               <Route path="/financeiro" element={<Financeiro />} />
               <Route path="/acervo" element={<AcervoTecnico />} />

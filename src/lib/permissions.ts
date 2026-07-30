@@ -51,10 +51,7 @@ export const ROLE_LABELS: Record<string, string> = {
   implantacao: "Implantação",
   produtos: "Produtos",
   desenvolvimento: "Desenvolvimento",
-  gerente_projetos: "Projetos (legado)",
-  executivo: "Diretoria (legado)",
-  user: "Usuário (legado)",
-  leitor: "Leitor (legado)",
+  user: "Usuário",
   integration: "Integração (API)",
 };
 
@@ -65,7 +62,7 @@ export const USER_AREAS = [
 ] as const;
 
 export const AVAILABLE_ROLES = [
-  "super_admin", "admin", ...USER_AREAS, "gerente_projetos", "executivo", "leitor", "user", "integration",
+  "super_admin", "admin", ...USER_AREAS, "integration",
 ] as const;
 
 

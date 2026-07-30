@@ -292,15 +292,18 @@ export default function VisaoComercial() {
           </div>
 
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Badge variant="secondary">{total} projeto{total !== 1 ? "s" : ""}</Badge>
+            <Badge variant="secondary">
+              {staleOnly ? visibleProjects.length : total} projeto{(staleOnly ? visibleProjects.length : total) !== 1 ? "s" : ""}
+            </Badge>
             {hasActiveFilters && <span>filtros ativos</span>}
+            {!filters.status && !showAll && <span>· Implementados ocultos</span>}
           </div>
 
           {loading ? (
             <div className="grid gap-3 xl:grid-cols-2">
               {Array.from({ length: 4 }).map((_, i) => <ProjectFollowUpSkeleton key={i} />)}
             </div>
-          ) : projects.length === 0 ? (
+          ) : visibleProjects.length === 0 ? (
             <EmptyState
               type="search"
               title="Nenhum projeto encontrado"
@@ -309,10 +312,11 @@ export default function VisaoComercial() {
           ) : (
             <>
               <div className="grid gap-3 xl:grid-cols-2">
-                {projects.map(p => (
+                {visibleProjects.map(p => (
                   <ProjectFollowUpCard key={p.id} project={p} staleDays={staleDays} onOpen={openProject} />
                 ))}
               </div>
+
               {hasMore && (
                 <div className="flex justify-center pt-2">
                   <Button variant="outline" onClick={() => fetchPage(page + 1, true)} disabled={loadingMore}>

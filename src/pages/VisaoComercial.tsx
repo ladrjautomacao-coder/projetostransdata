@@ -82,9 +82,11 @@ export default function VisaoComercial() {
     if (filters.state) query = query.eq("state", filters.state);
     if (filters.city) query = query.eq("city", filters.city);
     if (filters.status) query = query.eq("status", filters.status);
+    else if (!showAll) query = query.neq("status", "encerrado");
     if (debouncedSearch) query = query.or(`company_name.ilike.%${debouncedSearch}%,project_code.ilike.%${debouncedSearch}%`);
     return query as T;
-  }, [filters, debouncedSearch]);
+  }, [filters, debouncedSearch, showAll]);
+
 
   const applySort = useCallback((query: any) => {
     switch (sort) {

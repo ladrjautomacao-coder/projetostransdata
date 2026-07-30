@@ -152,7 +152,7 @@ export default function VisaoComercial() {
     return () => { supabase.removeChannel(channel); };
   }, [fetchPage, loadSummary]);
 
-  const hasActiveFilters = Object.values(filters).some(v => v !== "") || search !== "";
+  const hasActiveFilters = Object.values(filters).some(v => v !== "") || search !== "" || staleOnly || showAll;
   const hasMore = projects.length < total;
 
   const openProject = (p: FollowUpProject) => { setSelected(p); setDrawerOpen(true); };
@@ -163,7 +163,39 @@ export default function VisaoComercial() {
     value: statusCounts[s] || 0,
   })), [statusCounts]);
 
+  const isStale = useCallback((p: FollowUpProject) => {
+    const note = latestFollowUpNote(p.observations);
+    const ref = note?.date ? note.date.toISOString() : p.updated_at;
+    return (daysSince(ref) ?? 0) > staleDays;
+  }, [staleDays]);
+
+  const visibleProjects = useMemo(
+    () => (staleOnly ? projects.filter(isStale) : projects),
+    [projects, staleOnly, isStale]
+  );
+
+  const selectStatus = (status: string) => {
+    setShowAll(false);
+    setStaleOnly(false);
+    setFilter("status", filters.status === status ? "" : status);
+  };
+
+  const selectTotal = () => {
+    setStaleOnly(false);
+    setFilter("status", "");
+    setShowAll(true);
+  };
+
+  const toggleStale = () => {
+    setShowAll(false);
+    setStaleOnly(v => !v);
+  };
+
+  const kpiCardClass = (active: boolean) =>
+    `text-left transition-all hover:border-primary/50 hover:shadow-sm ${active ? "border-primary ring-1 ring-primary/40 bg-primary/5" : "border-border/60"}`;
+
   if (!allowed) return null;
+
 
   return (
     <div className="flex flex-col gap-4">

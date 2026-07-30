@@ -783,6 +783,7 @@ export type Database = {
           role: string
         }[]
       }
+      can_view_project: { Args: { _project_id: string }; Returns: boolean }
       can_write_project: { Args: { _project_id: string }; Returns: boolean }
       current_user_email: { Args: never; Returns: string }
       generate_project_code: {

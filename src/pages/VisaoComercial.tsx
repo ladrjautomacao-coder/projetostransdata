@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
+
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/EmptyState";
 import KanbanFilters from "@/components/kanban/KanbanFilters";
@@ -51,6 +51,9 @@ export default function VisaoComercial() {
   const [statusCounts, setStatusCounts] = useState<Record<string, number>>({});
   const [staleCount, setStaleCount] = useState(0);
   const [grandTotal, setGrandTotal] = useState(0);
+  const [showAll, setShowAll] = useState(false);
+  const [staleOnly, setStaleOnly] = useState(false);
+
 
   const staleDays = settings.stuckDays ?? 30;
   const allowed = permsLoading || can("visao_comercial", "view");
@@ -79,9 +82,11 @@ export default function VisaoComercial() {
     if (filters.state) query = query.eq("state", filters.state);
     if (filters.city) query = query.eq("city", filters.city);
     if (filters.status) query = query.eq("status", filters.status);
+    else if (!showAll) query = query.neq("status", "encerrado");
     if (debouncedSearch) query = query.or(`company_name.ilike.%${debouncedSearch}%,project_code.ilike.%${debouncedSearch}%`);
     return query as T;
-  }, [filters, debouncedSearch]);
+  }, [filters, debouncedSearch, showAll]);
+
 
   const applySort = useCallback((query: any) => {
     switch (sort) {
@@ -147,7 +152,7 @@ export default function VisaoComercial() {
     return () => { supabase.removeChannel(channel); };
   }, [fetchPage, loadSummary]);
 
-  const hasActiveFilters = Object.values(filters).some(v => v !== "") || search !== "";
+  const hasActiveFilters = Object.values(filters).some(v => v !== "") || search !== "" || staleOnly || showAll;
   const hasMore = projects.length < total;
 
   const openProject = (p: FollowUpProject) => { setSelected(p); setDrawerOpen(true); };
@@ -158,7 +163,39 @@ export default function VisaoComercial() {
     value: statusCounts[s] || 0,
   })), [statusCounts]);
 
+  const isStale = useCallback((p: FollowUpProject) => {
+    const note = latestFollowUpNote(p.observations);
+    const ref = note?.date ? note.date.toISOString() : p.updated_at;
+    return (daysSince(ref) ?? 0) > staleDays;
+  }, [staleDays]);
+
+  const visibleProjects = useMemo(
+    () => (staleOnly ? projects.filter(isStale) : projects),
+    [projects, staleOnly, isStale]
+  );
+
+  const selectStatus = (status: string) => {
+    setShowAll(false);
+    setStaleOnly(false);
+    setFilter("status", filters.status === status ? "" : status);
+  };
+
+  const selectTotal = () => {
+    setStaleOnly(false);
+    setFilter("status", "");
+    setShowAll(true);
+  };
+
+  const toggleStale = () => {
+    setShowAll(false);
+    setStaleOnly(v => !v);
+  };
+
+  const kpiCardClass = (active: boolean) =>
+    `rounded-lg border bg-card p-3 text-left transition-all hover:border-primary/50 hover:shadow-sm ${active ? "border-primary ring-1 ring-primary/40 bg-primary/5" : "border-border/60"}`;
+
   if (!allowed) return null;
+
 
   return (
     <div className="flex flex-col gap-4">
@@ -185,37 +222,44 @@ export default function VisaoComercial() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        <Card className="border-border/60">
-          <CardContent className="p-3">
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Total</p>
-            <p className="text-xl font-bold">{grandTotal}</p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
+        <button type="button" aria-pressed={showAll} onClick={selectTotal} className={kpiCardClass(showAll)}>
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Total</p>
+          <p className="text-xl font-bold">{grandTotal}</p>
+        </button>
         {kpis.map(k => (
-          <Card key={k.key} className="border-border/60">
-            <CardContent className="p-3">
-              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{k.label}</p>
-              <p className="text-xl font-bold">{k.value}</p>
-            </CardContent>
-          </Card>
+          <button
+            key={k.key}
+            type="button"
+            aria-pressed={filters.status === k.key}
+            onClick={() => selectStatus(k.key)}
+            className={kpiCardClass(filters.status === k.key)}
+          >
+            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{k.label}</p>
+            <p className="text-xl font-bold">{k.value}</p>
+          </button>
         ))}
-        <Card className="border-destructive/40 bg-destructive/5">
-          <CardContent className="p-3">
-            <p className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-destructive">
-              <AlertTriangle className="h-3 w-3" /> +{staleDays} dias
-            </p>
-            <p className="text-xl font-bold text-destructive">{staleCount}</p>
-          </CardContent>
-        </Card>
+        <button
+          type="button"
+          aria-pressed={staleOnly}
+          onClick={toggleStale}
+          className={`rounded-lg border bg-destructive/5 p-3 text-left transition-all hover:shadow-sm ${staleOnly ? "border-destructive ring-1 ring-destructive/40" : "border-destructive/40"}`}
+        >
+          <p className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-destructive">
+            <AlertTriangle className="h-3 w-3" /> +{staleDays} dias
+          </p>
+          <p className="text-xl font-bold text-destructive">{staleCount}</p>
+        </button>
       </div>
+
+
 
       <div className="flex flex-col gap-4 lg:flex-row">
         <div className="hidden lg:block">
           <KanbanFilters
             filters={filters}
             setFilter={setFilter}
-            clearFilters={() => { clearFilters(); setSearch(""); }}
+            clearFilters={() => { clearFilters(); setSearch(""); setShowAll(false); setStaleOnly(false); }}
             hasActiveFilters={hasActiveFilters}
             managers={managers}
             cities={cities}
@@ -248,15 +292,18 @@ export default function VisaoComercial() {
           </div>
 
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Badge variant="secondary">{total} projeto{total !== 1 ? "s" : ""}</Badge>
+            <Badge variant="secondary">
+              {staleOnly ? visibleProjects.length : total} projeto{(staleOnly ? visibleProjects.length : total) !== 1 ? "s" : ""}
+            </Badge>
             {hasActiveFilters && <span>filtros ativos</span>}
+            {!filters.status && !showAll && <span>· Implementados ocultos</span>}
           </div>
 
           {loading ? (
             <div className="grid gap-3 xl:grid-cols-2">
               {Array.from({ length: 4 }).map((_, i) => <ProjectFollowUpSkeleton key={i} />)}
             </div>
-          ) : projects.length === 0 ? (
+          ) : visibleProjects.length === 0 ? (
             <EmptyState
               type="search"
               title="Nenhum projeto encontrado"
@@ -265,10 +312,11 @@ export default function VisaoComercial() {
           ) : (
             <>
               <div className="grid gap-3 xl:grid-cols-2">
-                {projects.map(p => (
+                {visibleProjects.map(p => (
                   <ProjectFollowUpCard key={p.id} project={p} staleDays={staleDays} onOpen={openProject} />
                 ))}
               </div>
+
               {hasMore && (
                 <div className="flex justify-center pt-2">
                   <Button variant="outline" onClick={() => fetchPage(page + 1, true)} disabled={loadingMore}>

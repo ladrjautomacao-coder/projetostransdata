@@ -31,6 +31,7 @@ export default function VisaoComercial() {
   const navigate = useNavigate();
   const { filters, setFilter, clearFilters } = useProjectFilters();
   const { settings } = useSettings();
+  const { user } = useAuth();
   const { can, loading: permsLoading } = usePermissions();
 
   const [projects, setProjects] = useState<FollowUpProject[]>([]);

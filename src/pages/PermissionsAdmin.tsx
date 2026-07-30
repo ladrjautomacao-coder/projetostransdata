@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Fragment } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,9 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { KeyRound, Save, RotateCcw, Search, User as UserIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { KeyRound, Save, RotateCcw, Search, User as UserIcon, ShieldCheck, ShieldOff } from "lucide-react";
 import {
-  MODULES, SECTIONS, ACTION_LABELS, ROLE_LABELS, AVAILABLE_ROLES,
+  MODULES, MODULE_GROUPS, ALL_ACTIONS, SECTIONS, ACTION_LABELS, ROLE_LABELS, AVAILABLE_ROLES,
   PermissionsShape, PermModule, PermAction, PermSection,
 } from "@/lib/permissions";
 
@@ -19,28 +20,51 @@ interface UserRow { user_id: string; full_name: string; email: string; role: str
 function PermissionMatrix({
   perms, onChange, disabled = false,
 }: { perms: PermissionsShape; onChange: (p: PermissionsShape) => void; disabled?: boolean }) {
-  const toggle = (module: PermModule, action: PermAction) => {
+  const isOn = (m: PermModule, a: PermAction) => !!perms.modules?.[m]?.[a];
+
+  const setMany = (entries: Array<[PermModule, PermAction]>, value: boolean) => {
     if (disabled) return;
-    const next: PermissionsShape = { ...perms, modules: { ...(perms.modules || {}) } };
-    const mod = { ...(next.modules![module] || {}) };
-    mod[action] = !mod[action];
-    next.modules![module] = mod;
-    onChange(next);
+    const modules: PermissionsShape["modules"] = { ...(perms.modules || {}) };
+    for (const [m, a] of entries) modules[m] = { ...(modules[m] || {}), [a]: value };
+    onChange({ ...perms, modules });
   };
+
+  const toggle = (m: PermModule, a: PermAction) => setMany([[m, a]], !isOn(m, a));
+
+  const modulePairs = (m: typeof MODULES[number]) =>
+    (m.actions as readonly PermAction[]).map(a => [m.key, a] as [PermModule, PermAction]);
+
+  const actionPairs = (a: PermAction) =>
+    MODULES.filter(m => (m.actions as readonly string[]).includes(a))
+      .map(m => [m.key, a] as [PermModule, PermAction]);
+
+  const allPairs = MODULES.flatMap(modulePairs);
+  const allOn = (pairs: Array<[PermModule, PermAction]>) => pairs.length > 0 && pairs.every(([m, a]) => isOn(m, a));
+
+  const grantedCount = allPairs.filter(([m, a]) => isOn(m, a)).length;
+
   const toggleSection = (section: PermSection) => {
     if (disabled) return;
     const next: PermissionsShape = { ...perms, sections: { ...(perms.sections || {}) } };
-    next.sections![section] = !next.sections![section];
+    next.sections![section] = next.sections![section] === false ? true : false;
     onChange(next);
+  };
+  const setAllSections = (value: boolean) => {
+    if (disabled) return;
+    const sections: PermissionsShape["sections"] = {};
+    for (const s of SECTIONS) sections[s.key] = value;
+    onChange({ ...perms, sections });
   };
   const setScope = (val: "all" | "own") => {
     if (disabled) return;
     onChange({ ...perms, scope: val });
   };
 
+  const canEditProjects = isOn("projects", "edit");
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <span className="text-sm font-medium">Escopo de dados dos projetos:</span>
         <Select value={perms.scope || "all"} onValueChange={v => setScope(v as any)} disabled={disabled}>
           <SelectTrigger className="w-[280px]"><SelectValue /></SelectTrigger>
@@ -49,46 +73,116 @@ function PermissionMatrix({
             <SelectItem value="own">Somente projetos vinculados</SelectItem>
           </SelectContent>
         </Select>
+        <Badge variant="secondary" className="ml-auto">
+          {grantedCount} de {allPairs.length} permissões ativas
+        </Badge>
       </div>
 
       <div>
-        <h4 className="text-sm font-semibold mb-3">Módulos e ações</h4>
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <h4 className="text-sm font-semibold">Matriz de permissões — módulo × ação</h4>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={() => setMany(allPairs, true)}>
+              <ShieldCheck className="h-4 w-4 mr-1.5" /> Marcar tudo
+            </Button>
+            <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={() => setMany(allPairs, false)}>
+              <ShieldOff className="h-4 w-4 mr-1.5" /> Limpar tudo
+            </Button>
+          </div>
+        </div>
+
         <div className="overflow-x-auto border rounded-lg">
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr>
-                <th className="text-left px-3 py-2 font-medium">Módulo</th>
-                {["view", "create", "edit", "delete", "move_card"].map(a => (
-                  <th key={a} className="text-center px-3 py-2 font-medium">{ACTION_LABELS[a]}</th>
+                <th className="text-left px-3 py-2 font-medium min-w-[220px]">Módulo</th>
+                {ALL_ACTIONS.map(a => (
+                  <th key={a} className="text-center px-3 py-2 font-medium whitespace-nowrap">
+                    <div>{ACTION_LABELS[a]}</div>
+                    <button
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => setMany(actionPairs(a), !allOn(actionPairs(a)))}
+                      className="text-[10px] text-primary hover:underline disabled:opacity-50"
+                    >
+                      {allOn(actionPairs(a)) ? "desmarcar" : "marcar"} coluna
+                    </button>
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {MODULES.map(m => (
-                <tr key={m.key} className="border-t">
-                  <td className="px-3 py-2">{m.label}</td>
-                  {(["view", "create", "edit", "delete", "move_card"] as PermAction[]).map(a => {
-                    const supported = (m.actions as readonly string[]).includes(a);
-                    const checked = !!perms.modules?.[m.key]?.[a];
-                    return (
-                      <td key={a} className="text-center px-3 py-2">
-                        {supported ? (
-                          <Checkbox checked={checked} onCheckedChange={() => toggle(m.key, a)} disabled={disabled} />
-                        ) : (
-                          <span className="text-muted-foreground text-xs">—</span>
-                        )}
+              {MODULE_GROUPS.map(g => {
+                const mods = MODULES.filter(m => m.group === g.key);
+                if (!mods.length) return null;
+                const groupPairs = mods.flatMap(modulePairs);
+                return (
+                  <Fragment key={g.key}>
+                    <tr className="border-t bg-muted/30">
+                      <td className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        {g.label}
                       </td>
-                    );
-                  })}
-                </tr>
-              ))}
+                      <td colSpan={ALL_ACTIONS.length} className="px-3 py-1.5 text-right">
+                        <button
+                          type="button"
+                          disabled={disabled}
+                          onClick={() => setMany(groupPairs, !allOn(groupPairs))}
+                          className="text-[10px] text-primary hover:underline disabled:opacity-50"
+                        >
+                          {allOn(groupPairs) ? "desmarcar grupo" : "marcar grupo"}
+                        </button>
+                      </td>
+                    </tr>
+                    {mods.map(m => (
+                      <tr key={m.key} className="border-t hover:bg-muted/20">
+                        <td className="px-3 py-2">
+                          <button
+                            type="button"
+                            disabled={disabled}
+                            onClick={() => setMany(modulePairs(m), !allOn(modulePairs(m)))}
+                            className="text-left hover:text-primary disabled:hover:text-foreground"
+                            title="Marcar/desmarcar todas as ações deste módulo"
+                          >
+                            {m.label}
+                          </button>
+                        </td>
+                        {ALL_ACTIONS.map(a => {
+                          const supported = (m.actions as readonly string[]).includes(a);
+                          return (
+                            <td key={a} className="text-center px-3 py-2">
+                              {supported ? (
+                                <Checkbox checked={isOn(m.key, a)} onCheckedChange={() => toggle(m.key, a)} disabled={disabled} />
+                              ) : (
+                                <span className="text-muted-foreground text-xs">—</span>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
 
       <div>
-        <h4 className="text-sm font-semibold mb-3">Seções editáveis dos projetos (aplica quando "Editar" no módulo Projetos está ativo)</h4>
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <h4 className="text-sm font-semibold">
+            Seções editáveis dos projetos
+            {!canEditProjects && (
+              <span className="ml-2 text-xs font-normal text-amber-600">
+                (ative "Editar" em Gestão de Projetos para valer)
+              </span>
+            )}
+          </h4>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={() => setAllSections(true)}>Marcar todas</Button>
+            <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={() => setAllSections(false)}>Limpar todas</Button>
+          </div>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 border rounded-lg p-4">
           {SECTIONS.map(s => (
             <label key={s.key} className="flex items-center gap-2 text-sm cursor-pointer">
@@ -108,6 +202,7 @@ function PermissionMatrix({
     </div>
   );
 }
+
 
 export default function PermissionsAdmin() {
   const { toast } = useToast();

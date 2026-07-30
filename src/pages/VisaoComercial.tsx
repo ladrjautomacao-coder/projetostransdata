@@ -129,8 +129,8 @@ export default function VisaoComercial() {
     return () => { mounted.current = false; };
   }, []);
 
-  useEffect(() => { fetchPage(0, false); }, [fetchPage]);
-  useEffect(() => { loadSummary(); }, [loadSummary]);
+  useEffect(() => { if (user) fetchPage(0, false); }, [user, fetchPage]);
+  useEffect(() => { if (user) loadSummary(); }, [user, loadSummary]);
 
   // Realtime: novas notas e mudanças de status feitas pelo gerente
   useEffect(() => {

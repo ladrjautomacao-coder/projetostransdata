@@ -192,7 +192,7 @@ export default function VisaoComercial() {
   };
 
   const kpiCardClass = (active: boolean) =>
-    `text-left transition-all hover:border-primary/50 hover:shadow-sm ${active ? "border-primary ring-1 ring-primary/40 bg-primary/5" : "border-border/60"}`;
+    `rounded-lg border bg-card p-3 text-left transition-all hover:border-primary/50 hover:shadow-sm ${active ? "border-primary ring-1 ring-primary/40 bg-primary/5" : "border-border/60"}`;
 
   if (!allowed) return null;
 

@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.my_project_scope() TO authenticated;

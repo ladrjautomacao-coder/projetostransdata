@@ -1,3 +1,4 @@
+import { PROJECT_SEGMENTS, projectSegmentLabel } from "@/lib/projectSegments";
 import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useParams, useNavigate, useLocation } from "react-router-dom";

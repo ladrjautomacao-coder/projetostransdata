@@ -1,3 +1,4 @@
+import { PROJECT_SEGMENTS } from "@/lib/projectSegments";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";

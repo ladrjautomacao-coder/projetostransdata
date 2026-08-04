@@ -371,7 +371,7 @@ export default function NewProject() {
               <Label>Código do Projeto</Label>
               <Input value={codePreview || ""} readOnly placeholder="Será gerado automaticamente ao salvar" className="font-mono bg-muted/40" />
               <HelperText>
-                Formato: <span className="font-mono">1 + Tipo + Cidade + Sequencial</span>. Os 5 últimos dígitos (sequencial) são atribuídos no momento do cadastro.
+                Formato: <span className="font-mono">Cidade (3) + UF (2) + Tipo (2) + Seguimento (3) + Sequencial (4) - Nome da Empresa</span>. Exemplo: <span className="font-mono">CRISCVENEW0001-CRICIUMA</span>. Os 4 dígitos sequenciais são atribuídos no momento do cadastro.
               </HelperText>
             </div>
             <div className="space-y-2">

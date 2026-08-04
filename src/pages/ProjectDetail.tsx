@@ -1085,38 +1085,52 @@ export default function ProjectDetail() {
             const catFiles = getAttachmentsForCategory(cat.prefix);
             return (
               <div key={cat.key} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">{cat.label}</Label>
-                  <label>
-                    <input type="file" className="hidden" onChange={e => handleCategoryUpload(cat, e)} multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt,.csv" />
-                    <Button size="sm" variant="outline" asChild disabled={uploading}>
-                      <span><Upload className="mr-1 h-3.5 w-3.5" /> Anexar</span>
-                    </Button>
-                  </label>
+                <Label className="text-sm font-medium">{cat.label}</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={linkInputs[cat.key] || ""}
+                    onChange={e => setLinkInputs(prev => ({ ...prev, [cat.key]: e.target.value }))}
+                    onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleAddLink(cat); } }}
+                    placeholder="https://..."
+                  />
+                  <Button size="sm" variant="outline" disabled={uploading} onClick={() => handleAddLink(cat)}>
+                    <PlusCircle className="mr-1 h-3.5 w-3.5" /> Salvar
+                  </Button>
                 </div>
                 {catFiles.length > 0 ? (
                   <div className="space-y-1.5">
                     {catFiles.map(att => {
+                      const isLink = att.content_type === "link";
                       const isPdf = att.content_type === "application/pdf" || att.file_name?.toLowerCase().endsWith(".pdf");
                       const isImage = att.content_type?.startsWith("image/");
-                      const canPreview = isPdf || isImage;
+                      const canPreview = !isLink && (isPdf || isImage);
                       const displayName = att.file_name?.replace(cat.prefix + " ", "") || att.file_name;
                       return (
                         <div key={att.id} className="flex items-center justify-between p-2 rounded border bg-muted/30">
                           <div className="flex items-center gap-2 min-w-0 flex-1">
-                            <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                            {isLink ? <Link2 className="h-4 w-4 text-muted-foreground shrink-0" /> : <FileText className="h-4 w-4 text-muted-foreground shrink-0" />}
                             <span className="text-sm truncate">{displayName}</span>
                             <span className="text-xs text-muted-foreground shrink-0">{att.file_size ? `${(att.file_size / 1024).toFixed(0)} KB` : ""}</span>
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
-                            {canPreview && (
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePreview(att)} title="Visualizar">
-                                <Eye className="h-4 w-4 text-primary" />
+                            {isLink ? (
+                              <Button size="sm" variant="outline" asChild>
+                                <a href={att.file_path} target="_blank" rel="noopener noreferrer">
+                                  <ExternalLink className="mr-1 h-3.5 w-3.5" /> Acessar
+                                </a>
                               </Button>
+                            ) : (
+                              <>
+                                {canPreview && (
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePreview(att)} title="Visualizar">
+                                    <Eye className="h-4 w-4 text-primary" />
+                                  </Button>
+                                )}
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDownload(att)} title="Baixar">
+                                  <Download className="h-4 w-4 text-muted-foreground" />
+                                </Button>
+                              </>
                             )}
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDownload(att)} title="Baixar">
-                              <Download className="h-4 w-4 text-muted-foreground" />
-                            </Button>
                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDeleteAttachment(att)} title="Excluir">
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
@@ -1126,8 +1140,9 @@ export default function ProjectDetail() {
                     })}
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground italic">Nenhum arquivo anexado</p>
+                  <p className="text-xs text-muted-foreground italic">Nenhum link cadastrado</p>
                 )}
+              </div>
               </div>
             );
           })}

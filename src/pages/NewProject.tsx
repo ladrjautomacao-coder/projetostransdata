@@ -204,6 +204,7 @@ export default function NewProject() {
         status,
         created_by: user?.id || null,
         project_type_id: projectTypeId,
+        project_segment: projectSegment || null,
         fleet_size: fleet,
         fleet_urbano: urbano,
         fleet_seccionado: seccionado,

@@ -129,6 +129,7 @@ export default function ProjectDetail() {
       setStatus(data.status);
       setSelectedProducts(data.project_products?.map((pp: any) => pp.product_id) || []);
       setProjectTypeId(data.project_type_id || "");
+      setProjectSegment((data as any).project_segment || "");
       setSelectedSolutions(data.project_solutions?.map((ps: any) => ps.solution_id) || []);
       setFleetSize(data.fleet_size?.toString() || "");
       setFleetUrbano((data as any).fleet_urbano?.toString() || "0");
@@ -334,6 +335,7 @@ export default function ProjectDetail() {
         executive_project_date: executiveProjectDate ? format(executiveProjectDate, "yyyy-MM-dd") : null,
         executive_id: executiveId || null, manager_id: managerId || null, status,
         project_type_id: projectTypeId || null,
+        project_segment: projectSegment || null,
         fleet_size: fleet,
         fleet_urbano: urbano,
         fleet_seccionado: seccionado,

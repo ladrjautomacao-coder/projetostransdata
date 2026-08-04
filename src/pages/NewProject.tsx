@@ -56,6 +56,7 @@ export default function NewProject() {
 
   // Novos campos
   const [projectTypeId, setProjectTypeId] = useState("");
+  const [projectSegment, setProjectSegment] = useState("");
   const [selectedSolutions, setSelectedSolutions] = useState<string[]>([]);
   const [selectedIntegrations, setSelectedIntegrations] = useState<string[]>([]);
   const [fleetSize, setFleetSize] = useState<string>("");
@@ -351,6 +352,15 @@ export default function NewProject() {
                 <SelectTrigger><SelectValue placeholder="Selecione o tipo..." /></SelectTrigger>
                 <SelectContent>
                   {projectTypes.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Seguimento do Projeto</Label>
+              <Select value={projectSegment || undefined} onValueChange={setProjectSegment}>
+                <SelectTrigger><SelectValue placeholder="Selecione o seguimento..." /></SelectTrigger>
+                <SelectContent>
+                  {PROJECT_SEGMENTS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>

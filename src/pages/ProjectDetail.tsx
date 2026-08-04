@@ -63,6 +63,7 @@ export default function ProjectDetail() {
 
   // Edit state - new fields
   const [projectTypeId, setProjectTypeId] = useState("");
+  const [projectSegment, setProjectSegment] = useState("");
   const [selectedSolutions, setSelectedSolutions] = useState<string[]>([]);
   const [fleetSize, setFleetSize] = useState<string>("");
   const [fleetUrbano, setFleetUrbano] = useState<string>("0");
@@ -751,6 +752,13 @@ export default function ProjectDetail() {
                   </Select>
                 </div>
                 <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Seguimento do Projeto</Label>
+                  <Select value={projectSegment || undefined} onValueChange={setProjectSegment}>
+                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                    <SelectContent>{PROJECT_SEGMENTS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Frota Contratada</Label>
                   <Input type="number" min={1} step={1} value={fleetSize} onChange={e => setFleetSize(e.target.value)} />
                 </div>
@@ -790,6 +798,7 @@ export default function ProjectDetail() {
                 <div><span className="text-xs text-muted-foreground">Empresa</span><p className="font-medium">{project.company_name}</p></div>
                 <div><span className="text-xs text-muted-foreground">Localização</span><p>{project.city} / {project.state}</p></div>
                 <div><span className="text-xs text-muted-foreground">Tipo do Projeto</span><p>{projectTypeName}</p></div>
+                <div><span className="text-xs text-muted-foreground">Seguimento do Projeto</span><p>{projectSegmentLabel((project as any).project_segment)}</p></div>
                 <div><span className="text-xs text-muted-foreground">Frota Contratada</span><p>{project.fleet_size ?? "—"} veículos</p></div>
                 <div><span className="text-xs text-muted-foreground">Sistema</span><p>Urbano: <strong>{(project as any).fleet_urbano ?? 0}</strong> · Seccionado: <strong>{(project as any).fleet_seccionado ?? 0}</strong></p></div>
                 <div><span className="text-xs text-muted-foreground">Contratação</span><p>{fmtDate(project.contract_date)}</p></div>

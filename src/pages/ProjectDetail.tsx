@@ -1213,6 +1213,7 @@ export default function ProjectDetail() {
                   handover_date: "Data de handover", executive_project_date: "Data do projeto executivo",
                   executive_id: "Executivo", manager_id: "Gerente de Projetos",
                   project_type_id: "Tipo de Projeto", project_code: "Código do Projeto",
+                  project_segment: "Seguimento do Projeto",
                   fleet_size: "Frota Total", fleet_urbano: "Frota Urbano",
                   fleet_seccionado: "Frota Seccionado", complementary_fleet: "Frota Complementar",
                   implemented_fleet: "Frota Implementada",

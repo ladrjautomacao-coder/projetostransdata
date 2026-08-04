@@ -21,7 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { format, addDays } from "date-fns";
-import { ArrowLeft, Edit2, Save, X, CalendarIcon, Upload, FileText, Trash2, Info, Download, Eye, PlusCircle, RefreshCw, User } from "lucide-react";
+import { ArrowLeft, Edit2, Save, X, CalendarIcon, Upload, FileText, Trash2, Info, Download, Eye, PlusCircle, RefreshCw, User, Link2, ExternalLink } from "lucide-react";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -399,6 +399,7 @@ export default function ProjectDetail() {
   };
 
   const [uploading, setUploading] = useState(false);
+  const [linkInputs, setLinkInputs] = useState<Record<string, string>>({});
   const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number; fileName: string } | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewName, setPreviewName] = useState("");
@@ -419,48 +420,37 @@ export default function ProjectDetail() {
     return attachments.filter(a => !prefixes.some(p => a.file_name?.startsWith(p)));
   };
 
-  const handleCategoryUpload = async (category: typeof ATTACHMENT_CATEGORIES[0], e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || !id) return;
-
+  const handleAddLink = async (category: typeof ATTACHMENT_CATEGORIES[0]) => {
+    const url = (linkInputs[category.key] || "").trim();
+    if (!url || !id) return;
+    if (!/^https?:\/\//i.test(url)) {
+      toast({ title: "URL inválida", description: "A URL deve começar com http:// ou https://", variant: "destructive" });
+      return;
+    }
     setUploading(true);
-    const fileList = Array.from(files);
     try {
-      for (let i = 0; i < fileList.length; i++) {
-        const file = fileList[i];
-        setUploadProgress({ current: i + 1, total: fileList.length, fileName: file.name });
-        if (file.size > 100 * 1024 * 1024) {
-          toast({ title: `Arquivo "${file.name}" excede 100MB`, variant: "destructive" });
-          continue;
-        }
-        const sanitizedName = file.name
-          .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-          .replace(/[^a-zA-Z0-9._-]/g, "_");
-        const path = `${id}/${Date.now()}_${sanitizedName}`;
-        const { error: upErr } = await supabase.storage.from("project-attachments").upload(path, file);
-        if (upErr) { toast({ title: "Erro no upload", description: upErr.message, variant: "destructive" }); continue; }
-        const { error: insertErr } = await supabase.from("project_attachments").insert({
-          project_id: id,
-          file_name: `${category.prefix} ${file.name}`,
-          file_path: path,
-          file_size: file.size,
-          content_type: file.type,
-          uploaded_by: user?.id || null,
-        });
-        if (insertErr) { toast({ title: "Erro ao registrar anexo", description: insertErr.message, variant: "destructive" }); continue; }
-      }
-      toast({ title: "Arquivo(s) anexado(s)!" });
+      const { error } = await supabase.from("project_attachments").insert({
+        project_id: id,
+        file_name: `${category.prefix} ${url}`,
+        file_path: url,
+        file_size: null,
+        content_type: "link",
+        uploaded_by: user?.id || null,
+      });
+      if (error) { toast({ title: "Erro ao salvar link", description: error.message, variant: "destructive" }); return; }
+      setLinkInputs(prev => ({ ...prev, [category.key]: "" }));
+      toast({ title: "Link salvo!" });
       const { data: refreshed } = await supabase.from("project_attachments").select("*").eq("project_id", id).order("created_at", { ascending: false });
       setAttachments(refreshed || []);
     } finally {
       setUploading(false);
-      setUploadProgress(null);
-      e.target.value = "";
     }
   };
 
   const handleDeleteAttachment = async (att: any) => {
-    await supabase.storage.from("project-attachments").remove([att.file_path]);
+    if (att.content_type !== "link") {
+      await supabase.storage.from("project-attachments").remove([att.file_path]);
+    }
     await supabase.from("project_attachments").delete().eq("id", att.id);
     setAttachments(prev => prev.filter(a => a.id !== att.id));
     toast({ title: "Anexo removido" });
@@ -1095,38 +1085,52 @@ export default function ProjectDetail() {
             const catFiles = getAttachmentsForCategory(cat.prefix);
             return (
               <div key={cat.key} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">{cat.label}</Label>
-                  <label>
-                    <input type="file" className="hidden" onChange={e => handleCategoryUpload(cat, e)} multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt,.csv" />
-                    <Button size="sm" variant="outline" asChild disabled={uploading}>
-                      <span><Upload className="mr-1 h-3.5 w-3.5" /> Anexar</span>
-                    </Button>
-                  </label>
+                <Label className="text-sm font-medium">{cat.label}</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={linkInputs[cat.key] || ""}
+                    onChange={e => setLinkInputs(prev => ({ ...prev, [cat.key]: e.target.value }))}
+                    onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleAddLink(cat); } }}
+                    placeholder="https://..."
+                  />
+                  <Button size="sm" variant="outline" disabled={uploading} onClick={() => handleAddLink(cat)}>
+                    <PlusCircle className="mr-1 h-3.5 w-3.5" /> Salvar
+                  </Button>
                 </div>
                 {catFiles.length > 0 ? (
                   <div className="space-y-1.5">
                     {catFiles.map(att => {
+                      const isLink = att.content_type === "link";
                       const isPdf = att.content_type === "application/pdf" || att.file_name?.toLowerCase().endsWith(".pdf");
                       const isImage = att.content_type?.startsWith("image/");
-                      const canPreview = isPdf || isImage;
+                      const canPreview = !isLink && (isPdf || isImage);
                       const displayName = att.file_name?.replace(cat.prefix + " ", "") || att.file_name;
                       return (
                         <div key={att.id} className="flex items-center justify-between p-2 rounded border bg-muted/30">
                           <div className="flex items-center gap-2 min-w-0 flex-1">
-                            <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                            {isLink ? <Link2 className="h-4 w-4 text-muted-foreground shrink-0" /> : <FileText className="h-4 w-4 text-muted-foreground shrink-0" />}
                             <span className="text-sm truncate">{displayName}</span>
                             <span className="text-xs text-muted-foreground shrink-0">{att.file_size ? `${(att.file_size / 1024).toFixed(0)} KB` : ""}</span>
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
-                            {canPreview && (
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePreview(att)} title="Visualizar">
-                                <Eye className="h-4 w-4 text-primary" />
+                            {isLink ? (
+                              <Button size="sm" variant="outline" asChild>
+                                <a href={att.file_path} target="_blank" rel="noopener noreferrer">
+                                  <ExternalLink className="mr-1 h-3.5 w-3.5" /> Acessar
+                                </a>
                               </Button>
+                            ) : (
+                              <>
+                                {canPreview && (
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePreview(att)} title="Visualizar">
+                                    <Eye className="h-4 w-4 text-primary" />
+                                  </Button>
+                                )}
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDownload(att)} title="Baixar">
+                                  <Download className="h-4 w-4 text-muted-foreground" />
+                                </Button>
+                              </>
                             )}
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDownload(att)} title="Baixar">
-                              <Download className="h-4 w-4 text-muted-foreground" />
-                            </Button>
                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDeleteAttachment(att)} title="Excluir">
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
@@ -1136,7 +1140,7 @@ export default function ProjectDetail() {
                     })}
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground italic">Nenhum arquivo anexado</p>
+                  <p className="text-xs text-muted-foreground italic">Nenhum link cadastrado</p>
                 )}
               </div>
             );

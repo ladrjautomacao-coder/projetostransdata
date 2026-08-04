@@ -21,7 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { format, addDays } from "date-fns";
-import { ArrowLeft, Edit2, Save, X, CalendarIcon, Upload, FileText, Trash2, Info, Download, Eye, PlusCircle, RefreshCw, User } from "lucide-react";
+import { ArrowLeft, Edit2, Save, X, CalendarIcon, Upload, FileText, Trash2, Info, Download, Eye, PlusCircle, RefreshCw, User, Link2, ExternalLink } from "lucide-react";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { useSettings } from "@/contexts/SettingsContext";

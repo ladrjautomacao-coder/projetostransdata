@@ -399,6 +399,7 @@ export default function ProjectDetail() {
   };
 
   const [uploading, setUploading] = useState(false);
+  const [linkInputs, setLinkInputs] = useState<Record<string, string>>({});
   const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number; fileName: string } | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewName, setPreviewName] = useState("");

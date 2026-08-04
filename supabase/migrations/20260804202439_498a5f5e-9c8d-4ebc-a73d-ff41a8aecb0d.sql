@@ -1,0 +1,2 @@
+ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS project_segment text;
+ALTER TABLE public.projects ADD CONSTRAINT projects_project_segment_check CHECK (project_segment IS NULL OR project_segment IN ('new_project','upgrade_equipamentos'));

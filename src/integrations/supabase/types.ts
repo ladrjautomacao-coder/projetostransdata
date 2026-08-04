@@ -513,6 +513,7 @@ export type Database = {
           observations: string | null
           pilot_info: string | null
           project_code: string | null
+          project_segment: string | null
           project_type_id: string | null
           reached_implemented: boolean
           reached_implemented_at: string | null
@@ -548,6 +549,7 @@ export type Database = {
           observations?: string | null
           pilot_info?: string | null
           project_code?: string | null
+          project_segment?: string | null
           project_type_id?: string | null
           reached_implemented?: boolean
           reached_implemented_at?: string | null
@@ -583,6 +585,7 @@ export type Database = {
           observations?: string | null
           pilot_info?: string | null
           project_code?: string | null
+          project_segment?: string | null
           project_type_id?: string | null
           reached_implemented?: boolean
           reached_implemented_at?: string | null

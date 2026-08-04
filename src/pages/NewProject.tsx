@@ -370,9 +370,24 @@ export default function NewProject() {
             <div className="sm:col-span-2 space-y-2">
               <Label>Código do Projeto</Label>
               <Input value={codePreview || ""} readOnly placeholder="Será gerado automaticamente ao salvar" className="font-mono bg-muted/40" />
-              <HelperText>
-                Formato: <span className="font-mono">Cidade (3) + UF (2) + Tipo (2) + Seguimento (3) + Sequencial (4) - Nome da Empresa</span>. Exemplo: <span className="font-mono">CRISCVENEW0001-CRICIUMA</span>. Os 4 dígitos sequenciais são atribuídos no momento do cadastro.
-              </HelperText>
+              <div className="rounded-md border bg-muted/30 p-3 text-sm space-y-2">
+                <div className="flex items-start gap-2">
+                  <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                  <div className="space-y-1">
+                    <p className="font-medium text-foreground">Como o código é formado</p>
+                    <p className="text-muted-foreground">
+                      Cidade (3) + UF (2) + Tipo (2) + Seguimento (3) + Sequencial (4) - Nome da Empresa
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 pl-6">
+                  <span className="text-muted-foreground">Exemplo:</span>
+                  <code className="rounded bg-background px-2 py-1 font-mono text-sm border">CRISCVENEW0001-CRICIUMA</code>
+                </div>
+                <p className="text-xs text-muted-foreground pl-6">
+                  Os 4 dígitos sequenciais são atribuídos automaticamente no momento do cadastro.
+                </p>
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Frota Contratada <span className="text-destructive">*</span></Label>

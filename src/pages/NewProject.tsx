@@ -17,7 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon, ArrowLeft, Save, Info, Upload, FileText, X } from "lucide-react";
+import { CalendarIcon, ArrowLeft, Save, Info, Upload, FileText, X, Link2, ExternalLink, Plus } from "lucide-react";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -80,11 +80,17 @@ export default function NewProject() {
     { key: "outros", label: "Demais Documentos" },
   ] as const;
 
-  const [attachmentFiles, setAttachmentFiles] = useState<Record<string, File[]>>({
+  const [attachmentLinks, setAttachmentLinks] = useState<Record<string, string[]>>({
     contrato: [],
     proposta: [],
     ata: [],
     outros: [],
+  });
+  const [linkInputs, setLinkInputs] = useState<Record<string, string>>({
+    contrato: "",
+    proposta: "",
+    ata: "",
+    outros: "",
   });
 
   // Lookups (hardcoded)
@@ -257,19 +263,16 @@ export default function NewProject() {
 
       // Histórico: registrado automaticamente por trigger no banco
 
-      // Upload de anexos
+      // Links de anexos
       for (const cat of ATTACHMENT_CATEGORIES) {
-        const files = attachmentFiles[cat.key];
-        for (const file of files) {
-          const path = `${project.id}/${Date.now()}_${file.name}`;
-          const { error: upErr } = await supabase.storage.from("project-attachments").upload(path, file);
-          if (upErr) continue;
+        const links = attachmentLinks[cat.key];
+        for (const url of links) {
           await supabase.from("project_attachments").insert({
             project_id: project.id,
-            file_name: `[${cat.label}] ${file.name}`,
-            file_path: path,
-            file_size: file.size,
-            content_type: file.type,
+            file_name: `[${cat.label}] ${url}`,
+            file_path: url,
+            file_size: null,
+            content_type: "link",
             uploaded_by: user?.id || null,
           });
         }

@@ -699,59 +699,61 @@ export default function NewProject() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Anexos</CardTitle>
-            <CardDescription>Anexe documentos relacionados ao projeto (máx. 100MB cada)</CardDescription>
+            <CardDescription>Informe o link (URL) onde o documento está hospedado</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             {ATTACHMENT_CATEGORIES.map(cat => {
-              const files = attachmentFiles[cat.key];
-              const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-                const newFiles = e.target.files;
-                if (!newFiles) return;
-                const validFiles = Array.from(newFiles).filter(f => f.size <= 100 * 1024 * 1024);
-                if (validFiles.length < (newFiles?.length || 0)) {
-                  toast({ title: "Arquivos acima de 100MB foram ignorados", variant: "destructive" });
+              const links = attachmentLinks[cat.key];
+              const addLink = () => {
+                const url = (linkInputs[cat.key] || "").trim();
+                if (!url) return;
+                if (!/^https?:\/\//i.test(url)) {
+                  toast({ title: "URL inválida", description: "A URL deve começar com http:// ou https://", variant: "destructive" });
+                  return;
                 }
-                setAttachmentFiles(prev => ({
-                  ...prev,
-                  [cat.key]: [...prev[cat.key], ...validFiles],
-                }));
-                e.target.value = "";
+                setAttachmentLinks(prev => ({ ...prev, [cat.key]: [...prev[cat.key], url] }));
+                setLinkInputs(prev => ({ ...prev, [cat.key]: "" }));
               };
-              const removeFile = (idx: number) => {
-                setAttachmentFiles(prev => ({
-                  ...prev,
-                  [cat.key]: prev[cat.key].filter((_, i) => i !== idx),
-                }));
+              const removeLink = (idx: number) => {
+                setAttachmentLinks(prev => ({ ...prev, [cat.key]: prev[cat.key].filter((_, i) => i !== idx) }));
               };
               return (
                 <div key={cat.key} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">{cat.label}</Label>
-                    <label>
-                      <input type="file" className="hidden" onChange={handleFileChange} multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt,.csv" />
-                      <Button type="button" size="sm" variant="outline" asChild>
-                        <span><Upload className="mr-1 h-3.5 w-3.5" /> Anexar</span>
-                      </Button>
-                    </label>
+                  <Label className="text-sm font-medium">{cat.label}</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={linkInputs[cat.key] || ""}
+                      onChange={e => setLinkInputs(prev => ({ ...prev, [cat.key]: e.target.value }))}
+                      onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addLink(); } }}
+                      placeholder="https://..."
+                    />
+                    <Button type="button" size="sm" variant="outline" onClick={addLink}>
+                      <Plus className="mr-1 h-3.5 w-3.5" /> Adicionar
+                    </Button>
                   </div>
-                  {files.length > 0 && (
+                  {links.length > 0 ? (
                     <div className="space-y-1.5">
-                      {files.map((file, idx) => (
+                      {links.map((url, idx) => (
                         <div key={idx} className="flex items-center justify-between p-2 rounded border bg-muted/30">
                           <div className="flex items-center gap-2 min-w-0">
-                            <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                            <span className="text-sm truncate">{file.name}</span>
-                            <span className="text-xs text-muted-foreground shrink-0">{(file.size / 1024).toFixed(0)} KB</span>
+                            <Link2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <span className="text-sm truncate">{url}</span>
                           </div>
-                          <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeFile(idx)}>
-                            <X className="h-3.5 w-3.5 text-destructive" />
-                          </Button>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <Button type="button" size="sm" variant="outline" asChild>
+                              <a href={url} target="_blank" rel="noopener noreferrer">
+                                <ExternalLink className="mr-1 h-3.5 w-3.5" /> Acessar
+                              </a>
+                            </Button>
+                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeLink(idx)}>
+                              <X className="h-3.5 w-3.5 text-destructive" />
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
-                  )}
-                  {files.length === 0 && (
-                    <p className="text-xs text-muted-foreground italic">Nenhum arquivo anexado</p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic">Nenhum link cadastrado</p>
                   )}
                 </div>
               );

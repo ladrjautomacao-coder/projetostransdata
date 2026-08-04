@@ -419,48 +419,37 @@ export default function ProjectDetail() {
     return attachments.filter(a => !prefixes.some(p => a.file_name?.startsWith(p)));
   };
 
-  const handleCategoryUpload = async (category: typeof ATTACHMENT_CATEGORIES[0], e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || !id) return;
-
+  const handleAddLink = async (category: typeof ATTACHMENT_CATEGORIES[0]) => {
+    const url = (linkInputs[category.key] || "").trim();
+    if (!url || !id) return;
+    if (!/^https?:\/\//i.test(url)) {
+      toast({ title: "URL inválida", description: "A URL deve começar com http:// ou https://", variant: "destructive" });
+      return;
+    }
     setUploading(true);
-    const fileList = Array.from(files);
     try {
-      for (let i = 0; i < fileList.length; i++) {
-        const file = fileList[i];
-        setUploadProgress({ current: i + 1, total: fileList.length, fileName: file.name });
-        if (file.size > 100 * 1024 * 1024) {
-          toast({ title: `Arquivo "${file.name}" excede 100MB`, variant: "destructive" });
-          continue;
-        }
-        const sanitizedName = file.name
-          .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-          .replace(/[^a-zA-Z0-9._-]/g, "_");
-        const path = `${id}/${Date.now()}_${sanitizedName}`;
-        const { error: upErr } = await supabase.storage.from("project-attachments").upload(path, file);
-        if (upErr) { toast({ title: "Erro no upload", description: upErr.message, variant: "destructive" }); continue; }
-        const { error: insertErr } = await supabase.from("project_attachments").insert({
-          project_id: id,
-          file_name: `${category.prefix} ${file.name}`,
-          file_path: path,
-          file_size: file.size,
-          content_type: file.type,
-          uploaded_by: user?.id || null,
-        });
-        if (insertErr) { toast({ title: "Erro ao registrar anexo", description: insertErr.message, variant: "destructive" }); continue; }
-      }
-      toast({ title: "Arquivo(s) anexado(s)!" });
+      const { error } = await supabase.from("project_attachments").insert({
+        project_id: id,
+        file_name: `${category.prefix} ${url}`,
+        file_path: url,
+        file_size: null,
+        content_type: "link",
+        uploaded_by: user?.id || null,
+      });
+      if (error) { toast({ title: "Erro ao salvar link", description: error.message, variant: "destructive" }); return; }
+      setLinkInputs(prev => ({ ...prev, [category.key]: "" }));
+      toast({ title: "Link salvo!" });
       const { data: refreshed } = await supabase.from("project_attachments").select("*").eq("project_id", id).order("created_at", { ascending: false });
       setAttachments(refreshed || []);
     } finally {
       setUploading(false);
-      setUploadProgress(null);
-      e.target.value = "";
     }
   };
 
   const handleDeleteAttachment = async (att: any) => {
-    await supabase.storage.from("project-attachments").remove([att.file_path]);
+    if (att.content_type !== "link") {
+      await supabase.storage.from("project-attachments").remove([att.file_path]);
+    }
     await supabase.from("project_attachments").delete().eq("id", att.id);
     setAttachments(prev => prev.filter(a => a.id !== att.id));
     toast({ title: "Anexo removido" });

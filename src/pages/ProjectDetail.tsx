@@ -1143,7 +1143,6 @@ export default function ProjectDetail() {
                   <p className="text-xs text-muted-foreground italic">Nenhum link cadastrado</p>
                 )}
               </div>
-              </div>
             );
           })}
 

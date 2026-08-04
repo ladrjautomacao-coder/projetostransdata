@@ -135,13 +135,14 @@ export default function NewProject() {
       try {
         const { data, error } = await (supabase as any).rpc("preview_project_code", {
           p_city: city, p_state: state, p_project_type_id: projectTypeId,
+          p_segment: projectSegment || null, p_company_name: companyName || "",
         });
         if (!cancelled && !error) setCodePreview(data || "");
       } catch { /* ignore */ }
     };
     const t = setTimeout(run, 250);
     return () => { cancelled = true; clearTimeout(t); };
-  }, [city, state, projectTypeId]);
+  }, [city, state, projectTypeId, projectSegment, companyName]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

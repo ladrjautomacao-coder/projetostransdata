@@ -468,6 +468,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          short_code: string
         }
         Insert: {
           active?: boolean
@@ -475,6 +476,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          short_code: string
         }
         Update: {
           active?: boolean
@@ -482,6 +484,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          short_code?: string
         }
         Relationships: []
       }
@@ -788,9 +791,16 @@ export type Database = {
       }
       can_view_project: { Args: { _project_id: string }; Returns: boolean }
       can_write_project: { Args: { _project_id: string }; Returns: boolean }
+      code_token: { Args: { p: string }; Returns: string }
       current_user_email: { Args: never; Returns: string }
       generate_project_code: {
-        Args: { p_city: string; p_project_type_id: string; p_state: string }
+        Args: {
+          p_city: string
+          p_company_name: string
+          p_project_type_id: string
+          p_segment: string
+          p_state: string
+        }
         Returns: string
       }
       get_effective_permissions: { Args: { _user_id: string }; Returns: Json }
@@ -819,13 +829,20 @@ export type Database = {
       my_project_scope: { Args: never; Returns: string }
       norm_text: { Args: { p: string }; Returns: string }
       preview_project_code: {
-        Args: { p_city: string; p_project_type_id: string; p_state: string }
+        Args: {
+          p_city: string
+          p_company_name: string
+          p_project_type_id: string
+          p_segment: string
+          p_state: string
+        }
         Returns: string
       }
       resolve_city_code: {
         Args: { p_city: string; p_state: string }
         Returns: string
       }
+      segment_code: { Args: { p_segment: string }; Returns: string }
       unaccent: { Args: { "": string }; Returns: string }
     }
     Enums: {

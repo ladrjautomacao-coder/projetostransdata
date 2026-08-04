@@ -1,3 +1,4 @@
+import { PROJECT_SEGMENTS, projectSegmentLabel } from "@/lib/projectSegments";
 import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
@@ -63,6 +64,7 @@ export default function ProjectDetail() {
 
   // Edit state - new fields
   const [projectTypeId, setProjectTypeId] = useState("");
+  const [projectSegment, setProjectSegment] = useState("");
   const [selectedSolutions, setSelectedSolutions] = useState<string[]>([]);
   const [fleetSize, setFleetSize] = useState<string>("");
   const [fleetUrbano, setFleetUrbano] = useState<string>("0");
@@ -127,6 +129,7 @@ export default function ProjectDetail() {
       setStatus(data.status);
       setSelectedProducts(data.project_products?.map((pp: any) => pp.product_id) || []);
       setProjectTypeId(data.project_type_id || "");
+      setProjectSegment((data as any).project_segment || "");
       setSelectedSolutions(data.project_solutions?.map((ps: any) => ps.solution_id) || []);
       setFleetSize(data.fleet_size?.toString() || "");
       setFleetUrbano((data as any).fleet_urbano?.toString() || "0");
@@ -332,6 +335,7 @@ export default function ProjectDetail() {
         executive_project_date: executiveProjectDate ? format(executiveProjectDate, "yyyy-MM-dd") : null,
         executive_id: executiveId || null, manager_id: managerId || null, status,
         project_type_id: projectTypeId || null,
+        project_segment: projectSegment || null,
         fleet_size: fleet,
         fleet_urbano: urbano,
         fleet_seccionado: seccionado,
@@ -751,6 +755,13 @@ export default function ProjectDetail() {
                   </Select>
                 </div>
                 <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Seguimento do Projeto</Label>
+                  <Select value={projectSegment || undefined} onValueChange={setProjectSegment}>
+                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                    <SelectContent>{PROJECT_SEGMENTS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Frota Contratada</Label>
                   <Input type="number" min={1} step={1} value={fleetSize} onChange={e => setFleetSize(e.target.value)} />
                 </div>
@@ -790,6 +801,7 @@ export default function ProjectDetail() {
                 <div><span className="text-xs text-muted-foreground">Empresa</span><p className="font-medium">{project.company_name}</p></div>
                 <div><span className="text-xs text-muted-foreground">Localização</span><p>{project.city} / {project.state}</p></div>
                 <div><span className="text-xs text-muted-foreground">Tipo do Projeto</span><p>{projectTypeName}</p></div>
+                <div><span className="text-xs text-muted-foreground">Seguimento do Projeto</span><p>{projectSegmentLabel((project as any).project_segment)}</p></div>
                 <div><span className="text-xs text-muted-foreground">Frota Contratada</span><p>{project.fleet_size ?? "—"} veículos</p></div>
                 <div><span className="text-xs text-muted-foreground">Sistema</span><p>Urbano: <strong>{(project as any).fleet_urbano ?? 0}</strong> · Seccionado: <strong>{(project as any).fleet_seccionado ?? 0}</strong></p></div>
                 <div><span className="text-xs text-muted-foreground">Contratação</span><p>{fmtDate(project.contract_date)}</p></div>
@@ -1201,6 +1213,7 @@ export default function ProjectDetail() {
                   handover_date: "Data de handover", executive_project_date: "Data do projeto executivo",
                   executive_id: "Executivo", manager_id: "Gerente de Projetos",
                   project_type_id: "Tipo de Projeto", project_code: "Código do Projeto",
+                  project_segment: "Seguimento do Projeto",
                   fleet_size: "Frota Total", fleet_urbano: "Frota Urbano",
                   fleet_seccionado: "Frota Seccionado", complementary_fleet: "Frota Complementar",
                   implemented_fleet: "Frota Implementada",

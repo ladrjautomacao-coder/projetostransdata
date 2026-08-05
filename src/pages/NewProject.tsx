@@ -78,16 +78,10 @@ export default function NewProject() {
   ] as const;
 
   const [attachmentLinks, setAttachmentLinks] = useState<Record<string, string[]>>({
-    contrato: [],
-    proposta: [],
-    ata: [],
-    outros: [],
+    pasta: [],
   });
   const [linkInputs, setLinkInputs] = useState<Record<string, string>>({
-    contrato: "",
-    proposta: "",
-    ata: "",
-    outros: "",
+    pasta: "",
   });
 
   // Lookups (hardcoded)
@@ -262,7 +256,7 @@ export default function NewProject() {
 
       // Links de anexos
       for (const cat of ATTACHMENT_CATEGORIES) {
-        const links = attachmentLinks[cat.key];
+        const links = attachmentLinks[cat.key] ?? [];
         for (const url of links) {
           await supabase.from("project_attachments").insert({
             project_id: project.id,
@@ -700,7 +694,7 @@ export default function NewProject() {
           </CardHeader>
           <CardContent className="space-y-5">
             {ATTACHMENT_CATEGORIES.map(cat => {
-              const links = attachmentLinks[cat.key];
+              const links = attachmentLinks[cat.key] ?? [];
               const addLink = () => {
                 const url = (linkInputs[cat.key] || "").trim();
                 if (!url) return;
@@ -708,7 +702,7 @@ export default function NewProject() {
                   toast({ title: "URL inválida", description: "A URL deve começar com http:// ou https://", variant: "destructive" });
                   return;
                 }
-                setAttachmentLinks(prev => ({ ...prev, [cat.key]: [...prev[cat.key], url] }));
+                setAttachmentLinks(prev => ({ ...prev, [cat.key]: [...(prev[cat.key] ?? []), url] }));
                 setLinkInputs(prev => ({ ...prev, [cat.key]: "" }));
               };
               const removeLink = (idx: number) => {

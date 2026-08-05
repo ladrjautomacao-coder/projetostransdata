@@ -405,10 +405,7 @@ export default function ProjectDetail() {
   const [previewName, setPreviewName] = useState("");
 
   const ATTACHMENT_CATEGORIES = [
-    { key: "contrato", label: "Contrato", prefix: "[Contrato]" },
-    { key: "proposta", label: "Proposta Comercial", prefix: "[Proposta Comercial]" },
-    { key: "ata", label: "Ata de Reunião", prefix: "[Ata de Reunião]" },
-    { key: "outros", label: "Demais Documentos", prefix: "[Demais Documentos]" },
+    { key: "pasta", label: "Pasta do Projeto", prefix: "[Pasta do Projeto]" },
   ];
 
   const getAttachmentsForCategory = (prefix: string) => {

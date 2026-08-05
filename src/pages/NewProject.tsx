@@ -694,7 +694,7 @@ export default function NewProject() {
           </CardHeader>
           <CardContent className="space-y-5">
             {ATTACHMENT_CATEGORIES.map(cat => {
-              const links = attachmentLinks[cat.key];
+              const links = attachmentLinks[cat.key] ?? [];
               const addLink = () => {
                 const url = (linkInputs[cat.key] || "").trim();
                 if (!url) return;

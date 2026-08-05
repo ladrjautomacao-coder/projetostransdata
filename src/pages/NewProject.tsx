@@ -702,7 +702,7 @@ export default function NewProject() {
                   toast({ title: "URL inválida", description: "A URL deve começar com http:// ou https://", variant: "destructive" });
                   return;
                 }
-                setAttachmentLinks(prev => ({ ...prev, [cat.key]: [...prev[cat.key], url] }));
+                setAttachmentLinks(prev => ({ ...prev, [cat.key]: [...(prev[cat.key] ?? []), url] }));
                 setLinkInputs(prev => ({ ...prev, [cat.key]: "" }));
               };
               const removeLink = (idx: number) => {

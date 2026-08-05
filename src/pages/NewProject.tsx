@@ -256,7 +256,7 @@ export default function NewProject() {
 
       // Links de anexos
       for (const cat of ATTACHMENT_CATEGORIES) {
-        const links = attachmentLinks[cat.key];
+        const links = attachmentLinks[cat.key] ?? [];
         for (const url of links) {
           await supabase.from("project_attachments").insert({
             project_id: project.id,

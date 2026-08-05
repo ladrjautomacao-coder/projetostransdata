@@ -74,10 +74,7 @@ export default function NewProject() {
 
   // Anexos por categoria
   const ATTACHMENT_CATEGORIES = [
-    { key: "contrato", label: "Contrato" },
-    { key: "proposta", label: "Proposta Comercial" },
-    { key: "ata", label: "Ata de Reunião" },
-    { key: "outros", label: "Demais Documentos" },
+    { key: "pasta", label: "Pasta do Projeto" },
   ] as const;
 
   const [attachmentLinks, setAttachmentLinks] = useState<Record<string, string[]>>({

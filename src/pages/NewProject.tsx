@@ -78,16 +78,10 @@ export default function NewProject() {
   ] as const;
 
   const [attachmentLinks, setAttachmentLinks] = useState<Record<string, string[]>>({
-    contrato: [],
-    proposta: [],
-    ata: [],
-    outros: [],
+    pasta: [],
   });
   const [linkInputs, setLinkInputs] = useState<Record<string, string>>({
-    contrato: "",
-    proposta: "",
-    ata: "",
-    outros: "",
+    pasta: "",
   });
 
   // Lookups (hardcoded)

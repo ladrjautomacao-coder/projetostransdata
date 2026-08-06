@@ -1,0 +1,28 @@
+{
+  "name": "Transdata - Gestão de Projetos",
+  "short_name": "Transdata",
+  "description": "Plataforma de gerenciamento de projetos de bilhetagem",
+  "theme_color": "#4a1d8c",
+  "background_color": "#241539",
+  "display": "standalone",
+  "orientation": "portrait",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

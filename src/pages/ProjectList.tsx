@@ -98,28 +98,8 @@ export default function ProjectList() {
     if (!deleteTarget || deleteConfirmText !== "EXCLUIR") return;
     setDeleting(true);
     try {
-      // Log the deletion in project_history before deleting
-      await supabase.from("project_history").insert({
-        project_id: deleteTarget.id,
-        change_type: "exclusão",
-        changed_by: user?.id || null,
-        old_values: {
-          company_name: deleteTarget.company_name,
-          city: deleteTarget.city,
-          state: deleteTarget.state,
-          status: deleteTarget.status,
-          d_zero_date: deleteTarget.d_zero_date,
-          handover_date: deleteTarget.handover_date,
-        },
-        new_values: { deleted: true },
-      });
-
-      // Delete related records first
-      await supabase.from("project_solutions").delete().eq("project_id", deleteTarget.id);
-      await supabase.from("project_products").delete().eq("project_id", deleteTarget.id);
-      await supabase.from("project_attachments").delete().eq("project_id", deleteTarget.id);
-
-      // Delete the project
+      // Registros relacionados são removidos em cascata pelo banco
+      // e o histórico de exclusão é gravado automaticamente por trigger.
       const { error } = await supabase.from("projects").delete().eq("id", deleteTarget.id);
       if (error) throw error;
 

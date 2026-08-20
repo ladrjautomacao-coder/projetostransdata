@@ -284,15 +284,7 @@ export type Database = {
           old_values?: Json | null
           project_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "project_history_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       project_integrations: {
         Row: {

@@ -1,0 +1,1 @@
+ALTER TABLE public.project_history DROP CONSTRAINT project_history_project_id_fkey;

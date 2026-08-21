@@ -103,8 +103,43 @@ Deno.serve(async (req) => {
       });
     }
 
+    // CREATE USER (admin-provisioned, email already confirmed)
+    if (req.method === "POST" && action === "create") {
+      const body = await req.json();
+      const email = (body.email ?? "").trim().toLowerCase();
+      const role = body.role ?? "user";
+      if (!email) {
+        return new Response(JSON.stringify({ error: "email required" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (role === "super_admin" && !isSuperAdmin) {
+        return new Response(JSON.stringify({ error: "Apenas Super Admins podem criar Super Admins" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const tempPassword = body.password ?? crypto.randomUUID() + "aA1!";
+      const { data: created, error: createErr } = await adminClient.auth.admin.createUser({
+        email,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: { full_name: body.full_name ?? email, cargo: body.cargo ?? null },
+      });
+      if (createErr) throw createErr;
+      const newId = created.user!.id;
+      await adminClient.from("user_roles").delete().eq("user_id", newId);
+      const { error: roleErr } = await adminClient.from("user_roles").insert({ user_id: newId, role });
+      if (roleErr) throw roleErr;
+      return new Response(JSON.stringify({ success: true, user_id: newId, email }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // POST actions
     if (req.method === "POST" && action !== "list") {
+
       const body = await req.json();
       const targetUserId = body.user_id;
 

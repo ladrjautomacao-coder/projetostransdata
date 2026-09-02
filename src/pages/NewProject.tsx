@@ -327,22 +327,15 @@ export default function NewProject() {
               <Label>Nome da Empresa <span className="text-destructive">*</span></Label>
               <Input value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Ex.: TransMobile Ltda." required maxLength={settings.companyNameMax} />
             </div>
-            <div className="space-y-2">
-              <Label>Cidade <span className="text-destructive">*</span></Label>
-              <Input value={city} onChange={e => setCity(sanitizeCity(e.target.value))} placeholder="Ex.: São Paulo" required maxLength={settings.cityMax} />
-              <HelperText>Apenas letras, espaços, hífen e apóstrofo</HelperText>
-            </div>
-            <div className="space-y-2">
-              <Label>Estado <span className="text-destructive">*</span></Label>
-              <Select value={state || undefined} onValueChange={v => setState(v as BrazilianState)}>
-                <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                <SelectContent className="max-h-60 overflow-y-auto">
-                  {Constants.public.Enums.brazilian_state.map(s => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <LocationFields
+              countryCode={countryCode}
+              onCountryChange={setCountryCode}
+              city={city}
+              onCityChange={setCity}
+              state={state}
+              onStateChange={v => setState(v as BrazilianState)}
+              cityMax={settings.cityMax}
+            />
             <div className="space-y-2">
               <Label>Tipo do Projeto <span className="text-destructive">*</span></Label>
               <Select value={projectTypeId || undefined} onValueChange={setProjectTypeId}>

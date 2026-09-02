@@ -36,7 +36,7 @@ export default function KanbanFilters({ filters, setFilter, clearFilters, hasAct
       <div className="space-y-3">
         <div>
           <label className="text-xs font-medium text-muted-foreground mb-1 block">Gerente de Projetos</label>
-          <Select value={filters.managerId || undefined} onValueChange={v => setFilter("managerId", v === "all" ? "" : v)}>
+          <Select value={filters.managerId || "all"} onValueChange={v => setFilter("managerId", v === "all" ? "" : v)}>
             <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Todos" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos</SelectItem>
@@ -57,7 +57,7 @@ export default function KanbanFilters({ filters, setFilter, clearFilters, hasAct
 
         <div>
           <label className="text-xs font-medium text-muted-foreground mb-1 block">Estado</label>
-          <Select value={filters.state || undefined} onValueChange={v => setFilter("state", v === "all" ? "" : v)}>
+          <Select value={filters.state || "all"} onValueChange={v => setFilter("state", v === "all" ? "" : v)}>
             <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Todos" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos</SelectItem>
@@ -69,7 +69,7 @@ export default function KanbanFilters({ filters, setFilter, clearFilters, hasAct
 
         <div>
           <label className="text-xs font-medium text-muted-foreground mb-1 block">Cidade</label>
-          <Select value={filters.city || undefined} onValueChange={v => setFilter("city", v === "all" ? "" : v)}>
+          <Select value={filters.city || "all"} onValueChange={v => setFilter("city", v === "all" ? "" : v)}>
             <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Todas" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas</SelectItem>
@@ -80,7 +80,7 @@ export default function KanbanFilters({ filters, setFilter, clearFilters, hasAct
 
         <div>
           <label className="text-xs font-medium text-muted-foreground mb-1 block">Status</label>
-          <Select value={filters.status || undefined} onValueChange={v => setFilter("status", v === "all" ? "" : v)}>
+          <Select value={filters.status || "all"} onValueChange={v => setFilter("status", v === "all" ? "" : v)}>
             <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Todos" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos</SelectItem>

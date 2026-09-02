@@ -132,6 +132,11 @@ export default function ProjectManagement() {
     [isAdmin, currentManagerId]
   );
 
+  const countryOptions = useMemo(
+    () => Array.from(new Set(projects.map(p => p.country_code || "BR").filter(c => c !== "BR"))).sort(),
+    [projects]
+  );
+
   const cities = useMemo(() => {
     const set = new Set(projects.map(p => p.city));
     return Array.from(set).sort();
@@ -147,7 +152,9 @@ export default function ProjectManagement() {
       const q = filters.companyName.toLowerCase();
       list = list.filter(p => p.company_name.toLowerCase().includes(q));
     }
-    if (filters.state) list = list.filter(p => p.state === filters.state);
+    if (filters.state) list = filters.state.startsWith("c:")
+      ? list.filter(p => (p.country_code || "BR") === filters.state.slice(2))
+      : list.filter(p => p.state === filters.state && (p.country_code || "BR") === "BR");
     if (filters.city) list = list.filter(p => p.city === filters.city);
     if (filters.status) list = list.filter(p => p.status === filters.status);
     return list;
@@ -259,6 +266,7 @@ export default function ProjectManagement() {
           clearFilters={clearFilters}
           hasActiveFilters={hasActiveFilters}
           managers={managers}
+          countries={countryOptions}
           cities={cities}
           columns={columns}
         />

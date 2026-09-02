@@ -18,7 +18,7 @@ interface Props {
   columns: readonly string[];
 }
 
-export default function KanbanFilters({ filters, setFilter, clearFilters, hasActiveFilters, managers, cities, columns }: Props) {
+export default function KanbanFilters({ filters, setFilter, clearFilters, hasActiveFilters, managers, countries, cities, columns }: Props) {
   return (
     <div className="w-[260px] shrink-0 rounded-lg border border-border/50 bg-card p-4 flex flex-col gap-4">
       <div className="flex items-center justify-between">

@@ -79,7 +79,10 @@ export default function VisaoComercial() {
     let query = q as unknown as ReturnType<typeof supabase.from>["select"] extends never ? never : any;
     if (filters.managerId) query = query.eq("manager_id", filters.managerId);
     if (filters.companyName) query = query.ilike("company_name", `%${filters.companyName}%`);
-    if (filters.state) query = query.eq("state", filters.state);
+    if (filters.state) {
+      if (filters.state.startsWith("c:")) query = query.eq("country_code", filters.state.slice(2));
+      else query = query.eq("state", filters.state);
+    }
     if (filters.city) query = query.eq("city", filters.city);
     if (filters.status) query = query.eq("status", filters.status);
     else if (!showAll) query = query.neq("status", "encerrado");

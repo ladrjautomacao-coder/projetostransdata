@@ -29,7 +29,7 @@ export function AppLayout() {
               </div>
             </div>
           </header>
-          <div className="flex-1 p-3 md:p-6 overflow-auto tech-grid">
+          <div className="flex-1 p-3 md:p-6 overflow-auto bg-background">
             <Outlet />
           </div>
         </main>

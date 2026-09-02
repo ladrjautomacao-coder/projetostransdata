@@ -116,6 +116,11 @@ export default function ProjectList() {
     }
   };
 
+  const intlCountries = useMemo(
+    () => Array.from(new Set(projects.map(p => p.country_code || "BR").filter(c => c !== "BR"))).sort(),
+    [projects]
+  );
+
   const filtered = useMemo(() => {
     let list = projects;
     if (search) {
@@ -128,7 +133,9 @@ export default function ProjectList() {
       );
     }
     if (filterStatus) list = list.filter(p => p.status === filterStatus);
-    if (filterState) list = list.filter(p => p.state === filterState);
+    if (filterState) list = filterState.startsWith("c:")
+      ? list.filter(p => (p.country_code || "BR") === filterState.slice(2))
+      : list.filter(p => p.state === filterState && (p.country_code || "BR") === "BR");
     if (filterManager) list = list.filter(p => p.manager?.full_name === filterManager);
     if (filterExecutive) list = list.filter(p => p.executive?.full_name === filterExecutive);
 
@@ -182,6 +189,7 @@ export default function ProjectList() {
           <SelectContent>
             <SelectItem value="all">Todos</SelectItem>
             {Constants.public.Enums.brazilian_state.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            {intlCountries.map(c => <SelectItem key={c} value={`c:${c}`}>{c}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={filterManager} onValueChange={v => setFilterManager(v === "all" ? "" : v)}>

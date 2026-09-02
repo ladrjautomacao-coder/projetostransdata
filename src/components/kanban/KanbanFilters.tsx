@@ -13,11 +13,12 @@ interface Props {
   clearFilters: () => void;
   hasActiveFilters: boolean;
   managers: { id: string; full_name: string }[];
+  countries?: string[];
   cities: string[];
   columns: readonly string[];
 }
 
-export default function KanbanFilters({ filters, setFilter, clearFilters, hasActiveFilters, managers, cities, columns }: Props) {
+export default function KanbanFilters({ filters, setFilter, clearFilters, hasActiveFilters, managers, countries, cities, columns }: Props) {
   return (
     <div className="w-[260px] shrink-0 rounded-lg border border-border/50 bg-card p-4 flex flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -61,6 +62,7 @@ export default function KanbanFilters({ filters, setFilter, clearFilters, hasAct
             <SelectContent>
               <SelectItem value="all">Todos</SelectItem>
               {Constants.public.Enums.brazilian_state.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              {(countries || []).map(c => <SelectItem key={c} value={`c:${c}`}>{c}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>

@@ -1,3 +1,4 @@
+import { formatLocation } from "@/lib/location";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,7 +20,8 @@ interface ProjectItem {
   id: string;
   company_name: string;
   city: string;
-  state: string;
+  state: string | null;
+  country_code: string | null;
   status: string;
   sub_phase: string | null;
   manager: { full_name: string } | null;
@@ -46,7 +48,7 @@ export function CommandPalette() {
     if (!open || projects.length > 0) return;
     supabase
       .from("projects")
-      .select("id, company_name, city, state, status, sub_phase, manager:team_members!projects_manager_id_fkey(full_name)")
+      .select("id, company_name, city, state, country_code, status, sub_phase, manager:team_members!projects_manager_id_fkey(full_name)")
       .order("company_name")
       .then(({ data }) => setProjects((data as unknown as ProjectItem[]) || []));
   }, [open, projects.length]);
@@ -106,14 +108,14 @@ export function CommandPalette() {
               {projects.map(p => (
                 <CommandItem
                   key={p.id}
-                  value={`${p.company_name} ${p.city} ${p.state} ${p.manager?.full_name || ""}`}
+                  value={`${p.company_name} ${p.city} ${p.state || ""} ${p.country_code || ""} ${p.manager?.full_name || ""}`}
                   onSelect={() => go(`/projetos/${p.id}`)}
                 >
                   <Building2 className="mr-2 h-4 w-4 text-primary" />
                   <div className="flex flex-col">
                     <span className="text-sm">{p.company_name}</span>
                     <span className="text-xs text-muted-foreground">
-                      {p.city}/{p.state}
+                      {formatLocation(p.city, p.state, p.country_code)}
                       {p.manager?.full_name ? ` · ${p.manager.full_name}` : ""}
                     </span>
                   </div>

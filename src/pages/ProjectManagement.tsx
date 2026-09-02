@@ -73,7 +73,8 @@ export interface ProjectRow {
   id: string;
   company_name: string;
   city: string;
-  state: string;
+  state: string | null;
+  country_code: string | null;
   contract_date: string;
   d_zero_date: string | null;
   handover_date: string | null;
@@ -118,7 +119,7 @@ export default function ProjectManagement() {
     setLoading(true);
     const { data } = await supabase
       .from("projects")
-      .select("id, company_name, city, state, contract_date, d_zero_date, handover_date, status, sub_phase, is_pilot, complementary_sale, complementary_fleet, implemented_fleet, observations, reached_implemented, reached_implemented_at, updated_at, manager_id, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name)), project_integrations(integration:integrations(name))")
+      .select("id, company_name, city, state, country_code, contract_date, d_zero_date, handover_date, status, sub_phase, is_pilot, complementary_sale, complementary_fleet, implemented_fleet, observations, reached_implemented, reached_implemented_at, updated_at, manager_id, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name)), project_integrations(integration:integrations(name))")
       .order("company_name");
     setProjects((data as unknown as ProjectRow[]) || []);
     setLoading(false);
@@ -129,6 +130,11 @@ export default function ProjectManagement() {
   const canEditProject = useCallback(
     (p: { manager_id: string | null }) => isAdmin || (!!currentManagerId && p.manager_id === currentManagerId),
     [isAdmin, currentManagerId]
+  );
+
+  const countryOptions = useMemo(
+    () => Array.from(new Set(projects.map(p => p.country_code || "BR").filter(c => c !== "BR"))).sort(),
+    [projects]
   );
 
   const cities = useMemo(() => {
@@ -146,7 +152,9 @@ export default function ProjectManagement() {
       const q = filters.companyName.toLowerCase();
       list = list.filter(p => p.company_name.toLowerCase().includes(q));
     }
-    if (filters.state) list = list.filter(p => p.state === filters.state);
+    if (filters.state) list = filters.state.startsWith("c:")
+      ? list.filter(p => (p.country_code || "BR") === filters.state.slice(2))
+      : list.filter(p => p.state === filters.state && (p.country_code || "BR") === "BR");
     if (filters.city) list = list.filter(p => p.city === filters.city);
     if (filters.status) list = list.filter(p => p.status === filters.status);
     return list;
@@ -258,6 +266,7 @@ export default function ProjectManagement() {
           clearFilters={clearFilters}
           hasActiveFilters={hasActiveFilters}
           managers={managers}
+          countries={countryOptions}
           cities={cities}
           columns={columns}
         />

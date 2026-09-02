@@ -23,6 +23,8 @@ import { cn } from "@/lib/utils";
 import { format, addDays } from "date-fns";
 import { ArrowLeft, Edit2, Save, X, CalendarIcon, Upload, FileText, Trash2, Info, Download, Eye, PlusCircle, RefreshCw, User, Link2, ExternalLink } from "lucide-react";
 import { Constants } from "@/integrations/supabase/types";
+import { LocationFields } from "@/components/LocationFields";
+import { formatLocation } from "@/lib/location";
 import type { Database } from "@/integrations/supabase/types";
 import { useSettings } from "@/contexts/SettingsContext";
 import { subPhasesByStatus } from "@/pages/ProjectManagement";
@@ -52,6 +54,7 @@ export default function ProjectDetail() {
   // Edit state - existing
   const [companyName, setCompanyName] = useState("");
   const [city, setCity] = useState("");
+  const [countryCode, setCountryCode] = useState("BR");
   const [state, setState] = useState<BrazilianState>("SP");
   const [contractDate, setContractDate] = useState<Date>();
   const [dZeroDate, setDZeroDate] = useState<Date>();
@@ -119,6 +122,7 @@ export default function ProjectDetail() {
       setProject(data);
       setCompanyName(data.company_name);
       setCity(data.city);
+      setCountryCode(data.country_code || "BR");
       setState(data.state);
       setContractDate(new Date(data.contract_date + "T00:00:00"));
       setDZeroDate(data.d_zero_date ? new Date(data.d_zero_date + "T00:00:00") : undefined);
@@ -241,6 +245,7 @@ export default function ProjectDetail() {
     add("Empresa", project.company_name, companyName);
     add("Cidade", project.city, city);
     add("Estado", project.state, state);
+    add("País", project.country_code, countryCode);
     add("Status", statusLabels[project.status as ProjectStatus], statusLabels[status]);
     
     const oldTypeName = project.project_type?.name || "—";
@@ -328,7 +333,8 @@ export default function ProjectDetail() {
       const changes = buildChanges();
 
       const { error } = await supabase.from("projects").update({
-        company_name: companyName, city, state,
+        company_name: companyName, city, country_code: countryCode,
+        state: countryCode === "BR" ? state : null,
         contract_date: contractDate ? format(contractDate, "yyyy-MM-dd") : project.contract_date,
         d_zero_date: dZeroDate ? format(dZeroDate, "yyyy-MM-dd") : null,
         handover_date: handoverDate ? format(handoverDate, "yyyy-MM-dd") : null,
@@ -725,14 +731,14 @@ export default function ProjectDetail() {
               <>
                 <div className="space-y-1"><Label className="text-xs text-muted-foreground">Empresa</Label><Input value={companyName} onChange={e => setCompanyName(e.target.value)} /></div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1"><Label className="text-xs text-muted-foreground">Cidade</Label><Input value={city} onChange={e => setCity(e.target.value.replace(/[^A-Za-zÀ-ÿ\s'-]/g, ""))} /></div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Estado</Label>
-                    <Select value={state} onValueChange={v => setState(v as BrazilianState)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>{Constants.public.Enums.brazilian_state.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
+                  <LocationFields
+                    countryCode={countryCode}
+                    onCountryChange={setCountryCode}
+                    city={city}
+                    onCityChange={setCity}
+                    state={state}
+                    onStateChange={v => setState(v as BrazilianState)}
+                  />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Tipo do Projeto</Label>
@@ -786,7 +792,7 @@ export default function ProjectDetail() {
             ) : (
               <>
                 <div><span className="text-xs text-muted-foreground">Empresa</span><p className="font-medium">{project.company_name}</p></div>
-                <div><span className="text-xs text-muted-foreground">Localização</span><p>{project.city} / {project.state}</p></div>
+                <div><span className="text-xs text-muted-foreground">Localização</span><p>{formatLocation(project.city, project.state, project.country_code)}</p></div>
                 <div><span className="text-xs text-muted-foreground">Tipo do Projeto</span><p>{projectTypeName}</p></div>
                 <div><span className="text-xs text-muted-foreground">Seguimento do Projeto</span><p>{projectSegmentLabel((project as any).project_segment)}</p></div>
                 <div><span className="text-xs text-muted-foreground">Frota Contratada</span><p>{project.fleet_size ?? "—"} veículos</p></div>

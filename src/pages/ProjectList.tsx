@@ -18,6 +18,7 @@ import { ProjectTimeline } from "@/components/ProjectTimeline";
 import { EmptyState } from "@/components/EmptyState";
 import { format } from "date-fns";
 import { Constants } from "@/integrations/supabase/types";
+import { formatLocation } from "@/lib/location";
 import type { Database } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
 
@@ -44,7 +45,8 @@ interface ProjectRow {
   id: string;
   company_name: string;
   city: string;
-  state: BrazilianState;
+  state: BrazilianState | null;
+  country_code: string | null;
   contract_date: string;
   d_zero_date: string | null;
   handover_date: string | null;
@@ -86,7 +88,7 @@ export default function ProjectList() {
     setLoading(true);
     const { data } = await supabase
       .from("projects")
-      .select("id, company_name, city, state, contract_date, d_zero_date, handover_date, status, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name))")
+      .select("id, company_name, city, state, country_code, contract_date, d_zero_date, handover_date, status, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name))")
       .order("company_name");
     setProjects((data as unknown as ProjectRow[]) || []);
     setLoading(false);
@@ -114,6 +116,11 @@ export default function ProjectList() {
     }
   };
 
+  const intlCountries = useMemo(
+    () => Array.from(new Set(projects.map(p => p.country_code || "BR").filter(c => c !== "BR"))).sort(),
+    [projects]
+  );
+
   const filtered = useMemo(() => {
     let list = projects;
     if (search) {
@@ -126,7 +133,9 @@ export default function ProjectList() {
       );
     }
     if (filterStatus) list = list.filter(p => p.status === filterStatus);
-    if (filterState) list = list.filter(p => p.state === filterState);
+    if (filterState) list = filterState.startsWith("c:")
+      ? list.filter(p => (p.country_code || "BR") === filterState.slice(2))
+      : list.filter(p => p.state === filterState && (p.country_code || "BR") === "BR");
     if (filterManager) list = list.filter(p => p.manager?.full_name === filterManager);
     if (filterExecutive) list = list.filter(p => p.executive?.full_name === filterExecutive);
 
@@ -180,6 +189,7 @@ export default function ProjectList() {
           <SelectContent>
             <SelectItem value="all">Todos</SelectItem>
             {Constants.public.Enums.brazilian_state.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            {intlCountries.map(c => <SelectItem key={c} value={`c:${c}`}>{c}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={filterManager} onValueChange={v => setFilterManager(v === "all" ? "" : v)}>
@@ -223,7 +233,7 @@ export default function ProjectList() {
               {filtered.map(p => (
                 <TableRow key={p.id} className="hover:bg-muted/50">
                   <TableCell className="font-medium">{p.company_name}</TableCell>
-                  <TableCell>{p.city}/{p.state}</TableCell>
+                  <TableCell>{formatLocation(p.city, p.state, p.country_code)}</TableCell>
                   <TableCell>{p.manager?.full_name || "—"}</TableCell>
                   <TableCell>{p.executive?.full_name || "—"}</TableCell>
                   <TableCell>{fmtDate(p.d_zero_date)}</TableCell>
@@ -288,7 +298,7 @@ export default function ProjectList() {
             <AlertDialogTitle className="text-destructive">Excluir Projeto</AlertDialogTitle>
             <AlertDialogDescription className="space-y-3">
               <span className="block">
-                Tem certeza que deseja excluir permanentemente o projeto <strong>{deleteTarget?.company_name}</strong> ({deleteTarget?.city}/{deleteTarget?.state})?
+                Tem certeza que deseja excluir permanentemente o projeto <strong>{deleteTarget?.company_name}</strong> ({formatLocation(deleteTarget?.city, deleteTarget?.state, deleteTarget?.country_code)})?
               </span>
               <span className="block text-destructive font-medium">
                 Esta ação não pode ser desfeita. Todos os dados relacionados (soluções, anexos e produtos) serão removidos.

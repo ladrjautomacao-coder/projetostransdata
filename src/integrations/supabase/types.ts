@@ -77,6 +77,62 @@ export type Database = {
         }
         Relationships: []
       }
+      countries: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          name: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          name: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      country_cities: {
+        Row: {
+          active: boolean
+          country_code: string
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          country_code: string
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          country_code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "country_cities_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       equipment_types: {
         Row: {
           active: boolean
@@ -488,6 +544,7 @@ export type Database = {
           complementary_sale: boolean
           contract_date: string
           contractual_deadline_days: number | null
+          country_code: string
           created_at: string
           created_by: string | null
           d_zero_date: string | null
@@ -512,7 +569,7 @@ export type Database = {
           project_type_id: string | null
           reached_implemented: boolean
           reached_implemented_at: string | null
-          state: Database["public"]["Enums"]["brazilian_state"]
+          state: Database["public"]["Enums"]["brazilian_state"] | null
           status: Database["public"]["Enums"]["project_status"]
           sub_phase: string | null
           updated_at: string
@@ -524,6 +581,7 @@ export type Database = {
           complementary_sale?: boolean
           contract_date: string
           contractual_deadline_days?: number | null
+          country_code?: string
           created_at?: string
           created_by?: string | null
           d_zero_date?: string | null
@@ -548,7 +606,7 @@ export type Database = {
           project_type_id?: string | null
           reached_implemented?: boolean
           reached_implemented_at?: string | null
-          state: Database["public"]["Enums"]["brazilian_state"]
+          state?: Database["public"]["Enums"]["brazilian_state"] | null
           status?: Database["public"]["Enums"]["project_status"]
           sub_phase?: string | null
           updated_at?: string
@@ -560,6 +618,7 @@ export type Database = {
           complementary_sale?: boolean
           contract_date?: string
           contractual_deadline_days?: number | null
+          country_code?: string
           created_at?: string
           created_by?: string | null
           d_zero_date?: string | null
@@ -584,7 +643,7 @@ export type Database = {
           project_type_id?: string | null
           reached_implemented?: boolean
           reached_implemented_at?: string | null
-          state?: Database["public"]["Enums"]["brazilian_state"]
+          state?: Database["public"]["Enums"]["brazilian_state"] | null
           status?: Database["public"]["Enums"]["project_status"]
           sub_phase?: string | null
           updated_at?: string
@@ -789,6 +848,7 @@ export type Database = {
         Args: {
           p_city: string
           p_company_name: string
+          p_country?: string
           p_project_type_id: string
           p_segment: string
           p_state: string
@@ -824,6 +884,7 @@ export type Database = {
         Args: {
           p_city: string
           p_company_name: string
+          p_country?: string
           p_project_type_id: string
           p_segment: string
           p_state: string

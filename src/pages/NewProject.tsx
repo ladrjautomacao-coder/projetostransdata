@@ -21,6 +21,7 @@ import { CalendarIcon, ArrowLeft, Save, Info, Upload, FileText, X, Link2, Extern
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { useSettings } from "@/contexts/SettingsContext";
+import { LocationFields } from "@/components/LocationFields";
 
 type BrazilianState = Database["public"]["Enums"]["brazilian_state"];
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
@@ -46,6 +47,7 @@ export default function NewProject() {
   const [companyName, setCompanyName] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState<BrazilianState | "">("");
+  const [countryCode, setCountryCode] = useState("BR");
   const [contractDate, setContractDate] = useState<Date>();
   const [dZeroDate, setDZeroDate] = useState<Date>();
   const [handoverDate, setHandoverDate] = useState<Date>();
@@ -128,24 +130,24 @@ export default function NewProject() {
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
-      if (!city || !state || !projectTypeId) { setCodePreview(""); return; }
+      if (!city || !projectTypeId || (countryCode === "BR" && !state)) { setCodePreview(""); return; }
       try {
         const { data, error } = await (supabase as any).rpc("preview_project_code", {
-          p_city: city, p_state: state, p_project_type_id: projectTypeId,
-          p_segment: projectSegment || null, p_company_name: companyName || "",
+          p_city: city, p_state: state || null, p_project_type_id: projectTypeId,
+          p_segment: projectSegment || null, p_company_name: companyName || "", p_country: countryCode,
         });
         if (!cancelled && !error) setCodePreview(data || "");
       } catch { /* ignore */ }
     };
     const t = setTimeout(run, 250);
     return () => { cancelled = true; clearTimeout(t); };
-  }, [city, state, projectTypeId, projectSegment, companyName]);
+  }, [city, state, countryCode, projectTypeId, projectSegment, companyName]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validações
-    if (!companyName || !city || !state || !contractDate) {
+    if (!companyName || !city || !contractDate || (countryCode === "BR" && !state)) {
       toast({ title: "Preencha os campos obrigatórios de Dados Gerais", variant: "destructive" });
       return;
     }
@@ -192,7 +194,8 @@ export default function NewProject() {
       const { data: project, error } = await supabase.from("projects").insert({
         company_name: companyName,
         city,
-        state: state as BrazilianState,
+        state: countryCode === "BR" ? (state as BrazilianState) : null,
+        country_code: countryCode,
         contract_date: format(contractDate, "yyyy-MM-dd"),
         d_zero_date: dZeroDate ? format(dZeroDate, "yyyy-MM-dd") : null,
         handover_date: handoverDate ? format(handoverDate, "yyyy-MM-dd") : null,
@@ -327,22 +330,15 @@ export default function NewProject() {
               <Label>Nome da Empresa <span className="text-destructive">*</span></Label>
               <Input value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Ex.: TransMobile Ltda." required maxLength={settings.companyNameMax} />
             </div>
-            <div className="space-y-2">
-              <Label>Cidade <span className="text-destructive">*</span></Label>
-              <Input value={city} onChange={e => setCity(sanitizeCity(e.target.value))} placeholder="Ex.: São Paulo" required maxLength={settings.cityMax} />
-              <HelperText>Apenas letras, espaços, hífen e apóstrofo</HelperText>
-            </div>
-            <div className="space-y-2">
-              <Label>Estado <span className="text-destructive">*</span></Label>
-              <Select value={state || undefined} onValueChange={v => setState(v as BrazilianState)}>
-                <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                <SelectContent className="max-h-60 overflow-y-auto">
-                  {Constants.public.Enums.brazilian_state.map(s => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <LocationFields
+              countryCode={countryCode}
+              onCountryChange={setCountryCode}
+              city={city}
+              onCityChange={setCity}
+              state={state}
+              onStateChange={v => setState(v as BrazilianState)}
+              cityMax={settings.cityMax}
+            />
             <div className="space-y-2">
               <Label>Tipo do Projeto <span className="text-destructive">*</span></Label>
               <Select value={projectTypeId || undefined} onValueChange={setProjectTypeId}>

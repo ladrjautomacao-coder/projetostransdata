@@ -194,8 +194,18 @@ Deno.serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        const allowed = ["user", "admin", "super_admin", "gerente_projetos", "executivo", "comercial", "leitor"];
-        const newRole = allowed.includes(body.role) ? body.role : "user";
+        const allowed = [
+          "super_admin", "admin", "diretoria", "comercial", "projetos",
+          "suporte_tecnico", "relacionamento", "implantacao", "produtos",
+          "desenvolvimento", "integration",
+        ];
+        const newRole = body.role;
+        if (!allowed.includes(newRole)) {
+          return new Response(JSON.stringify({ error: `Papel inválido: ${body.role}` }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
         if (newRole === "super_admin" && !isSuperAdmin) {
           return new Response(JSON.stringify({ error: "Apenas Super Admins podem conceder o papel Super Admin" }), {
             status: 403,

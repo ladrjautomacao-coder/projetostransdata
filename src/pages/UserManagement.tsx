@@ -273,7 +273,11 @@ export default function UserManagement() {
                       disabled={actionLoading === user.id}
                     >
                       <SelectTrigger className="h-8 w-[170px] text-xs">
-                        <SelectValue />
+                        <SelectValue placeholder="Definir área">
+                          {(AVAILABLE_ROLES as readonly string[]).includes(user.role)
+                            ? ROLE_LABELS[user.role]
+                            : `${ROLE_LABELS[user.role] ?? user.role} (definir área)`}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {AVAILABLE_ROLES.map(r => (

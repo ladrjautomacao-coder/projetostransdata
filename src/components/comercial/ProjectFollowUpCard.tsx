@@ -1,3 +1,4 @@
+import { formatLocation } from "@/lib/location";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -44,7 +45,7 @@ export function ProjectFollowUpCard({ project, staleDays, onOpen }: Props) {
             </div>
             <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
               {project.project_code && <span className="font-mono">{project.project_code}</span>}
-              <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{project.city}/{project.state}</span>
+              <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{formatLocation(project.city, project.state, project.country_code)}</span>
               <span className="flex items-center gap-1"><UserRound className="h-3 w-3" />{project.manager?.full_name ?? "Sem gerente"}</span>
               <span className="flex items-center gap-1"><Briefcase className="h-3 w-3" />{project.executive?.full_name ?? "Sem executivo"}</span>
             </div>

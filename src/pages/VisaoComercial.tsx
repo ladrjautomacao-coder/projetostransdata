@@ -24,7 +24,7 @@ import type { FollowUpProject, ProjectStatus } from "@/components/comercial/type
 const PAGE_SIZE = 24;
 
 const SELECT_COLS =
-  "id, company_name, project_code, city, state, status, sub_phase, contract_date, d_zero_date, handover_date, fleet_size, implemented_fleet, observations, is_pilot, created_at, updated_at, manager_id, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name)), project_integrations(integration:integrations(name))";
+  "id, company_name, project_code, city, state, country_code, status, sub_phase, contract_date, d_zero_date, handover_date, fleet_size, implemented_fleet, observations, is_pilot, created_at, updated_at, manager_id, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name)), project_integrations(integration:integrations(name))";
 
 type SortKey = "stale" | "recent" | "company" | "status";
 

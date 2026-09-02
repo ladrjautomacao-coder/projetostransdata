@@ -1,3 +1,4 @@
+import { formatLocation } from "@/lib/location";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Draggable } from "@hello-pangea/dnd";
@@ -198,7 +199,7 @@ export default function KanbanCard({ project: p, index, onUpdateObservations, ca
               </div>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <MapPin className="h-3 w-3" />
-                {p.city}/{p.state}
+                {formatLocation(p.city, p.state, p.country_code)}
               </div>
               {p.manager?.full_name && (
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">

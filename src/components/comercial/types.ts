@@ -7,7 +7,8 @@ export interface FollowUpProject {
   company_name: string;
   project_code: string | null;
   city: string;
-  state: string;
+  state: string | null;
+  country_code: string | null;
   status: ProjectStatus;
   sub_phase: string | null;
   contract_date: string;

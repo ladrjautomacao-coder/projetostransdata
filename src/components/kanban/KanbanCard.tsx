@@ -71,7 +71,14 @@ export default function KanbanCard({ project: p, index, onUpdateObservations, ca
   // SLA: baseado na data do último acompanhamento registrado.
   // Não aplicar em "Implementado" (encerrado) nem em "Outros" (suspenso)
   const slaEligible = p.status !== "encerrado" && p.status !== "suspenso";
-  const lastNoteDate = latestFollowUpNote(p.observations)?.date ?? null;
+  const obsNoteDate = latestFollowUpNote(p.observations)?.date ?? null;
+  const noteTableDate = p.last_note_at ? new Date(p.last_note_at) : null;
+  const candidates = [obsNoteDate, noteTableDate].filter(
+    (d): d is Date => !!d && !isNaN(d.getTime())
+  );
+  const lastNoteDate = candidates.length
+    ? new Date(Math.max(...candidates.map(d => d.getTime())))
+    : null;
   const sla = slaEligible
     ? (lastNoteDate ? getSLA(lastNoteDate) : { level: "red" as SLALevel, days: null as number | null })
     : null;

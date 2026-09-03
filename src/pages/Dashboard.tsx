@@ -1201,7 +1201,22 @@ export default function Dashboard() {
                       }
                     }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} vertical={false} />
-                      <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                      <XAxis
+                        dataKey="name"
+                        interval={0}
+                        angle={-30}
+                        textAnchor="end"
+                        height={80}
+                        tickMargin={8}
+                        tickFormatter={(v: string) => {
+                          const parts = String(v).split(" ").filter(Boolean);
+                          const short = parts.length > 2 ? `${parts[0]} ${parts[parts.length - 1]}` : String(v);
+                          return short.length > 18 ? `${short.slice(0, 17)}…` : short;
+                        }}
+                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
                       <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Bar dataKey="value" radius={[6, 6, 0, 0]} animationDuration={1200} cursor="pointer">

@@ -12,13 +12,14 @@ import { Building2, MapPin, Calendar, Users, Pencil, Clock, Lock } from "lucide-
 import { format, differenceInDays } from "date-fns";
 import type { ProjectRow } from "@/pages/ProjectManagement";
 import { useSettings } from "@/contexts/SettingsContext";
+import { latestFollowUpNote } from "@/lib/followUpNotes";
 
 const fmtDate = (d: string | null) => d ? format(new Date(d + "T00:00:00"), "dd/MM/yyyy") : "—";
 
 type SLALevel = "green" | "yellow" | "orange" | "red";
 function makeGetSLA(green: number, yellow: number, orange: number) {
-  return (updatedAt: string): { level: SLALevel; days: number } => {
-    const days = Math.max(0, differenceInDays(new Date(), new Date(updatedAt)));
+  return (since: Date): { level: SLALevel; days: number } => {
+    const days = Math.max(0, differenceInDays(new Date(), since));
     if (days <= green) return { level: "green", days };
     if (days <= yellow) return { level: "yellow", days };
     if (days <= orange) return { level: "orange", days };
@@ -67,9 +68,19 @@ export default function KanbanCard({ project: p, index, onUpdateObservations, ca
     ? format(new Date(p.reached_implemented_at), "dd/MM/yyyy")
     : null;
 
-  // SLA: não aplicar em "Implementado" (encerrado) nem em "Outros" (suspenso)
+  // SLA: baseado na data do último acompanhamento registrado.
+  // Não aplicar em "Implementado" (encerrado) nem em "Outros" (suspenso)
   const slaEligible = p.status !== "encerrado" && p.status !== "suspenso";
-  const sla = slaEligible && p.updated_at ? getSLA(p.updated_at) : null;
+  const lastNoteDate = latestFollowUpNote(p.observations)?.date ?? null;
+  const sla = slaEligible
+    ? (lastNoteDate ? getSLA(lastNoteDate) : { level: "red" as SLALevel, days: null as number | null })
+    : null;
+  const slaLabel = sla ? (lastNoteDate ? SLA_LABEL[sla.level] : "Sem acompanhamento") : "";
+  const slaText = sla
+    ? (sla.days !== null
+        ? `${slaLabel} — sem acompanhamento há ${sla.days} dia${sla.days !== 1 ? "s" : ""}`
+        : "Sem acompanhamento registrado")
+    : "";
 
   const borderClass = returnedFromImplemented
     ? "border-l-4 border-l-red-500 bg-red-50/30 dark:bg-red-950/10"
@@ -103,7 +114,7 @@ export default function KanbanCard({ project: p, index, onUpdateObservations, ca
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">
-                    {SLA_LABEL[sla.level]} — parado há {sla.days} dia{sla.days !== 1 ? "s" : ""} nesta etapa
+                    {slaText}
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -112,10 +123,10 @@ export default function KanbanCard({ project: p, index, onUpdateObservations, ca
               <span
                 className={`absolute top-2 left-2 z-10 flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm ${SLA_BAR[sla.level]} ${sla.level === "red" ? "animate-pulse" : ""}`}
                 onClick={(e) => e.stopPropagation()}
-                title={`${SLA_LABEL[sla.level]} — parado há ${sla.days} dia${sla.days !== 1 ? "s" : ""}`}
+                title={slaText}
               >
                 <Clock className="h-2.5 w-2.5" />
-                {sla.days}d
+                {sla.days !== null ? `${sla.days}d` : "—"}
               </span>
             )}
             {returnedFromImplemented && (

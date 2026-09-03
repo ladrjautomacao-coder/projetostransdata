@@ -68,9 +68,19 @@ export default function KanbanCard({ project: p, index, onUpdateObservations, ca
     ? format(new Date(p.reached_implemented_at), "dd/MM/yyyy")
     : null;
 
-  // SLA: não aplicar em "Implementado" (encerrado) nem em "Outros" (suspenso)
+  // SLA: baseado na data do último acompanhamento registrado.
+  // Não aplicar em "Implementado" (encerrado) nem em "Outros" (suspenso)
   const slaEligible = p.status !== "encerrado" && p.status !== "suspenso";
-  const sla = slaEligible && p.updated_at ? getSLA(p.updated_at) : null;
+  const lastNoteDate = latestFollowUpNote(p.observations)?.date ?? null;
+  const sla = slaEligible
+    ? (lastNoteDate ? getSLA(lastNoteDate) : { level: "red" as SLALevel, days: null as number | null })
+    : null;
+  const slaLabel = sla ? (lastNoteDate ? SLA_LABEL[sla.level] : "Sem acompanhamento") : "";
+  const slaText = sla
+    ? (sla.days !== null
+        ? `${slaLabel} — sem acompanhamento há ${sla.days} dia${sla.days !== 1 ? "s" : ""}`
+        : "Sem acompanhamento registrado")
+    : "";
 
   const borderClass = returnedFromImplemented
     ? "border-l-4 border-l-red-500 bg-red-50/30 dark:bg-red-950/10"

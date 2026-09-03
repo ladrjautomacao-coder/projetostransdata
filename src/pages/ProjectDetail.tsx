@@ -686,11 +686,11 @@ export default function ProjectDetail() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Textarea
+            <MarkdownNoteEditor
               value={newNote}
-              onChange={e => setNewNote(e.target.value)}
+              onChange={setNewNote}
               placeholder="Registre aqui uma nova informação de acompanhamento..."
-              className="min-h-[100px]"
+              disabled={addingNote}
             />
             <div className="flex justify-end">
               <Button size="sm" onClick={handleAddNote} disabled={addingNote || !newNote.trim()}>

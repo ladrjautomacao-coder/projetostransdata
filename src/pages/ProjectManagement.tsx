@@ -90,6 +90,8 @@ export interface ProjectRow {
   reached_implemented: boolean;
   reached_implemented_at: string | null;
   updated_at: string;
+  /** Data do último registro salvo em "Acompanhamento do Projeto" (tabela project_notes) */
+  last_note_at?: string | null;
   executive: { full_name: string } | null;
   manager: { full_name: string } | null;
   manager_id: string | null;

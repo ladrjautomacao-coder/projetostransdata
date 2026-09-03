@@ -35,7 +35,8 @@ export default function KanbanLegend() {
             </button>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="max-w-[260px] text-xs">
-            A cor indica há quantos dias o projeto está sem atualização nesta etapa.
+            A cor indica há quantos dias o projeto está sem um novo registro no
+            Acompanhamento do Projeto. Projetos sem nenhum registro aparecem em vermelho.
             Não se aplica a cards em "Implementado" e "Outros".
           </TooltipContent>
         </Tooltip>

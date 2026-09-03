@@ -17,6 +17,8 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-p
 import { toast } from "sonner";
 import KanbanFilters from "@/components/kanban/KanbanFilters";
 import KanbanColumn from "@/components/kanban/KanbanColumn";
+import KanbanLegend from "@/components/kanban/KanbanLegend";
+
 
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 

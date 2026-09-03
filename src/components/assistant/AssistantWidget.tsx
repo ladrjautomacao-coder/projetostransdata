@@ -5,6 +5,10 @@ import { AssistantChat } from "./AssistantChat";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function AssistantWidget() {
+  // Assistente de IA oculto temporariamente
+  return null;
+
+  /*
   const { user, isSuperAdmin } = useAuth();
   const [open, setOpen] = useState(false);
 

@@ -125,7 +125,22 @@ export default function ProjectManagement() {
       .from("projects")
       .select("id, company_name, city, state, country_code, contract_date, d_zero_date, handover_date, status, sub_phase, is_pilot, complementary_sale, complementary_fleet, implemented_fleet, observations, reached_implemented, reached_implemented_at, updated_at, manager_id, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name)), project_integrations(integration:integrations(name))")
       .order("company_name");
-    setProjects((data as unknown as ProjectRow[]) || []);
+
+    // Considerar também os acompanhamentos já registrados em project_notes
+    const { data: notes } = await supabase
+      .from("project_notes")
+      .select("project_id, created_at")
+      .order("created_at", { ascending: false });
+    const lastNoteMap = new Map<string, string>();
+    (notes || []).forEach(n => {
+      if (!lastNoteMap.has(n.project_id)) lastNoteMap.set(n.project_id, n.created_at);
+    });
+
+    const rows = ((data as unknown as ProjectRow[]) || []).map(p => ({
+      ...p,
+      last_note_at: lastNoteMap.get(p.id) ?? null,
+    }));
+    setProjects(rows);
     setLoading(false);
   }, []);
 

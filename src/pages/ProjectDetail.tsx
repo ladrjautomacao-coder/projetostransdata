@@ -714,7 +714,7 @@ export default function ProjectDetail() {
                     <span>•</span>
                     <span>{format(new Date(n.created_at), "dd/MM/yyyy 'às' HH:mm")}</span>
                   </div>
-                  <p className="text-sm whitespace-pre-wrap">{n.content}</p>
+                  <NoteContent content={n.content} />
                 </div>
               ))}
             </div>

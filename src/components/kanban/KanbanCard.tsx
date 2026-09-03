@@ -18,8 +18,8 @@ const fmtDate = (d: string | null) => d ? format(new Date(d + "T00:00:00"), "dd/
 
 type SLALevel = "green" | "yellow" | "orange" | "red";
 function makeGetSLA(green: number, yellow: number, orange: number) {
-  return (updatedAt: string): { level: SLALevel; days: number } => {
-    const days = Math.max(0, differenceInDays(new Date(), new Date(updatedAt)));
+  return (since: Date): { level: SLALevel; days: number } => {
+    const days = Math.max(0, differenceInDays(new Date(), since));
     if (days <= green) return { level: "green", days };
     if (days <= yellow) return { level: "yellow", days };
     if (days <= orange) return { level: "orange", days };

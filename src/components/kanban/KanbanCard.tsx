@@ -12,6 +12,7 @@ import { Building2, MapPin, Calendar, Users, Pencil, Clock, Lock } from "lucide-
 import { format, differenceInDays } from "date-fns";
 import type { ProjectRow } from "@/pages/ProjectManagement";
 import { useSettings } from "@/contexts/SettingsContext";
+import { latestFollowUpNote } from "@/lib/followUpNotes";
 
 const fmtDate = (d: string | null) => d ? format(new Date(d + "T00:00:00"), "dd/MM/yyyy") : "—";
 

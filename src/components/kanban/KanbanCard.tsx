@@ -114,7 +114,7 @@ export default function KanbanCard({ project: p, index, onUpdateObservations, ca
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">
-                    {SLA_LABEL[sla.level]} — parado há {sla.days} dia{sla.days !== 1 ? "s" : ""} nesta etapa
+                    {slaText}
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

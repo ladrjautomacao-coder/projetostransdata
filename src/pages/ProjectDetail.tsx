@@ -24,6 +24,7 @@ import { format, addDays } from "date-fns";
 import { ArrowLeft, Edit2, Save, X, CalendarIcon, Upload, FileText, Trash2, Info, Download, Eye, PlusCircle, RefreshCw, User, Link2, ExternalLink } from "lucide-react";
 import { Constants } from "@/integrations/supabase/types";
 import { LocationFields } from "@/components/LocationFields";
+import { MarkdownNoteEditor, NoteContent } from "@/components/MarkdownNoteEditor";
 import { formatLocation } from "@/lib/location";
 import type { Database } from "@/integrations/supabase/types";
 import { useSettings } from "@/contexts/SettingsContext";

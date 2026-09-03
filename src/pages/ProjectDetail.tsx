@@ -24,6 +24,7 @@ import { format, addDays } from "date-fns";
 import { ArrowLeft, Edit2, Save, X, CalendarIcon, Upload, FileText, Trash2, Info, Download, Eye, PlusCircle, RefreshCw, User, Link2, ExternalLink } from "lucide-react";
 import { Constants } from "@/integrations/supabase/types";
 import { LocationFields } from "@/components/LocationFields";
+import { MarkdownNoteEditor, NoteContent } from "@/components/MarkdownNoteEditor";
 import { formatLocation } from "@/lib/location";
 import type { Database } from "@/integrations/supabase/types";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -685,11 +686,11 @@ export default function ProjectDetail() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Textarea
+            <MarkdownNoteEditor
               value={newNote}
-              onChange={e => setNewNote(e.target.value)}
+              onChange={setNewNote}
               placeholder="Registre aqui uma nova informação de acompanhamento..."
-              className="min-h-[100px]"
+              disabled={addingNote}
             />
             <div className="flex justify-end">
               <Button size="sm" onClick={handleAddNote} disabled={addingNote || !newNote.trim()}>
@@ -713,7 +714,7 @@ export default function ProjectDetail() {
                     <span>•</span>
                     <span>{format(new Date(n.created_at), "dd/MM/yyyy 'às' HH:mm")}</span>
                   </div>
-                  <p className="text-sm whitespace-pre-wrap">{n.content}</p>
+                  <NoteContent content={n.content} />
                 </div>
               ))}
             </div>

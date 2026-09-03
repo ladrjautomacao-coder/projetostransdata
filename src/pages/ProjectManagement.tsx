@@ -17,6 +17,8 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-p
 import { toast } from "sonner";
 import KanbanFilters from "@/components/kanban/KanbanFilters";
 import KanbanColumn from "@/components/kanban/KanbanColumn";
+import KanbanLegend from "@/components/kanban/KanbanLegend";
+
 
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 
@@ -253,9 +255,13 @@ export default function ProjectManagement() {
           </div>
           <h1 className="text-2xl font-bold">Kanban</h1>
         </div>
-        <div className="ml-auto text-sm text-muted-foreground">
-          {filtered.length} projeto{filtered.length !== 1 ? "s" : ""}
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
+          <KanbanLegend />
+          <span className="text-sm text-muted-foreground">
+            {filtered.length} projeto{filtered.length !== 1 ? "s" : ""}
+          </span>
         </div>
+
       </div>
 
       {/* Body: Filters + Board */}

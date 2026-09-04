@@ -203,6 +203,7 @@ export default function Dashboard() {
   const [filterState, setFilterState] = useState<string>("all");
   const [filterCity, setFilterCity] = useState<string>("all");
   const [filterSolution, setFilterSolution] = useState<string>("all");
+  const [filterManager, setFilterManager] = useState<string>("all");
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [selectedStatus, setSelectedStatus] = useState<ProjectStatus | null>(null);

@@ -705,6 +705,16 @@ export default function Dashboard() {
                   ))}
                 </SelectContent>
               </Select>
+
+              <Select value={filterManager} onValueChange={setFilterManager}>
+                <SelectTrigger className="bg-background border-border/50 h-9 text-xs"><SelectValue placeholder="Gerente" /></SelectTrigger>
+                <SelectContent className="bg-popover z-50">
+                  <SelectItem value="all">Todos os Gerentes</SelectItem>
+                  {managerOptions.map(m => (
+                    <SelectItem key={m} value={m}>{m}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </GlowCard>

@@ -373,7 +373,9 @@ export default function NewProject() {
         }
       }
 
+      clearDraft();
       toast({ title: "Projeto criado com sucesso!" });
+
       navigate("/projetos/lista");
     } catch (err: any) {
       toast({ title: "Erro ao criar projeto", description: err.message, variant: "destructive" });

@@ -1,5 +1,5 @@
 import { PROJECT_SEGMENTS } from "@/lib/projectSegments";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -144,7 +144,106 @@ export default function NewProject() {
     return () => { cancelled = true; clearTimeout(t); };
   }, [city, state, countryCode, projectTypeId, projectSegment, companyName]);
 
+  // ===== Rascunho automático (localStorage) =====
+  const draftKey = `transdata:new-project-draft:${user?.id || "anon"}`;
+  const [draftFound, setDraftFound] = useState<{ savedAt: string } | null>(null);
+  const [draftReady, setDraftReady] = useState(false);
+  const pendingDraftRef = useRef<any>(null);
+
+  const draftData = useMemo(() => ({
+    companyName, city, state, countryCode,
+    contractDate: contractDate ? contractDate.toISOString() : null,
+    dZeroDate: dZeroDate ? dZeroDate.toISOString() : null,
+    handoverDate: handoverDate ? handoverDate.toISOString() : null,
+    executiveProjectDate: executiveProjectDate ? executiveProjectDate.toISOString() : null,
+    executiveId, managerId, status, selectedProducts, projectTypeId, projectSegment,
+    selectedSolutions, selectedIntegrations, selectedFeatures, selectedEquipments, equipmentQty,
+    fleetSize, implDeadlineDays, contractualDeadlineDays, isPilot, pilotInfo, embeddedTraining,
+    installationTransmobile, installationClient, complementarySale, complementaryFleet,
+    fleetUrbano, fleetSeccionado, attachmentLinks,
+  }), [companyName, city, state, countryCode, contractDate, dZeroDate, handoverDate, executiveProjectDate,
+    executiveId, managerId, status, selectedProducts, projectTypeId, projectSegment, selectedSolutions,
+    selectedIntegrations, selectedFeatures, selectedEquipments, equipmentQty, fleetSize, implDeadlineDays,
+    contractualDeadlineDays, isPilot, pilotInfo, embeddedTraining, installationTransmobile,
+    installationClient, complementarySale, complementaryFleet, fleetUrbano, fleetSeccionado, attachmentLinks]);
+
+  // Carregar rascunho existente ao abrir a tela
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.data) {
+          pendingDraftRef.current = parsed.data;
+          setDraftFound({ savedAt: parsed.savedAt });
+        }
+      }
+    } catch { /* ignore */ }
+    setDraftReady(true);
+  }, [draftKey]);
+
+  const clearDraft = () => {
+    try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
+    pendingDraftRef.current = null;
+    setDraftFound(null);
+  };
+
+  const restoreDraft = () => {
+    const d = pendingDraftRef.current;
+    if (!d) return;
+    setCompanyName(d.companyName || "");
+    setCity(d.city || "");
+    setState(d.state || "");
+    setCountryCode(d.countryCode || "BR");
+    setContractDate(d.contractDate ? new Date(d.contractDate) : undefined);
+    setDZeroDate(d.dZeroDate ? new Date(d.dZeroDate) : undefined);
+    setHandoverDate(d.handoverDate ? new Date(d.handoverDate) : undefined);
+    setExecutiveProjectDate(d.executiveProjectDate ? new Date(d.executiveProjectDate) : undefined);
+    setExecutiveId(d.executiveId || "");
+    setManagerId(d.managerId || "");
+    setStatus(d.status || "planejamento");
+    setSelectedProducts(d.selectedProducts || []);
+    setProjectTypeId(d.projectTypeId || "");
+    setProjectSegment(d.projectSegment || "");
+    setSelectedSolutions(d.selectedSolutions || []);
+    setSelectedIntegrations(d.selectedIntegrations || []);
+    setSelectedFeatures(d.selectedFeatures || []);
+    setSelectedEquipments(d.selectedEquipments || []);
+    setEquipmentQty(d.equipmentQty || {});
+    setFleetSize(d.fleetSize || "");
+    setImplDeadlineDays(d.implDeadlineDays || "");
+    setContractualDeadlineDays(d.contractualDeadlineDays || "");
+    setIsPilot(!!d.isPilot);
+    setPilotInfo(d.pilotInfo || "");
+    setEmbeddedTraining(d.embeddedTraining || "");
+    setInstallationTransmobile(d.installationTransmobile ?? "0");
+    setInstallationClient(d.installationClient ?? "0");
+    setComplementarySale(!!d.complementarySale);
+    setComplementaryFleet(d.complementaryFleet ?? "0");
+    setFleetUrbano(d.fleetUrbano ?? "0");
+    setFleetSeccionado(d.fleetSeccionado ?? "0");
+    setAttachmentLinks(d.attachmentLinks || { pasta: [] });
+    setDraftFound(null);
+    toast({ title: "Cadastro restaurado", description: "Os dados preenchidos anteriormente foram recuperados." });
+  };
+
+  // Salvar rascunho automaticamente (debounce)
+  useEffect(() => {
+    if (!draftReady || submitting) return;
+    const isEmpty = !companyName && !city && !projectTypeId && !companyName && !managerId
+      && !executiveId && !fleetSize && !projectSegment && selectedSolutions.length === 0
+      && selectedEquipments.length === 0 && !contractDate;
+    if (isEmpty) return;
+    const t = setTimeout(() => {
+      try {
+        localStorage.setItem(draftKey, JSON.stringify({ savedAt: new Date().toISOString(), data: draftData }));
+      } catch { /* ignore */ }
+    }, 800);
+    return () => clearTimeout(t);
+  }, [draftData, draftReady, submitting, draftKey, companyName, city, projectTypeId, managerId, executiveId, fleetSize, projectSegment, selectedSolutions, selectedEquipments, contractDate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
+
     e.preventDefault();
 
     // Validações
@@ -274,7 +373,9 @@ export default function NewProject() {
         }
       }
 
+      clearDraft();
       toast({ title: "Projeto criado com sucesso!" });
+
       navigate("/projetos/lista");
     } catch (err: any) {
       toast({ title: "Erro ao criar projeto", description: err.message, variant: "destructive" });
@@ -319,6 +420,22 @@ export default function NewProject() {
         <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
       </Button>
       <h1 className="text-2xl font-bold mb-6">Cadastrar Novo Projeto</h1>
+      {draftFound && (
+        <Card className="mb-6 border-primary/40 bg-primary/5">
+          <CardContent className="flex flex-wrap items-center gap-3 py-4">
+            <Info className="h-4 w-4 text-primary" />
+            <span className="text-sm">
+              Encontramos um cadastro não finalizado de{" "}
+              {format(new Date(draftFound.savedAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}.
+            </span>
+            <div className="ml-auto flex gap-2">
+              <Button type="button" size="sm" onClick={restoreDraft}>Restaurar</Button>
+              <Button type="button" size="sm" variant="ghost" onClick={clearDraft}>Descartar</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
 
         {/* === SEÇÃO: PROJETO === */}

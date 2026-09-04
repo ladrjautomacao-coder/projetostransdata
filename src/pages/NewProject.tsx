@@ -67,6 +67,7 @@ export default function NewProject() {
   const [contractualDeadlineDays, setContractualDeadlineDays] = useState<string>("");
   const [isPilot, setIsPilot] = useState(false);
   const [pilotInfo, setPilotInfo] = useState("");
+  const [embeddedTraining, setEmbeddedTraining] = useState<string>("");
   const [installationTransmobile, setInstallationTransmobile] = useState<string>("0");
   const [installationClient, setInstallationClient] = useState<string>("0");
   const [complementarySale, setComplementarySale] = useState(false);
@@ -213,6 +214,7 @@ export default function NewProject() {
         contractual_deadline_days: contrDays,
         is_pilot: isPilot,
         pilot_info: isPilot ? pilotInfo : null,
+        embedded_install_training: embeddedTraining === "" ? null : embeddedTraining === "sim",
         filled_by: user?.id || null,
         installation_transmobile: parseInt(installationTransmobile) || 0,
         installation_client: parseInt(installationClient) || 0,
@@ -636,6 +638,16 @@ export default function NewProject() {
                 />
               </div>
             )}
+            <div className="space-y-2">
+              <Label>Treinamento de instalação embarcada</Label>
+              <Select value={embeddedTraining} onValueChange={setEmbeddedTraining}>
+                <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sim">Com treinamento de instalação embarcada</SelectItem>
+                  <SelectItem value="nao">Sem treinamento de instalação embarcada</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
 

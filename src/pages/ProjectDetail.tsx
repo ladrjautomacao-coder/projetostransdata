@@ -77,6 +77,7 @@ export default function ProjectDetail() {
   const [contractualDeadlineDays, setContractualDeadlineDays] = useState<string>("");
   const [isPilot, setIsPilot] = useState(false);
   const [pilotInfo, setPilotInfo] = useState("");
+  const [embeddedTraining, setEmbeddedTraining] = useState<string>("");
   const [installationTransmobile, setInstallationTransmobile] = useState<string>("0");
   const [installationClient, setInstallationClient] = useState<string>("0");
   const [complementarySale, setComplementarySale] = useState(false);
@@ -142,6 +143,7 @@ export default function ProjectDetail() {
       setImplDeadlineDays(data.implementation_deadline_days?.toString() || "");
       setContractualDeadlineDays(data.contractual_deadline_days?.toString() || "");
       setIsPilot(data.is_pilot || false);
+      setEmbeddedTraining((data as any).embedded_install_training === null || (data as any).embedded_install_training === undefined ? "" : ((data as any).embedded_install_training ? "sim" : "nao"));
       setPilotInfo(data.pilot_info || "");
       setInstallationTransmobile(data.installation_transmobile?.toString() || "0");
       setInstallationClient(data.installation_client?.toString() || "0");
@@ -262,6 +264,8 @@ export default function ProjectDetail() {
     add("Prazo Implantação (dias)", project.implementation_deadline_days, implDeadlineDays);
     add("Prazo Contratual (dias)", project.contractual_deadline_days, contractualDeadlineDays);
     add("Piloto", project.is_pilot ? "Sim" : "Não", isPilot ? "Sim" : "Não");
+    const trainLabel = (v: any) => v === true ? "Com treinamento" : v === false ? "Sem treinamento" : "—";
+    add("Treinamento de instalação embarcada", trainLabel((project as any).embedded_install_training), trainLabel(embeddedTraining === "" ? null : embeddedTraining === "sim"));
 
     const oldExec = project.executive?.full_name || "—";
     const newExec = executives.find(e => e.id === executiveId)?.full_name || "—";
@@ -355,6 +359,7 @@ export default function ProjectDetail() {
         contractual_deadline_days: contrDays,
         is_pilot: isPilot,
         pilot_info: isPilot ? pilotInfo : null,
+        embedded_install_training: embeddedTraining === "" ? null : embeddedTraining === "sim",
         installation_transmobile: parseInt(installationTransmobile) || 0,
         installation_client: parseInt(installationClient) || 0,
         complementary_sale: complementarySale,
@@ -1008,6 +1013,16 @@ export default function ProjectDetail() {
                     <Textarea value={pilotInfo} onChange={e => setPilotInfo(e.target.value)} rows={3} maxLength={settings.pilotInfoMax} />
                   </div>
                 )}
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Treinamento de instalação embarcada</Label>
+                  <Select value={embeddedTraining} onValueChange={setEmbeddedTraining}>
+                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sim">Com treinamento de instalação embarcada</SelectItem>
+                      <SelectItem value="nao">Sem treinamento de instalação embarcada</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </>
             ) : (
               <>
@@ -1015,6 +1030,10 @@ export default function ProjectDetail() {
                 {project.is_pilot && project.pilot_info && (
                   <div><span className="text-xs text-muted-foreground">Informação Adicional</span><p className="text-sm">{project.pilot_info}</p></div>
                 )}
+                <div>
+                  <span className="text-xs text-muted-foreground">Treinamento de instalação embarcada</span>
+                  <p>{(project as any).embedded_install_training === true ? "Com treinamento" : (project as any).embedded_install_training === false ? "Sem treinamento" : "—"}</p>
+                </div>
               </>
             )}
           </CardContent>
@@ -1231,6 +1250,7 @@ export default function ProjectDetail() {
                   fleet_seccionado: "Frota Seccionado", complementary_fleet: "Frota Complementar",
                   implemented_fleet: "Frota Implementada",
                   is_pilot: "Piloto", pilot_info: "Info do Piloto",
+                  embedded_install_training: "Treinamento de instalação embarcada",
                   complementary_sale: "Venda Complementar", observations: "Observações",
                   implementation_deadline_days: "Prazo de Implantação (dias)",
                   contractual_deadline_days: "Prazo Contratual (dias)",

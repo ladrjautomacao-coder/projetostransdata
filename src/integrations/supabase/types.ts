@@ -548,6 +548,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           d_zero_date: string | null
+          embedded_install_training: boolean | null
           executive_id: string | null
           executive_project_date: string | null
           filled_by: string | null
@@ -585,6 +586,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           d_zero_date?: string | null
+          embedded_install_training?: boolean | null
           executive_id?: string | null
           executive_project_date?: string | null
           filled_by?: string | null
@@ -622,6 +624,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           d_zero_date?: string | null
+          embedded_install_training?: boolean | null
           executive_id?: string | null
           executive_project_date?: string | null
           filled_by?: string | null

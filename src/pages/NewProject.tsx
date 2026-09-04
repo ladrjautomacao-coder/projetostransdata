@@ -214,6 +214,7 @@ export default function NewProject() {
         contractual_deadline_days: contrDays,
         is_pilot: isPilot,
         pilot_info: isPilot ? pilotInfo : null,
+        embedded_install_training: embeddedTraining === "" ? null : embeddedTraining === "sim",
         filled_by: user?.id || null,
         installation_transmobile: parseInt(installationTransmobile) || 0,
         installation_client: parseInt(installationClient) || 0,

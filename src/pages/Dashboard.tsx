@@ -353,7 +353,7 @@ export default function Dashboard() {
       }
       return true;
     });
-  }, [projects, filterStatus, filterProject, filterState, filterCity, filterSolution, dateFrom, dateTo]);
+  }, [projects, filterStatus, filterProject, filterState, filterCity, filterSolution, filterManager, dateFrom, dateTo]);
 
   const statusCounts = useMemo(() => {
     const counts: Record<ProjectStatus, number> = {

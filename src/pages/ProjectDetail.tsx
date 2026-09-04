@@ -182,7 +182,12 @@ export default function ProjectDetail() {
       const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", userIds);
       if (profiles) profiles.forEach(p => { profileMap[p.user_id] = p.full_name || "Usuário"; });
     }
-    setNotes(data.map(n => ({ ...n, _user_name: n.created_by ? (profileMap[n.created_by] || "Usuário") : "Sistema" })));
+    setNotes(data.map(n => ({
+      ...n,
+      _user_name: n.created_by
+        ? (profileMap[n.created_by] || (n.created_by === user?.id ? (user?.email ?? "Usuário") : "Usuário"))
+        : "Sistema",
+    })));
   };
 
   const handleAddNote = async () => {

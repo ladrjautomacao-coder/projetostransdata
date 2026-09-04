@@ -342,6 +342,7 @@ export default function Dashboard() {
         const hasSolution = p.project_solutions?.some(ps => ps.solution?.name === filterSolution);
         if (!hasSolution) return false;
       }
+      if (filterManager !== "all" && (p.manager?.full_name || "Sem gerente") !== filterManager) return false;
       if (dateFrom) {
         const contractDate = parseISO(p.contract_date);
         if (contractDate < dateFrom) return false;

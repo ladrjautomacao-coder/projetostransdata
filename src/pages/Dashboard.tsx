@@ -203,6 +203,7 @@ export default function Dashboard() {
   const [filterState, setFilterState] = useState<string>("all");
   const [filterCity, setFilterCity] = useState<string>("all");
   const [filterSolution, setFilterSolution] = useState<string>("all");
+  const [filterManager, setFilterManager] = useState<string>("all");
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [selectedStatus, setSelectedStatus] = useState<ProjectStatus | null>(null);
@@ -300,7 +301,7 @@ export default function Dashboard() {
     };
   }, [authLoading, user?.id]);
 
-  const hasActiveFilters = filterStatus !== "all" || filterProject !== "all" || filterState !== "all" || filterCity !== "all" || filterSolution !== "all" || !!dateFrom || !!dateTo;
+  const hasActiveFilters = filterStatus !== "all" || filterProject !== "all" || filterState !== "all" || filterCity !== "all" || filterSolution !== "all" || filterManager !== "all" || !!dateFrom || !!dateTo;
 
   const clearFilters = () => {
     setFilterStatus("all");
@@ -308,6 +309,7 @@ export default function Dashboard() {
     setFilterState("all");
     setFilterCity("all");
     setFilterSolution("all");
+    setFilterManager("all");
     setDateFrom(undefined);
     setDateTo(undefined);
   };
@@ -322,6 +324,13 @@ export default function Dashboard() {
     projects.forEach(p => p.project_solutions?.forEach(ps => { if (ps.solution?.name) names.add(ps.solution.name); }));
     return [...names].sort();
   }, [projects]);
+  const managerOptions = useMemo(() => {
+    const names = new Set<string>();
+    let hasNone = false;
+    projects.forEach(p => { if (p.manager?.full_name) names.add(p.manager.full_name); else hasNone = true; });
+    const sorted = [...names].sort((a, b) => a.localeCompare(b, "pt-BR"));
+    return hasNone ? [...sorted, "Sem gerente"] : sorted;
+  }, [projects]);
 
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {
@@ -333,6 +342,7 @@ export default function Dashboard() {
         const hasSolution = p.project_solutions?.some(ps => ps.solution?.name === filterSolution);
         if (!hasSolution) return false;
       }
+      if (filterManager !== "all" && (p.manager?.full_name || "Sem gerente") !== filterManager) return false;
       if (dateFrom) {
         const contractDate = parseISO(p.contract_date);
         if (contractDate < dateFrom) return false;
@@ -343,7 +353,7 @@ export default function Dashboard() {
       }
       return true;
     });
-  }, [projects, filterStatus, filterProject, filterState, filterCity, filterSolution, dateFrom, dateTo]);
+  }, [projects, filterStatus, filterProject, filterState, filterCity, filterSolution, filterManager, dateFrom, dateTo]);
 
   const statusCounts = useMemo(() => {
     const counts: Record<ProjectStatus, number> = {
@@ -692,6 +702,16 @@ export default function Dashboard() {
                   <SelectItem value="all">Todas as Soluções</SelectItem>
                   {solutionOptions.map(s => (
                     <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={filterManager} onValueChange={setFilterManager}>
+                <SelectTrigger className="bg-background border-border/50 h-9 text-xs"><SelectValue placeholder="Gerente" /></SelectTrigger>
+                <SelectContent className="bg-popover z-50">
+                  <SelectItem value="all">Todos os Gerentes</SelectItem>
+                  {managerOptions.map(m => (
+                    <SelectItem key={m} value={m}>{m}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

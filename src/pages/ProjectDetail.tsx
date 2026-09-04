@@ -264,6 +264,8 @@ export default function ProjectDetail() {
     add("Prazo Implantação (dias)", project.implementation_deadline_days, implDeadlineDays);
     add("Prazo Contratual (dias)", project.contractual_deadline_days, contractualDeadlineDays);
     add("Piloto", project.is_pilot ? "Sim" : "Não", isPilot ? "Sim" : "Não");
+    const trainLabel = (v: any) => v === true ? "Com treinamento" : v === false ? "Sem treinamento" : "—";
+    add("Treinamento de instalação embarcada", trainLabel((project as any).embedded_install_training), trainLabel(embeddedTraining === "" ? null : embeddedTraining === "sim"));
 
     const oldExec = project.executive?.full_name || "—";
     const newExec = executives.find(e => e.id === executiveId)?.full_name || "—";

@@ -142,6 +142,7 @@ export default function ProjectDetail() {
       setImplDeadlineDays(data.implementation_deadline_days?.toString() || "");
       setContractualDeadlineDays(data.contractual_deadline_days?.toString() || "");
       setIsPilot(data.is_pilot || false);
+      setEmbeddedTraining((data as any).embedded_install_training === null || (data as any).embedded_install_training === undefined ? "" : ((data as any).embedded_install_training ? "sim" : "nao"));
       setPilotInfo(data.pilot_info || "");
       setInstallationTransmobile(data.installation_transmobile?.toString() || "0");
       setInstallationClient(data.installation_client?.toString() || "0");

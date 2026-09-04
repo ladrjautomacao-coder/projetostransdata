@@ -1250,6 +1250,7 @@ export default function ProjectDetail() {
                   fleet_seccionado: "Frota Seccionado", complementary_fleet: "Frota Complementar",
                   implemented_fleet: "Frota Implementada",
                   is_pilot: "Piloto", pilot_info: "Info do Piloto",
+                  embedded_install_training: "Treinamento de instalação embarcada",
                   complementary_sale: "Venda Complementar", observations: "Observações",
                   implementation_deadline_days: "Prazo de Implantação (dias)",
                   contractual_deadline_days: "Prazo Contratual (dias)",

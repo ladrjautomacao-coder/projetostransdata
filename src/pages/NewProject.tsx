@@ -638,6 +638,16 @@ export default function NewProject() {
                 />
               </div>
             )}
+            <div className="space-y-2">
+              <Label>Treinamento de instalação embarcada</Label>
+              <Select value={embeddedTraining} onValueChange={setEmbeddedTraining}>
+                <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sim">Com treinamento de instalação embarcada</SelectItem>
+                  <SelectItem value="nao">Sem treinamento de instalação embarcada</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
 

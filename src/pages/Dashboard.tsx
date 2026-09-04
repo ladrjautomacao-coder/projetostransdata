@@ -324,6 +324,13 @@ export default function Dashboard() {
     projects.forEach(p => p.project_solutions?.forEach(ps => { if (ps.solution?.name) names.add(ps.solution.name); }));
     return [...names].sort();
   }, [projects]);
+  const managerOptions = useMemo(() => {
+    const names = new Set<string>();
+    let hasNone = false;
+    projects.forEach(p => { if (p.manager?.full_name) names.add(p.manager.full_name); else hasNone = true; });
+    const sorted = [...names].sort((a, b) => a.localeCompare(b, "pt-BR"));
+    return hasNone ? [...sorted, "Sem gerente"] : sorted;
+  }, [projects]);
 
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {

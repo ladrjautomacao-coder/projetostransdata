@@ -301,7 +301,7 @@ export default function Dashboard() {
     };
   }, [authLoading, user?.id]);
 
-  const hasActiveFilters = filterStatus !== "all" || filterProject !== "all" || filterState !== "all" || filterCity !== "all" || filterSolution !== "all" || !!dateFrom || !!dateTo;
+  const hasActiveFilters = filterStatus !== "all" || filterProject !== "all" || filterState !== "all" || filterCity !== "all" || filterSolution !== "all" || filterManager !== "all" || !!dateFrom || !!dateTo;
 
   const clearFilters = () => {
     setFilterStatus("all");
@@ -309,6 +309,7 @@ export default function Dashboard() {
     setFilterState("all");
     setFilterCity("all");
     setFilterSolution("all");
+    setFilterManager("all");
     setDateFrom(undefined);
     setDateTo(undefined);
   };

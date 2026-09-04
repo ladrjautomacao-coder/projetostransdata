@@ -420,6 +420,22 @@ export default function NewProject() {
         <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
       </Button>
       <h1 className="text-2xl font-bold mb-6">Cadastrar Novo Projeto</h1>
+      {draftFound && (
+        <Card className="mb-6 border-primary/40 bg-primary/5">
+          <CardContent className="flex flex-wrap items-center gap-3 py-4">
+            <Info className="h-4 w-4 text-primary" />
+            <span className="text-sm">
+              Encontramos um cadastro não finalizado de{" "}
+              {format(new Date(draftFound.savedAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}.
+            </span>
+            <div className="ml-auto flex gap-2">
+              <Button type="button" size="sm" onClick={restoreDraft}>Restaurar</Button>
+              <Button type="button" size="sm" variant="ghost" onClick={clearDraft}>Descartar</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
 
         {/* === SEÇÃO: PROJETO === */}

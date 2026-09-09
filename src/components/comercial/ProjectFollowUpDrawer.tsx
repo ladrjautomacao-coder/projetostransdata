@@ -9,7 +9,9 @@ import { ProjectTimeline } from "@/components/ProjectTimeline";
 import { statusLabels, subPhasesByStatus } from "@/pages/ProjectManagement";
 import { effectiveFollowUps } from "@/lib/followUpNotes";
 import { format } from "date-fns";
-import { CalendarDays, History, MessageSquareText, Layers, Plug } from "lucide-react";
+import { CalendarDays, History, MessageSquareText, Layers, Plug, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import type { FollowUpProject, ProjectStatus } from "./types";
 
 interface HistoryRow {

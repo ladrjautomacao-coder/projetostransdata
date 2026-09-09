@@ -51,7 +51,7 @@ export default function KanbanCard({ project: p, index, onUpdateObservations, ca
   const { settings } = useSettings();
   const getSLA = makeGetSLA(settings.slaGreenMaxDays, settings.slaYellowMaxDays, settings.slaOrangeMaxDays);
   const [open, setOpen] = useState(false);
-  const [note, setNote] = useState("");
+  const { value: note, update: setNote, clear: clearNoteDraft, draftSavedAt } = useNoteDraft(p.id);
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -59,7 +59,7 @@ export default function KanbanCard({ project: p, index, onUpdateObservations, ca
     setSaving(true);
     await onUpdateObservations(p.id, note.trim());
     setSaving(false);
-    setNote("");
+    clearNoteDraft();
     setOpen(false);
   };
 

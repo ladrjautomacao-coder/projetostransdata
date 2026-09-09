@@ -79,10 +79,13 @@ export function AlertsBell() {
     return () => { mounted = false; clearInterval(i); };
   }, [settings.pollingSeconds]);
 
+  const isFullScope = isAdmin || isSuperAdmin || !managerId;
+
   const grouped = useMemo(() => {
     const today = new Date();
+    const scoped = isFullScope ? projects : projects.filter(p => p.manager_id === managerId);
     const result: Record<Category, AlertProject[]> = { returned: [], dzero: [], stuck: [], no_manager: [] };
-    for (const p of projects) {
+    for (const p of scoped) {
       if (p.reached_implemented) result.returned.push(p);
       if (p.d_zero_date) {
         const dz = new Date(p.d_zero_date + "T00:00:00");

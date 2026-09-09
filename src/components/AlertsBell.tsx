@@ -32,7 +32,8 @@ const CATEGORY_META: Record<Category, { label: string; icon: typeof Bell; color:
 };
 export function AlertsBell() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAdmin, isSuperAdmin } = useAuth();
+  const [managerId, setManagerId] = useState<string | null>(null);
   const { settings } = useSettings();
   const [open, setOpen] = useState(false);
   const [projects, setProjects] = useState<AlertProject[]>([]);
@@ -57,6 +58,15 @@ export function AlertsBell() {
 
   useEffect(() => {
     let mounted = true;
+    if (!user) { setManagerId(null); return; }
+    supabase.rpc("get_my_manager_id").then(({ data }) => {
+      if (mounted) setManagerId((data as string | null) ?? null);
+    });
+    return () => { mounted = false; };
+  }, [user]);
+
+  useEffect(() => {
+    let mounted = true;
     const load = async () => {
       const { data } = await supabase
         .from("projects")
@@ -69,10 +79,13 @@ export function AlertsBell() {
     return () => { mounted = false; clearInterval(i); };
   }, [settings.pollingSeconds]);
 
+  const isFullScope = isAdmin || isSuperAdmin || !managerId;
+
   const grouped = useMemo(() => {
     const today = new Date();
+    const scoped = isFullScope ? projects : projects.filter(p => p.manager_id === managerId);
     const result: Record<Category, AlertProject[]> = { returned: [], dzero: [], stuck: [], no_manager: [] };
-    for (const p of projects) {
+    for (const p of scoped) {
       if (p.reached_implemented) result.returned.push(p);
       if (p.d_zero_date) {
         const dz = new Date(p.d_zero_date + "T00:00:00");
@@ -82,10 +95,10 @@ export function AlertsBell() {
       if (p.updated_at && differenceInDays(today, new Date(p.updated_at)) > settings.stuckDays && p.status !== "suspenso") {
         result.stuck.push(p);
       }
-      if (!p.manager_id) result.no_manager.push(p);
+      if (isFullScope && !p.manager_id) result.no_manager.push(p);
     }
     return result;
-  }, [projects, settings.dzeroWindowDays, settings.stuckDays]);
+  }, [projects, settings.dzeroWindowDays, settings.stuckDays, isFullScope, managerId]);
 
   const activeKeys = useMemo(() => {
     const keys: string[] = [];

@@ -13,6 +13,7 @@ import { format, differenceInDays } from "date-fns";
 import type { ProjectRow } from "@/pages/ProjectManagement";
 import { useSettings } from "@/contexts/SettingsContext";
 import { latestFollowUpNote } from "@/lib/followUpNotes";
+import { useNoteDraft } from "@/hooks/useNoteDraft";
 
 const fmtDate = (d: string | null) => d ? format(new Date(d + "T00:00:00"), "dd/MM/yyyy") : "—";
 
@@ -51,7 +52,7 @@ export default function KanbanCard({ project: p, index, onUpdateObservations, ca
   const { settings } = useSettings();
   const getSLA = makeGetSLA(settings.slaGreenMaxDays, settings.slaYellowMaxDays, settings.slaOrangeMaxDays);
   const [open, setOpen] = useState(false);
-  const [note, setNote] = useState("");
+  const { value: note, update: setNote, clear: clearNoteDraft, draftSavedAt } = useNoteDraft(p.id);
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -59,7 +60,7 @@ export default function KanbanCard({ project: p, index, onUpdateObservations, ca
     setSaving(true);
     await onUpdateObservations(p.id, note.trim());
     setSaving(false);
-    setNote("");
+    clearNoteDraft();
     setOpen(false);
   };
 
@@ -198,6 +199,19 @@ export default function KanbanCard({ project: p, index, onUpdateObservations, ca
                   >
                     <div className="space-y-2">
                       <p className="text-sm font-semibold">Acompanhamento do Projeto</p>
+                      {draftSavedAt && (
+                        <div className="flex items-center justify-between gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1">
+                          <span className="text-[11px] text-amber-700 dark:text-amber-400">
+                            Rascunho restaurado de {format(draftSavedAt, "dd/MM/yyyy HH:mm")}
+                          </span>
+                          <button
+                            className="text-[11px] font-medium text-amber-700 dark:text-amber-400 hover:underline"
+                            onClick={() => clearNoteDraft()}
+                          >
+                            Descartar
+                          </button>
+                        </div>
+                      )}
                       <Textarea
                         value={note}
                         onChange={e => setNote(e.target.value)}

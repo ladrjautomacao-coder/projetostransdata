@@ -29,6 +29,7 @@ import { formatLocation } from "@/lib/location";
 import type { Database } from "@/integrations/supabase/types";
 import { useSettings } from "@/contexts/SettingsContext";
 import { subPhasesByStatus } from "@/pages/ProjectManagement";
+import { useNoteDraft } from "@/hooks/useNoteDraft";
 
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 type BrazilianState = Database["public"]["Enums"]["brazilian_state"];
@@ -85,7 +86,7 @@ export default function ProjectDetail() {
   const [implementedFleet, setImplementedFleet] = useState<string>("0");
   const [observations, setObservations] = useState("");
   const [notes, setNotes] = useState<any[]>([]);
-  const [newNote, setNewNote] = useState("");
+  const { value: newNote, update: setNewNote, clear: clearNoteDraft, draftSavedAt: noteDraftSavedAt } = useNoteDraft(id);
   const [addingNote, setAddingNote] = useState(false);
 
   // Lookups
@@ -202,7 +203,7 @@ export default function ProjectDetail() {
         created_by: user?.id || null,
       });
       if (error) throw error;
-      setNewNote("");
+      clearNoteDraft();
       toast({ title: "Acompanhamento registrado!" });
       loadNotes();
     } catch (err: any) {
@@ -696,6 +697,19 @@ export default function ProjectDetail() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
+            {noteDraftSavedAt && (
+              <div className="flex items-center justify-between gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-1.5">
+                <span className="text-xs text-amber-700 dark:text-amber-400">
+                  Rascunho restaurado de {format(noteDraftSavedAt, "dd/MM/yyyy HH:mm")}
+                </span>
+                <button
+                  className="text-xs font-medium text-amber-700 dark:text-amber-400 hover:underline"
+                  onClick={() => clearNoteDraft()}
+                >
+                  Descartar
+                </button>
+              </div>
+            )}
             <MarkdownNoteEditor
               value={newNote}
               onChange={setNewNote}

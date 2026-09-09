@@ -203,7 +203,7 @@ export default function ProjectDetail() {
         created_by: user?.id || null,
       });
       if (error) throw error;
-      setNewNote("");
+      clearNoteDraft();
       toast({ title: "Acompanhamento registrado!" });
       loadNotes();
     } catch (err: any) {
@@ -697,6 +697,19 @@ export default function ProjectDetail() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
+            {noteDraftSavedAt && (
+              <div className="flex items-center justify-between gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-1.5">
+                <span className="text-xs text-amber-700 dark:text-amber-400">
+                  Rascunho restaurado de {format(noteDraftSavedAt, "dd/MM/yyyy HH:mm")}
+                </span>
+                <button
+                  className="text-xs font-medium text-amber-700 dark:text-amber-400 hover:underline"
+                  onClick={() => clearNoteDraft()}
+                >
+                  Descartar
+                </button>
+              </div>
+            )}
             <MarkdownNoteEditor
               value={newNote}
               onChange={setNewNote}

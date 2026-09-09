@@ -90,6 +90,15 @@ export function ProjectFollowUpDrawer({ project, open, onOpenChange }: Props) {
               <Badge variant="outline">{statusLabels[project.status]}</Badge>
               {subPhaseLabel && <span>{subPhaseLabel}</span>}
             </SheetDescription>
+            <div className="pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/projetos/${project.id}`)}
+              >
+                <ExternalLink className="mr-1.5 h-3.5 w-3.5" /> Abrir projeto
+              </Button>
+            </div>
           </SheetHeader>
 
           <ScrollArea className="flex-1">

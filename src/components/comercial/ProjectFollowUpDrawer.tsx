@@ -68,7 +68,7 @@ export function ProjectFollowUpDrawer({ project, open, onOpenChange }: Props) {
 
   if (!project) return null;
 
-  const notes = parseFollowUpNotes(project.observations);
+  const notes = effectiveFollowUps(project);
   const subPhaseLabel = project.sub_phase
     ? subPhasesByStatus[project.status]?.find(sp => sp.id === project.sub_phase)?.label ?? project.sub_phase
     : null;

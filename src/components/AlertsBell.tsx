@@ -95,10 +95,10 @@ export function AlertsBell() {
       if (p.updated_at && differenceInDays(today, new Date(p.updated_at)) > settings.stuckDays && p.status !== "suspenso") {
         result.stuck.push(p);
       }
-      if (!p.manager_id) result.no_manager.push(p);
+      if (isFullScope && !p.manager_id) result.no_manager.push(p);
     }
     return result;
-  }, [projects, settings.dzeroWindowDays, settings.stuckDays]);
+  }, [projects, settings.dzeroWindowDays, settings.stuckDays, isFullScope, managerId]);
 
   const activeKeys = useMemo(() => {
     const keys: string[] = [];

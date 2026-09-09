@@ -58,6 +58,15 @@ export function AlertsBell() {
 
   useEffect(() => {
     let mounted = true;
+    if (!user) { setManagerId(null); return; }
+    supabase.rpc("get_my_manager_id").then(({ data }) => {
+      if (mounted) setManagerId((data as string | null) ?? null);
+    });
+    return () => { mounted = false; };
+  }, [user]);
+
+  useEffect(() => {
+    let mounted = true;
     const load = async () => {
       const { data } = await supabase
         .from("projects")

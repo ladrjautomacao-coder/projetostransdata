@@ -32,7 +32,8 @@ const CATEGORY_META: Record<Category, { label: string; icon: typeof Bell; color:
 };
 export function AlertsBell() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAdmin, isSuperAdmin } = useAuth();
+  const [managerId, setManagerId] = useState<string | null>(null);
   const { settings } = useSettings();
   const [open, setOpen] = useState(false);
   const [projects, setProjects] = useState<AlertProject[]>([]);

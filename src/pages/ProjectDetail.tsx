@@ -29,6 +29,7 @@ import { formatLocation } from "@/lib/location";
 import type { Database } from "@/integrations/supabase/types";
 import { useSettings } from "@/contexts/SettingsContext";
 import { subPhasesByStatus } from "@/pages/ProjectManagement";
+import { useNoteDraft } from "@/hooks/useNoteDraft";
 
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
 type BrazilianState = Database["public"]["Enums"]["brazilian_state"];
@@ -85,7 +86,7 @@ export default function ProjectDetail() {
   const [implementedFleet, setImplementedFleet] = useState<string>("0");
   const [observations, setObservations] = useState("");
   const [notes, setNotes] = useState<any[]>([]);
-  const [newNote, setNewNote] = useState("");
+  const { value: newNote, update: setNewNote, clear: clearNoteDraft, draftSavedAt: noteDraftSavedAt } = useNoteDraft(id);
   const [addingNote, setAddingNote] = useState(false);
 
   // Lookups

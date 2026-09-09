@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProjectTimeline } from "@/components/ProjectTimeline";
 import { statusLabels, subPhasesByStatus } from "@/pages/ProjectManagement";
-import { parseFollowUpNotes } from "@/lib/followUpNotes";
+import { effectiveFollowUps } from "@/lib/followUpNotes";
 import { format } from "date-fns";
 import { CalendarDays, History, MessageSquareText, Layers, Plug } from "lucide-react";
 import type { FollowUpProject, ProjectStatus } from "./types";

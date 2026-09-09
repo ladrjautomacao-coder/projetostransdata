@@ -659,7 +659,7 @@ export default function Dashboard() {
               <Select value={filterStatus} onValueChange={setFilterStatus}>
                 <SelectTrigger className="bg-background border-border/50 h-9 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
                 <SelectContent className="bg-popover z-50">
-                  <SelectItem value="all">Todos os Status</SelectItem>
+                  <SelectItem value="all">Status</SelectItem>
                   {Constants.public.Enums.project_status.map(s => (
                     <SelectItem key={s} value={s}>{statusLabels[s]}</SelectItem>
                   ))}
@@ -669,7 +669,7 @@ export default function Dashboard() {
               <Select value={filterProject} onValueChange={setFilterProject}>
                 <SelectTrigger className="bg-background border-border/50 h-9 text-xs"><SelectValue placeholder="Projeto" /></SelectTrigger>
                 <SelectContent className="bg-popover z-50">
-                  <SelectItem value="all">Todos os Projetos</SelectItem>
+                  <SelectItem value="all">Projetos</SelectItem>
                   {projects.map(p => (
                     <SelectItem key={p.id} value={p.id}>{p.company_name}</SelectItem>
                   ))}
@@ -679,7 +679,7 @@ export default function Dashboard() {
               <Select value={filterState} onValueChange={v => { setFilterState(v); setFilterCity("all"); }}>
                 <SelectTrigger className="bg-background border-border/50 h-9 text-xs"><SelectValue placeholder="Estado" /></SelectTrigger>
                 <SelectContent className="bg-popover z-50">
-                  <SelectItem value="all">Todos os Estados</SelectItem>
+                  <SelectItem value="all">Estados</SelectItem>
                   {stateOptions.map(s => (
                     <SelectItem key={s} value={s}>{s}</SelectItem>
                   ))}
@@ -689,7 +689,7 @@ export default function Dashboard() {
               <Select value={filterCity} onValueChange={setFilterCity}>
                 <SelectTrigger className="bg-background border-border/50 h-9 text-xs"><SelectValue placeholder="Cidade" /></SelectTrigger>
                 <SelectContent className="bg-popover z-50">
-                  <SelectItem value="all">Todas as Cidades</SelectItem>
+                  <SelectItem value="all">Cidades</SelectItem>
                   {cityOptions.map(c => (
                     <SelectItem key={c} value={c}>{c}</SelectItem>
                   ))}
@@ -699,7 +699,7 @@ export default function Dashboard() {
               <Select value={filterSolution} onValueChange={setFilterSolution}>
                 <SelectTrigger className="bg-background border-border/50 h-9 text-xs"><SelectValue placeholder="Solução" /></SelectTrigger>
                 <SelectContent className="bg-popover z-50">
-                  <SelectItem value="all">Todas as Soluções</SelectItem>
+                  <SelectItem value="all">Soluções</SelectItem>
                   {solutionOptions.map(s => (
                     <SelectItem key={s} value={s}>{s}</SelectItem>
                   ))}
@@ -709,7 +709,7 @@ export default function Dashboard() {
               <Select value={filterManager} onValueChange={setFilterManager}>
                 <SelectTrigger className="bg-background border-border/50 h-9 text-xs"><SelectValue placeholder="Gerente" /></SelectTrigger>
                 <SelectContent className="bg-popover z-50">
-                  <SelectItem value="all">Todos os Gerentes</SelectItem>
+                  <SelectItem value="all">Gerentes</SelectItem>
                   {managerOptions.map(m => (
                     <SelectItem key={m} value={m}>{m}</SelectItem>
                   ))}

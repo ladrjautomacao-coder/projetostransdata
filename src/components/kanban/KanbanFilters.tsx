@@ -37,9 +37,9 @@ export default function KanbanFilters({ filters, setFilter, clearFilters, hasAct
         <div>
           <label className="text-xs font-medium text-muted-foreground mb-1 block">Gerente de Projetos</label>
           <Select value={filters.managerId || "all"} onValueChange={v => setFilter("managerId", v === "all" ? "" : v)}>
-            <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Todos" /></SelectTrigger>
+            <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Gerentes" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="all">Gerentes</SelectItem>
               {managers.map(m => <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>)}
             </SelectContent>
           </Select>
@@ -58,9 +58,9 @@ export default function KanbanFilters({ filters, setFilter, clearFilters, hasAct
         <div>
           <label className="text-xs font-medium text-muted-foreground mb-1 block">Estado</label>
           <Select value={filters.state || "all"} onValueChange={v => setFilter("state", v === "all" ? "" : v)}>
-            <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Todos" /></SelectTrigger>
+            <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Estados" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="all">Estados</SelectItem>
               {Constants.public.Enums.brazilian_state.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
               {(countries || []).map(c => <SelectItem key={c} value={`c:${c}`}>{c}</SelectItem>)}
             </SelectContent>
@@ -70,9 +70,9 @@ export default function KanbanFilters({ filters, setFilter, clearFilters, hasAct
         <div>
           <label className="text-xs font-medium text-muted-foreground mb-1 block">Cidade</label>
           <Select value={filters.city || "all"} onValueChange={v => setFilter("city", v === "all" ? "" : v)}>
-            <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Todas" /></SelectTrigger>
+            <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Cidades" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todas</SelectItem>
+              <SelectItem value="all">Cidades</SelectItem>
               {cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
             </SelectContent>
           </Select>
@@ -81,9 +81,9 @@ export default function KanbanFilters({ filters, setFilter, clearFilters, hasAct
         <div>
           <label className="text-xs font-medium text-muted-foreground mb-1 block">Status</label>
           <Select value={filters.status || "all"} onValueChange={v => setFilter("status", v === "all" ? "" : v)}>
-            <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Todos" /></SelectTrigger>
+            <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="all">Status</SelectItem>
               {columns.map(s => <SelectItem key={s} value={s}>{statusLabels[s as keyof typeof statusLabels]}</SelectItem>)}
             </SelectContent>
           </Select>

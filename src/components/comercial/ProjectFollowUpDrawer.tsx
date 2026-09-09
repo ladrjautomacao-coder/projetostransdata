@@ -7,9 +7,11 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProjectTimeline } from "@/components/ProjectTimeline";
 import { statusLabels, subPhasesByStatus } from "@/pages/ProjectManagement";
-import { parseFollowUpNotes } from "@/lib/followUpNotes";
+import { effectiveFollowUps } from "@/lib/followUpNotes";
 import { format } from "date-fns";
-import { CalendarDays, History, MessageSquareText, Layers, Plug } from "lucide-react";
+import { CalendarDays, History, MessageSquareText, Layers, Plug, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import type { FollowUpProject, ProjectStatus } from "./types";
 
 interface HistoryRow {
@@ -33,6 +35,7 @@ export function ProjectFollowUpDrawer({ project, open, onOpenChange }: Props) {
   const [history, setHistory] = useState<HistoryRow[]>([]);
   const [authors, setAuthors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!open || !project) return;
@@ -68,7 +71,7 @@ export function ProjectFollowUpDrawer({ project, open, onOpenChange }: Props) {
 
   if (!project) return null;
 
-  const notes = parseFollowUpNotes(project.observations);
+  const notes = effectiveFollowUps(project);
   const subPhaseLabel = project.sub_phase
     ? subPhasesByStatus[project.status]?.find(sp => sp.id === project.sub_phase)?.label ?? project.sub_phase
     : null;
@@ -88,6 +91,15 @@ export function ProjectFollowUpDrawer({ project, open, onOpenChange }: Props) {
               <Badge variant="outline">{statusLabels[project.status]}</Badge>
               {subPhaseLabel && <span>{subPhaseLabel}</span>}
             </SheetDescription>
+            <div className="pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/projetos/${project.id}`)}
+              >
+                <ExternalLink className="mr-1.5 h-3.5 w-3.5" /> Abrir projeto
+              </Button>
+            </div>
           </SheetHeader>
 
           <ScrollArea className="flex-1">

@@ -2,6 +2,13 @@ import type { Database } from "@/integrations/supabase/types";
 
 export type ProjectStatus = Database["public"]["Enums"]["project_status"];
 
+export interface DbFollowUpNote {
+  id: string;
+  content: string;
+  created_at: string;
+  author: string | null;
+}
+
 export interface FollowUpProject {
   id: string;
   company_name: string;
@@ -25,4 +32,6 @@ export interface FollowUpProject {
   manager: { full_name: string } | null;
   project_solutions: { solution: { name: string } | null }[];
   project_integrations: { integration: { name: string } | null }[];
+  /** Notas de acompanhamento vindas de public.project_notes (mais recentes primeiro). */
+  notes?: DbFollowUpNote[];
 }

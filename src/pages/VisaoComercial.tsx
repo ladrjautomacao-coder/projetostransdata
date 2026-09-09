@@ -15,11 +15,16 @@ import KanbanFilters from "@/components/kanban/KanbanFilters";
 import { ProjectFollowUpCard } from "@/components/comercial/ProjectFollowUpCard";
 import { ProjectFollowUpDrawer } from "@/components/comercial/ProjectFollowUpDrawer";
 import { ProjectFollowUpSkeleton } from "@/components/comercial/ProjectFollowUpSkeleton";
-import { latestFollowUpNote, daysSince } from "@/lib/followUpNotes";
+import {
+  daysSince,
+  effectiveLatestFollowUp,
+  followUpReferenceDate,
+  followUpLevelStyles,
+} from "@/lib/followUpNotes";
 import { Constants } from "@/integrations/supabase/types";
 import { statusLabels } from "@/pages/ProjectManagement";
-import { Search, RefreshCw, Signal, AlertTriangle, Radio } from "lucide-react";
-import type { FollowUpProject, ProjectStatus } from "@/components/comercial/types";
+import { Search, RefreshCw, Signal, AlertTriangle, Radio, Download } from "lucide-react";
+import type { DbFollowUpNote, FollowUpProject, ProjectStatus } from "@/components/comercial/types";
 
 const PAGE_SIZE = 24;
 
@@ -27,6 +32,8 @@ const SELECT_COLS =
   "id, company_name, project_code, city, state, country_code, status, sub_phase, contract_date, d_zero_date, handover_date, fleet_size, implemented_fleet, observations, is_pilot, created_at, updated_at, manager_id, executive:team_members!projects_executive_id_fkey(full_name), manager:team_members!projects_manager_id_fkey(full_name), project_solutions(solution:solutions(name)), project_integrations(integration:integrations(name))";
 
 type SortKey = "stale" | "recent" | "company" | "status";
+
+const prefsKey = (userId: string) => `transdata:comercial-prefs:${userId}`;
 
 export default function VisaoComercial() {
   const navigate = useNavigate();
@@ -48,12 +55,13 @@ export default function VisaoComercial() {
   const [selected, setSelected] = useState<FollowUpProject | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [liveAt, setLiveAt] = useState<Date | null>(null);
+  const [recentIds, setRecentIds] = useState<string[]>([]);
   const [statusCounts, setStatusCounts] = useState<Record<string, number>>({});
   const [staleCount, setStaleCount] = useState(0);
   const [grandTotal, setGrandTotal] = useState(0);
   const [showAll, setShowAll] = useState(false);
   const [staleOnly, setStaleOnly] = useState(false);
-
+  const [prefsLoaded, setPrefsLoaded] = useState(false);
 
   const staleDays = settings.stuckDays ?? 30;
   const allowed = permsLoading || can("visao_comercial", "view");
@@ -62,6 +70,27 @@ export default function VisaoComercial() {
   useEffect(() => {
     if (!permsLoading && !can("visao_comercial", "view")) navigate("/", { replace: true });
   }, [permsLoading, can, navigate]);
+
+  // Preferências (busca / ordenação) por usuário
+  useEffect(() => {
+    if (!user) return;
+    try {
+      const raw = localStorage.getItem(prefsKey(user.id));
+      if (raw) {
+        const p = JSON.parse(raw) as { search?: string; sort?: SortKey };
+        if (p.search) { setSearch(p.search); setDebouncedSearch(p.search); }
+        if (p.sort) setSort(p.sort);
+      }
+    } catch { /* ignora */ }
+    setPrefsLoaded(true);
+  }, [user]);
+
+  useEffect(() => {
+    if (!user || !prefsLoaded) return;
+    try {
+      localStorage.setItem(prefsKey(user.id), JSON.stringify({ search, sort }));
+    } catch { /* ignora */ }
+  }, [user, prefsLoaded, search, sort]);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search.trim()), 350);
@@ -73,6 +102,34 @@ export default function VisaoComercial() {
       .then(({ data }) => setManagers(data || []));
     supabase.from("projects").select("city").order("city")
       .then(({ data }) => setCities(Array.from(new Set((data || []).map(p => p.city))).sort()));
+  }, []);
+
+  // Notas de acompanhamento (project_notes) dos projetos carregados
+  const loadNotes = useCallback(async (ids: string[]): Promise<Record<string, DbFollowUpNote[]>> => {
+    if (ids.length === 0) return {};
+    const { data } = await supabase
+      .from("project_notes")
+      .select("id, project_id, content, created_at, created_by")
+      .in("project_id", ids)
+      .order("created_at", { ascending: false });
+    const rows = data || [];
+    const authorIds = Array.from(new Set(rows.map(r => r.created_by).filter(Boolean))) as string[];
+    const authorMap: Record<string, string> = {};
+    if (authorIds.length > 0) {
+      const { data: profs } = await supabase.from("profiles").select("user_id, full_name").in("user_id", authorIds);
+      (profs || []).forEach(p => { if (p.full_name) authorMap[p.user_id] = p.full_name; });
+    }
+    const map: Record<string, DbFollowUpNote[]> = {};
+    rows.forEach(r => {
+      const list = map[r.project_id] ?? (map[r.project_id] = []);
+      list.push({
+        id: r.id,
+        content: r.content,
+        created_at: r.created_at,
+        author: r.created_by ? authorMap[r.created_by] ?? null : null,
+      });
+    });
+    return map;
   }, []);
 
   const applyFilters = useCallback(<T,>(q: T): T => {
@@ -108,24 +165,32 @@ export default function VisaoComercial() {
     query = applySort(query);
     const from = targetPage * PAGE_SIZE;
     const { data, count } = await query.range(from, from + PAGE_SIZE - 1);
-    if (!mounted.current) return;
     const rows = (data as unknown as FollowUpProject[]) || [];
-    setProjects(prev => (append ? [...prev, ...rows] : rows));
+    const notesMap = await loadNotes(rows.map(r => r.id));
+    if (!mounted.current) return;
+    const withNotes = rows.map(r => ({ ...r, notes: notesMap[r.id] ?? [] }));
+    setProjects(prev => (append ? [...prev, ...withNotes] : withNotes));
     setTotal(count ?? rows.length);
     setPage(targetPage);
     setLoading(false);
     setLoadingMore(false);
-  }, [applyFilters, applySort]);
+  }, [applyFilters, applySort, loadNotes]);
 
   const loadSummary = useCallback(async () => {
-    const { data } = await supabase.from("projects").select("status, updated_at, observations");
-    const rows = (data as { status: string; updated_at: string; observations: string | null }[]) || [];
+    const [{ data: projData }, { data: noteData }] = await Promise.all([
+      supabase.from("projects").select("id, status, updated_at, observations"),
+      supabase.from("project_notes").select("project_id, created_at").order("created_at", { ascending: false }),
+    ]);
+    const rows = (projData as { id: string; status: string; updated_at: string; observations: string | null }[]) || [];
+    const latestNote: Record<string, string> = {};
+    (noteData || []).forEach(n => {
+      if (!latestNote[n.project_id]) latestNote[n.project_id] = n.created_at;
+    });
     const counts: Record<string, number> = {};
     let stale = 0;
     rows.forEach(r => {
       counts[r.status] = (counts[r.status] || 0) + 1;
-      const note = latestFollowUpNote(r.observations);
-      const ref = note?.date ? note.date.toISOString() : r.updated_at;
+      const ref = latestNote[r.id] ?? followUpReferenceDate({ observations: r.observations, updated_at: r.updated_at });
       if ((daysSince(ref) ?? 0) > staleDays) stale += 1;
     });
     if (!mounted.current) return;
@@ -142,18 +207,75 @@ export default function VisaoComercial() {
   useEffect(() => { if (user) fetchPage(0, false); }, [user, fetchPage]);
   useEffect(() => { if (user) loadSummary(); }, [user, loadSummary]);
 
-  // Realtime: novas notas e mudanças de status feitas pelo gerente
+  const flag = useCallback((id: string) => {
+    setLiveAt(new Date());
+    setRecentIds(prev => (prev.includes(id) ? prev : [...prev, id]));
+    setTimeout(() => {
+      if (!mounted.current) return;
+      setRecentIds(prev => prev.filter(x => x !== id));
+    }, 10000);
+  }, []);
+
+  // Atualiza um único projeto já carregado na lista
+  const refreshOne = useCallback(async (id: string) => {
+    const { data } = await supabase.from("projects").select(SELECT_COLS).eq("id", id).maybeSingle();
+    if (!data) return false;
+    const notesMap = await loadNotes([id]);
+    if (!mounted.current) return true;
+    const row = { ...(data as unknown as FollowUpProject), notes: notesMap[id] ?? [] };
+    let found = false;
+    setProjects(prev => {
+      found = prev.some(p => p.id === id);
+      return found ? prev.map(p => (p.id === id ? row : p)) : prev;
+    });
+    setSelected(prev => (prev && prev.id === id ? row : prev));
+    return found;
+  }, [loadNotes]);
+
+  // Realtime: mudanças em projetos e novos acompanhamentos
   useEffect(() => {
+    if (!user) return;
+    let summaryTimer: ReturnType<typeof setTimeout> | undefined;
+    const scheduleSummary = () => {
+      if (summaryTimer) clearTimeout(summaryTimer);
+      summaryTimer = setTimeout(() => loadSummary(), 600);
+    };
+
     const channel = supabase
-      .channel("visao-comercial-projects")
-      .on("postgres_changes", { event: "*", schema: "public", table: "projects" }, () => {
+      .channel("visao-comercial-live")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "projects" }, async payload => {
+        const id = (payload.new as { id?: string })?.id;
+        if (!id) return;
+        flag(id);
+        const inList = await refreshOne(id);
+        if (!inList) fetchPage(0, false);
+        scheduleSummary();
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "projects" }, () => {
         setLiveAt(new Date());
         fetchPage(0, false);
-        loadSummary();
+        scheduleSummary();
+      })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "projects" }, () => {
+        setLiveAt(new Date());
+        fetchPage(0, false);
+        scheduleSummary();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "project_notes" }, async payload => {
+        const rec = (payload.new ?? payload.old) as { project_id?: string } | null;
+        const id = rec?.project_id;
+        if (!id) return;
+        flag(id);
+        await refreshOne(id);
+        scheduleSummary();
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [fetchPage, loadSummary]);
+
+    return () => {
+      if (summaryTimer) clearTimeout(summaryTimer);
+      supabase.removeChannel(channel);
+    };
+  }, [user, fetchPage, loadSummary, refreshOne, flag]);
 
   const hasActiveFilters = Object.values(filters).some(v => v !== "") || search !== "" || staleOnly || showAll;
   const hasMore = projects.length < total;
@@ -166,16 +288,55 @@ export default function VisaoComercial() {
     value: statusCounts[s] || 0,
   })), [statusCounts]);
 
-  const isStale = useCallback((p: FollowUpProject) => {
-    const note = latestFollowUpNote(p.observations);
-    const ref = note?.date ? note.date.toISOString() : p.updated_at;
-    return (daysSince(ref) ?? 0) > staleDays;
-  }, [staleDays]);
+  const daysFor = useCallback((p: FollowUpProject) => daysSince(followUpReferenceDate(p)) ?? 0, []);
+  const isStale = useCallback((p: FollowUpProject) => daysFor(p) > staleDays, [daysFor, staleDays]);
 
-  const visibleProjects = useMemo(
-    () => (staleOnly ? projects.filter(isStale) : projects),
-    [projects, staleOnly, isStale]
-  );
+  const visibleProjects = useMemo(() => {
+    const list = staleOnly ? projects.filter(isStale) : projects;
+    if (sort === "stale") return [...list].sort((a, b) => daysFor(b) - daysFor(a));
+    if (sort === "recent") return [...list].sort((a, b) => daysFor(a) - daysFor(b));
+    return list;
+  }, [projects, staleOnly, isStale, sort, daysFor]);
+
+  const managerSummary = useMemo(() => {
+    const map = new Map<string, { name: string; total: number; stale: number }>();
+    projects.forEach(p => {
+      const name = p.manager?.full_name ?? "Sem gerente";
+      const entry = map.get(name) ?? { name, total: 0, stale: 0 };
+      entry.total += 1;
+      if (isStale(p)) entry.stale += 1;
+      map.set(name, entry);
+    });
+    return Array.from(map.values()).sort((a, b) => b.stale - a.stale || b.total - a.total);
+  }, [projects, isStale]);
+
+  const exportCsv = () => {
+    const head = ["Código", "Empresa", "Cidade", "UF/País", "Gerente", "Executivo", "Status", "Frota", "Implantada", "Dias sem atualização", "Última atualização", "Autor"];
+    const lines = visibleProjects.map(p => {
+      const note = effectiveLatestFollowUp(p);
+      return [
+        p.project_code ?? "",
+        p.company_name,
+        p.city,
+        p.state ?? p.country_code ?? "",
+        p.manager?.full_name ?? "",
+        p.executive?.full_name ?? "",
+        statusLabels[p.status],
+        String(p.fleet_size ?? 0),
+        String(p.implemented_fleet ?? 0),
+        String(daysFor(p)),
+        (note?.text ?? "").replace(/\s+/g, " ").slice(0, 300),
+        note?.author ?? "",
+      ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(";");
+    });
+    const csv = "\uFEFF" + [head.join(";"), ...lines].join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `visao-comercial-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const selectStatus = (status: string) => {
     setShowAll(false);
@@ -215,9 +376,12 @@ export default function VisaoComercial() {
         <div className="ml-auto flex items-center gap-2">
           {liveAt && (
             <span className="flex items-center gap-1 text-[11px] text-emerald-600">
-              <Radio className="h-3 w-3" /> atualizado agora
+              <Radio className="h-3 w-3" /> atualizado às {liveAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
             </span>
           )}
+          <Button variant="outline" size="sm" onClick={exportCsv}>
+            <Download className="mr-1.5 h-3.5 w-3.5" /> Exportar CSV
+          </Button>
           <Button variant="outline" size="sm" onClick={() => { fetchPage(0, false); loadSummary(); }}>
             <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Atualizar
           </Button>
@@ -268,6 +432,25 @@ export default function VisaoComercial() {
             cities={cities}
             columns={Constants.public.Enums.project_status}
           />
+
+          {managerSummary.length > 0 && (
+            <div className="mt-4 w-full rounded-lg border border-border/60 bg-card p-3">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Por gerente (nesta lista)
+              </p>
+              <ul className="space-y-1.5">
+                {managerSummary.map(m => (
+                  <li key={m.name} className="flex items-center justify-between gap-2 text-xs">
+                    <span className="truncate">{m.name}</span>
+                    <span className="shrink-0 text-muted-foreground">
+                      {m.total}
+                      {m.stale > 0 && <span className="ml-1 font-semibold text-destructive">({m.stale} parados)</span>}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         <div className="min-w-0 flex-1 space-y-4">
@@ -294,12 +477,20 @@ export default function VisaoComercial() {
             </Select>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             <Badge variant="secondary">
               {staleOnly ? visibleProjects.length : total} projeto{(staleOnly ? visibleProjects.length : total) !== 1 ? "s" : ""}
             </Badge>
             {hasActiveFilters && <span>filtros ativos</span>}
             {!filters.status && !showAll && <span>· Implementados ocultos</span>}
+            <span className="ml-auto flex items-center gap-3">
+              {(["ok", "warn", "late", "critical"] as const).map(l => (
+                <span key={l} className="flex items-center gap-1">
+                  <span className={`h-2 w-2 rounded-full ${followUpLevelStyles[l].dot}`} />
+                  {followUpLevelStyles[l].label}
+                </span>
+              ))}
+            </span>
           </div>
 
           {loading ? (
@@ -316,7 +507,13 @@ export default function VisaoComercial() {
             <>
               <div className="grid gap-3 xl:grid-cols-2">
                 {visibleProjects.map(p => (
-                  <ProjectFollowUpCard key={p.id} project={p} staleDays={staleDays} onOpen={openProject} />
+                  <ProjectFollowUpCard
+                    key={p.id}
+                    project={p}
+                    staleDays={staleDays}
+                    onOpen={openProject}
+                    justUpdated={recentIds.includes(p.id)}
+                  />
                 ))}
               </div>
 

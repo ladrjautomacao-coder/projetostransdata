@@ -4,19 +4,27 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { AlertTriangle, Building2, MapPin, UserRound, Briefcase, MessageSquareText, Clock } from "lucide-react";
 import { statusLabels, statusColors, subPhasesByStatus } from "@/pages/ProjectManagement";
-import { latestFollowUpNote, daysSince } from "@/lib/followUpNotes";
+import {
+  daysSince,
+  effectiveFollowUps,
+  followUpReferenceDate,
+  followUpLevel,
+  followUpLevelStyles,
+} from "@/lib/followUpNotes";
 import type { FollowUpProject } from "./types";
 
 interface Props {
   project: FollowUpProject;
   staleDays: number;
   onOpen: (project: FollowUpProject) => void;
+  justUpdated?: boolean;
 }
 
-export function ProjectFollowUpCard({ project, staleDays, onOpen }: Props) {
-  const note = latestFollowUpNote(project.observations);
-  const referenceDate = note?.date ? note.date.toISOString() : project.updated_at;
-  const days = daysSince(referenceDate) ?? 0;
+export function ProjectFollowUpCard({ project, staleDays, onOpen, justUpdated }: Props) {
+  const notes = effectiveFollowUps(project).slice(0, 2);
+  const days = daysSince(followUpReferenceDate(project)) ?? 0;
+  const level = followUpLevel(days, staleDays);
+  const levelStyle = followUpLevelStyles[level];
   const isStale = days > staleDays;
   const colors = statusColors[project.status];
   const subPhaseLabel = project.sub_phase
@@ -33,9 +41,16 @@ export function ProjectFollowUpCard({ project, staleDays, onOpen }: Props) {
       tabIndex={0}
       onClick={() => onOpen(project)}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(project); } }}
-      className={`cursor-pointer border-border/60 transition-all hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${colors.bg}`}
+      className={`relative cursor-pointer border-border/60 transition-all hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${colors.bg} ${justUpdated ? "border-primary ring-2 ring-primary/40" : ""}`}
     >
-      <CardContent className="p-4 space-y-3">
+      <span
+        aria-hidden="true"
+        className={`absolute left-0 top-0 h-full w-1 rounded-l-lg ${levelStyle.dot}`}
+      />
+      <CardContent className="space-y-3 p-4 pl-5">
+        {justUpdated && (
+          <Badge className="absolute right-3 top-3 bg-primary text-primary-foreground">Atualizado agora</Badge>
+        )}
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
@@ -57,6 +72,7 @@ export function ProjectFollowUpCard({ project, staleDays, onOpen }: Props) {
             {subPhaseLabel && (
               <span className="text-[10px] text-muted-foreground">{subPhaseLabel}</span>
             )}
+            <span className={`text-[10px] font-medium ${levelStyle.text}`}>{levelStyle.label}</span>
           </div>
         </div>
 
@@ -71,16 +87,20 @@ export function ProjectFollowUpCard({ project, staleDays, onOpen }: Props) {
         <div className="rounded-lg border border-border/50 bg-background/70 p-3">
           <div className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             <MessageSquareText className="h-3.5 w-3.5 text-primary" />
-            Última atualização
+            Últimas atualizações
           </div>
-          {note ? (
-            <>
-              <p className="whitespace-pre-line text-sm text-foreground line-clamp-3">{note.text}</p>
-              <p className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
-                <Clock className="h-3 w-3" />
-                {note.dateLabel ?? "—"}{note.author ? ` • ${note.author}` : ""}
-              </p>
-            </>
+          {notes.length > 0 ? (
+            <ul className="space-y-2">
+              {notes.map((n, i) => (
+                <li key={i} className={i > 0 ? "border-t border-border/40 pt-2" : undefined}>
+                  <p className={`whitespace-pre-line text-sm text-foreground ${i === 0 ? "line-clamp-3" : "line-clamp-2 opacity-80"}`}>{n.text}</p>
+                  <p className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    {n.dateLabel ?? "—"}{n.author ? ` • ${n.author}` : ""}
+                  </p>
+                </li>
+              ))}
+            </ul>
           ) : (
             <p className="text-sm italic text-muted-foreground">Nenhum acompanhamento registrado pelo gerente.</p>
           )}

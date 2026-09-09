@@ -56,3 +56,69 @@ export function daysSince(iso: string | null | undefined): number | null {
   if (isNaN(t)) return null;
   return Math.floor((Date.now() - t) / 86_400_000);
 }
+
+/** Nota de acompanhamento efetiva de um projeto: prioriza a tabela project_notes
+ *  e usa o texto legado de "observations" apenas como reserva. */
+export interface EffectiveFollowUp {
+  text: string;
+  author: string | null;
+  dateISO: string | null;
+  dateLabel: string | null;
+}
+
+interface FollowUpSource {
+  observations?: string | null;
+  updated_at?: string | null;
+  notes?: { id: string; content: string; created_at: string; author: string | null }[];
+}
+
+function fmt(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "—";
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+export function effectiveFollowUps(project: FollowUpSource): EffectiveFollowUp[] {
+  const dbNotes = project.notes ?? [];
+  if (dbNotes.length > 0) {
+    return dbNotes.map(n => ({
+      text: n.content,
+      author: n.author,
+      dateISO: n.created_at,
+      dateLabel: fmt(n.created_at),
+    }));
+  }
+  return parseFollowUpNotes(project.observations).map(n => ({
+    text: n.text,
+    author: n.author,
+    dateISO: n.date ? n.date.toISOString() : null,
+    dateLabel: n.dateLabel,
+  }));
+}
+
+export function effectiveLatestFollowUp(project: FollowUpSource): EffectiveFollowUp | null {
+  return effectiveFollowUps(project)[0] ?? null;
+}
+
+/** Data usada para calcular "dias sem atualização". */
+export function followUpReferenceDate(project: FollowUpSource): string | null {
+  const latest = effectiveLatestFollowUp(project);
+  return latest?.dateISO ?? project.updated_at ?? null;
+}
+
+export type FollowUpLevel = "ok" | "warn" | "late" | "critical";
+
+export function followUpLevel(days: number, staleDays: number): FollowUpLevel {
+  if (days > staleDays * 2) return "critical";
+  if (days > staleDays) return "late";
+  if (days > Math.round(staleDays / 2)) return "warn";
+  return "ok";
+}
+
+export const followUpLevelStyles: Record<FollowUpLevel, { dot: string; label: string; text: string }> = {
+  ok: { dot: "bg-emerald-500", label: "Em dia", text: "text-emerald-600" },
+  warn: { dot: "bg-amber-500", label: "Atenção", text: "text-amber-600" },
+  late: { dot: "bg-orange-500", label: "Atrasado", text: "text-orange-600" },
+  critical: { dot: "bg-destructive", label: "Crítico", text: "text-destructive" },
+};

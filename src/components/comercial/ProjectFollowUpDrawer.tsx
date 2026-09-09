@@ -35,6 +35,7 @@ export function ProjectFollowUpDrawer({ project, open, onOpenChange }: Props) {
   const [history, setHistory] = useState<HistoryRow[]>([]);
   const [authors, setAuthors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!open || !project) return;

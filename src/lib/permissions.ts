@@ -9,6 +9,7 @@ export const MODULES = [
   { key: "projects", label: "Gestão de Projetos", group: "projetos", actions: ["view", "create", "edit", "delete", "move_card"] as const },
   { key: "visao_comercial", label: "Visão Comercial (leitura)", group: "projetos", actions: ["view"] as const },
   { key: "implantacao", label: "Implantação", group: "operacao", actions: ["view"] as const },
+  { key: "report_imp", label: "Report IMP", group: "operacao", actions: ["view", "create", "delete"] as const },
   { key: "suporte", label: "Suporte Técnico", group: "operacao", actions: ["view"] as const },
   { key: "financeiro", label: "Financeiro", group: "operacao", actions: ["view"] as const },
   { key: "admin_team", label: "Admin — Equipe", group: "admin", actions: ["view", "edit"] as const },

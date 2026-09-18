@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   FolderKanban, LayoutDashboard, HardHat, BookOpenCheck, Users, LogOut, ShieldCheck,
-  Settings, KeyRound, LifeBuoy, Wallet, ChevronsLeft, Search, MoreVertical, UserRound, Eye,
+  Settings, KeyRound, LifeBuoy, Wallet, ChevronsLeft, Search, MoreVertical, UserRound, Eye, FileUp,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -48,7 +48,10 @@ export function AppSidebar({ badges = {} }: { badges?: SidebarBadges }) {
     },
     {
       label: "Implantação",
-      items: [{ title: "Implantação", url: "/implantacao", icon: HardHat, module: "implantacao" }],
+      items: [
+        { title: "Implantação", url: "/implantacao", icon: HardHat, module: "implantacao", end: true },
+        { title: "Report IMP", url: "/implantacao/report-imp", icon: FileUp, module: "report_imp" },
+      ],
     },
     {
       label: "Financeiro",

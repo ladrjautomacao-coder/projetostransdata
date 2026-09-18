@@ -21,6 +21,7 @@ import VisaoComercial from "./pages/VisaoComercial";
 import TeamMembers from "./pages/TeamMembers";
 import Products from "./pages/Products";
 import Implantacao from "./pages/Implantacao";
+import ReportImp from "./pages/ReportImp";
 import Suporte from "./pages/Suporte";
 import Financeiro from "./pages/Financeiro";
 import AcervoTecnico from "./pages/AcervoTecnico";
@@ -55,6 +56,7 @@ const App = () => (
               <Route path="/projetos/:id" element={<ProjectDetail />} />
               <Route path="/comercial" element={<VisaoComercial />} />
               <Route path="/implantacao" element={<Implantacao />} />
+              <Route path="/implantacao/report-imp" element={<ReportImp />} />
 
               <Route path="/suporte" element={<Suporte />} />
               <Route path="/financeiro" element={<Financeiro />} />

@@ -2,12 +2,12 @@ import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { convertToModelMessages, streamText, stepCountIs, tool, type UIMessage } from "npm:ai";
 import { z } from "npm:zod";
-import { createLovableAiGatewayProvider } from "../_shared/ai-gateway.ts";
+import { createAnthropicProvider } from "../_shared/ai-gateway.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
+const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY")!;
 
 const PHASE_LABELS: Record<string, string> = {
   planejamento: "Planejamento",
@@ -66,8 +66,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    const gateway = createLovableAiGatewayProvider(LOVABLE_API_KEY);
-    const model = gateway("google/gemini-3-flash-preview");
+    const anthropic = createAnthropicProvider(ANTHROPIC_API_KEY);
+    const model = anthropic("claude-haiku-4-5-20251001");
 
     const tools = {
       searchProjects: tool({

@@ -9,6 +9,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -88,6 +98,11 @@ export default function ProjectDetail() {
   const [notes, setNotes] = useState<any[]>([]);
   const { value: newNote, update: setNewNote, clear: clearNoteDraft, draftSavedAt: noteDraftSavedAt } = useNoteDraft(id);
   const [addingNote, setAddingNote] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editingNoteContent, setEditingNoteContent] = useState("");
+  const [updatingNote, setUpdatingNote] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<any | null>(null);
+  const [deletingNote, setDeletingNote] = useState(false);
 
   // Lookups
   const [executives, setExecutives] = useState<{ id: string; full_name: string }[]>([]);
@@ -210,6 +225,52 @@ export default function ProjectDetail() {
       toast({ title: "Erro", description: err.message, variant: "destructive" });
     } finally {
       setAddingNote(false);
+    }
+  };
+
+  const startEditingNote = (note: any) => {
+    setEditingNoteId(note.id);
+    setEditingNoteContent(note.content);
+  };
+
+  const cancelEditingNote = () => {
+    setEditingNoteId(null);
+    setEditingNoteContent("");
+  };
+
+  const handleUpdateNote = async () => {
+    if (!editingNoteId || !editingNoteContent.trim()) return;
+    setUpdatingNote(true);
+    try {
+      const { error } = await supabase
+        .from("project_notes")
+        .update({ content: editingNoteContent.trim() })
+        .eq("id", editingNoteId);
+      if (error) throw error;
+      cancelEditingNote();
+      await loadNotes();
+      toast({ title: "Acompanhamento atualizado!" });
+    } catch (err: any) {
+      toast({ title: "Erro ao editar", description: err.message, variant: "destructive" });
+    } finally {
+      setUpdatingNote(false);
+    }
+  };
+
+  const handleDeleteNote = async () => {
+    if (!noteToDelete) return;
+    setDeletingNote(true);
+    try {
+      const { error } = await supabase.from("project_notes").delete().eq("id", noteToDelete.id);
+      if (error) throw error;
+      if (editingNoteId === noteToDelete.id) cancelEditingNote();
+      setNoteToDelete(null);
+      await loadNotes();
+      toast({ title: "Acompanhamento excluído!" });
+    } catch (err: any) {
+      toast({ title: "Erro ao excluir", description: err.message, variant: "destructive" });
+    } finally {
+      setDeletingNote(false);
     }
   };
 
@@ -730,21 +791,86 @@ export default function ProjectDetail() {
             <p className="text-sm text-muted-foreground italic">Nenhum acompanhamento registrado.</p>
           ) : (
             <div className="space-y-3">
-              {notes.map(n => (
-                <div key={n.id} className="rounded-lg border border-border/60 bg-muted/30 p-3">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                    <User className="w-3.5 h-3.5" />
-                    <span className="font-medium text-foreground">{n._user_name}</span>
-                    <span>•</span>
-                    <span>{format(new Date(n.created_at), "dd/MM/yyyy 'às' HH:mm")}</span>
+              {notes.map(n => {
+                const canManageNote = isAdmin || n.created_by === user?.id;
+                const wasEdited = n.updated_at && new Date(n.updated_at).getTime() > new Date(n.created_at).getTime() + 1000;
+                const isEditingNote = editingNoteId === n.id;
+                return (
+                  <div key={n.id} className="rounded-lg border border-border/60 bg-muted/30 p-3">
+                    <div className="mb-2 flex items-start justify-between gap-3">
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        <User className="h-3.5 w-3.5" />
+                        <span className="font-medium text-foreground">{n._user_name}</span>
+                        <span>•</span>
+                        <span>{format(new Date(n.created_at), "dd/MM/yyyy 'às' HH:mm")}</span>
+                        {wasEdited && (
+                          <span title={`Última edição em ${format(new Date(n.updated_at), "dd/MM/yyyy 'às' HH:mm")}`}>
+                            • Editado em {format(new Date(n.updated_at), "dd/MM/yyyy 'às' HH:mm")}
+                          </span>
+                        )}
+                      </div>
+                      {canManageNote && !isEditingNote && (
+                        <div className="flex shrink-0 items-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => startEditingNote(n)} title="Editar acompanhamento">
+                            <Edit2 className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setNoteToDelete(n)} title="Excluir acompanhamento">
+                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    {isEditingNote ? (
+                      <div className="space-y-2">
+                        <MarkdownNoteEditor
+                          value={editingNoteContent}
+                          onChange={setEditingNoteContent}
+                          disabled={updatingNote}
+                        />
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" size="sm" onClick={cancelEditingNote} disabled={updatingNote}>Cancelar</Button>
+                          <Button size="sm" onClick={handleUpdateNote} disabled={updatingNote || !editingNoteContent.trim()}>
+                            <Save className="mr-2 h-4 w-4" />
+                            {updatingNote ? "Salvando..." : "Salvar alteração"}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <NoteContent content={n.content} />
+                    )}
                   </div>
-                  <NoteContent content={n.content} />
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!noteToDelete} onOpenChange={open => { if (!open && !deletingNote) setNoteToDelete(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir acompanhamento?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O comentário deixará de aparecer no projeto, mas uma cópia será preservada no histórico de auditoria.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {noteToDelete?.content && (
+            <div className="max-h-32 overflow-auto rounded-md border border-border/60 bg-muted/30 p-3 text-sm">
+              <NoteContent content={noteToDelete.content} />
+            </div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingNote}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={event => { event.preventDefault(); void handleDeleteNote(); }}
+              disabled={deletingNote}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingNote ? "Excluindo..." : "Excluir comentário"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Details Grid */}
       <div className="grid gap-6 md:grid-cols-2 mb-6">

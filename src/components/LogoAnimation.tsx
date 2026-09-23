@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import logoTransdata from "@/assets/logo-transdata.png.asset.json";
+import logoTransdata from "@/assets/logo-transdata.png";
 
 const LETTERS_TRANS = "TRANS".split("");
 const LETTERS_MOBILE = "DATA".split("");
@@ -181,7 +181,7 @@ export default function LogoAnimation() {
         ) : (
           <motion.img
             key="logo"
-            src={logoTransdata.url}
+            src={logoTransdata}
             alt="Transdata"
             className="h-32 rounded-xl z-10 relative"
             initial={{ opacity: 0, scale: 0.8 }}

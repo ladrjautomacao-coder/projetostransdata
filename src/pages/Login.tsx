@@ -9,7 +9,7 @@ import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Mail, Lock, User, Signal, Briefcase } from "lucide-react";
 import { motion } from "framer-motion";
-import logoTransdata from "@/assets/logo-transdata.png.asset.json";
+import logoTransdata from "@/assets/logo-transdata.png";
 import LogoAnimation from "@/components/LogoAnimation";
 
 function AnimatedGrid() {
@@ -188,7 +188,7 @@ export default function Login() {
           <Card className="w-full max-w-md shadow-lg border-primary/20 glow-orange">
             <CardHeader className="text-center space-y-3">
               <div className="lg:hidden flex justify-center mb-2">
-                <img src={logoTransdata.url} alt="Transdata" className="h-20 rounded-lg" />
+                <img src={logoTransdata} alt="Transdata" className="h-20 rounded-lg" />
               </div>
               <CardTitle className="text-2xl font-bold">
                 {isSignUp ? "Criar Conta" : "Acessar Sistema"}

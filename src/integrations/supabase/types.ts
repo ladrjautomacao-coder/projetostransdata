@@ -375,6 +375,42 @@ export type Database = {
           },
         ]
       }
+      project_note_history: {
+        Row: {
+          action: string
+          changed_at: string
+          changed_by: string | null
+          id: string
+          new_content: string | null
+          note_created_by: string | null
+          note_id: string
+          old_content: string
+          project_id: string
+        }
+        Insert: {
+          action: string
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_content?: string | null
+          note_created_by?: string | null
+          note_id: string
+          old_content: string
+          project_id: string
+        }
+        Update: {
+          action?: string
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_content?: string | null
+          note_created_by?: string | null
+          note_id?: string
+          old_content?: string
+          project_id?: string
+        }
+        Relationships: []
+      }
       project_notes: {
         Row: {
           content: string
@@ -382,6 +418,7 @@ export type Database = {
           created_by: string | null
           id: string
           project_id: string
+          updated_at: string
         }
         Insert: {
           content: string
@@ -389,6 +426,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           project_id: string
+          updated_at?: string
         }
         Update: {
           content?: string
@@ -396,6 +434,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           project_id?: string
+          updated_at?: string
         }
         Relationships: [
           {

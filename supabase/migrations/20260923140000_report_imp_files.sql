@@ -1,3 +1,7 @@
+-- Ports the report_imp_files table + RLS policies that previously only
+-- existed as Drizzle migrations (drizzle/migrations/0000, 0001), never
+-- tracked in supabase/migrations. Written directly to its final state
+-- (post-tightening), matching what was applied to the old database.
 CREATE TABLE public.report_imp_files (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
@@ -30,6 +34,7 @@ WITH CHECK (
   uploaded_by = auth.uid()
   AND public.has_permission(auth.uid(), 'report_imp', 'create')
   AND public.can_view_project(project_id)
+  AND file_path LIKE project_id::text || '/' || auth.uid()::text || '/%'
 );
 
 CREATE POLICY "Uploaders or admins can delete Report IMP metadata"
@@ -49,6 +54,7 @@ WITH CHECK (
   bucket_id = 'report-imp'
   AND owner = auth.uid()
   AND public.has_permission(auth.uid(), 'report_imp', 'create')
+  AND (storage.foldername(name))[2] = auth.uid()::text
 );
 
 CREATE POLICY "Report IMP viewers can download files"

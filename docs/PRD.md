@@ -3,7 +3,7 @@
 **Versão:** 1.0  
 **Data:** 13/06/2026  
 **Status:** Documento vivo (atualizar a cada feature relevante)  
-**Stack:** React 18 + Vite + TypeScript + Tailwind + shadcn/ui + Lovable Cloud (Postgres, Auth, Storage, Edge Functions)
+**Stack:** React 18 + Vite + TypeScript + Tailwind + shadcn/ui + Supabase próprio (Postgres, Auth, Storage, Edge Functions) + Vercel (hosting)
 
 ---
 
@@ -40,7 +40,7 @@ Plataforma interna da Transdata para gestão ponta-a-ponta de projetos de implan
 ## 3. Módulos Funcionais
 
 ### 3.1 Autenticação
-- Login por e-mail/senha (Lovable Cloud Auth).
+- Login por e-mail/senha (Supabase Auth).
 - Recuperação de senha (`/forgot-password`, `/reset-password`).
 - **Sem cadastro público** — usuários criados via Gestão de Usuários.
 - Vínculo `auth.users.email ↔ team_members.email` define identidade de gerente.
@@ -76,7 +76,7 @@ Plataforma interna da Transdata para gestão ponta-a-ponta de projetos de implan
 - Não editável após criação (auditabilidade).
 
 ### 3.6 Anexos
-- Storage no Lovable Cloud.
+- Storage no Supabase (projeto próprio).
 - INSERT exige `uploaded_by = auth.uid()`.
 - DELETE só pelo autor ou admin.
 

@@ -15,6 +15,13 @@
       "when": 1789739042726,
       "tag": "0001_tighten_report_imp_file_paths",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790172374621,
+      "tag": "0002_audit_project_note_edits_and_deletions",
+      "breakpoints": true
     }
   ]
 }

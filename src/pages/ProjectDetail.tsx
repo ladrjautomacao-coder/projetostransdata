@@ -793,7 +793,7 @@ export default function ProjectDetail() {
             <div className="space-y-3">
               {notes.map(n => {
                 const canManageNote = isAdmin || n.created_by === user?.id;
-                const wasEdited = n.updated_at && new Date(n.updated_at).getTime() > new Date(n.created_at).getTime() + 1000;
+                const wasEdited = n.updated_at && new Date(n.updated_at).getTime() !== new Date(n.created_at).getTime();
                 const isEditingNote = editingNoteId === n.id;
                 return (
                   <div key={n.id} className="rounded-lg border border-border/60 bg-muted/30 p-3">

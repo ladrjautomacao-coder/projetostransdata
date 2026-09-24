@@ -15,7 +15,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarNavGroup, type NavItem } from "@/components/sidebar/SidebarNav";
-import logoTransdata from "@/assets/logo-transdata.png";
+import { useTenantBranding } from "@/contexts/TenantBrandingContext";
 
 interface NavGroupDef {
   label: string;
@@ -83,6 +83,7 @@ export function AppSidebar({ badges = {} }: { badges?: SidebarBadges }) {
     }))
     .filter(g => g.items.length > 0);
 
+  const branding = useTenantBranding();
   const name = profile?.full_name || "Usuário";
   const initials = name.split(" ").filter(Boolean).slice(0, 2).map(p => p[0]?.toUpperCase()).join("") || "U";
   const roleLabel = isSuperAdmin ? "Super Admin" : isAdmin ? "Administrador" : "Usuário";
@@ -93,11 +94,11 @@ export function AppSidebar({ badges = {} }: { badges?: SidebarBadges }) {
       <div className="relative overflow-hidden border-b border-sidebar-border px-3 py-4">
         <div className="absolute inset-0 bg-gradient-to-r from-sidebar-primary/5 to-transparent" />
         <div className="relative z-10 flex items-center gap-2.5">
-          <img src={logoTransdata} alt="PAINEL 360" className="h-9 w-auto shrink-0 rounded-lg" />
+          <img src={branding.logoUrl} alt={branding.portalName} className="h-9 w-auto shrink-0 rounded-lg" />
           {!collapsed && (
             <>
               <div className="flex min-w-0 flex-col">
-                <span className="truncate text-sm font-bold tracking-wide text-sidebar-foreground">PAINEL 360</span>
+                <span className="truncate text-sm font-bold tracking-wide text-sidebar-foreground">{branding.portalName}</span>
                 <span className="truncate text-[10px] uppercase tracking-[0.18em] text-sidebar-foreground/45">Sistema de gestão</span>
               </div>
               <Button

@@ -3,90 +3,94 @@
 @tailwind utilities;
 
 @layer base {
+  /* Paleta padrão da HopeXT — usada por qualquer cliente sem marca própria
+     configurada em tenant_branding. A Transdata (e qualquer cliente já
+     personalizado) sobrescreve isso em tempo de execução via
+     TenantBrandingContext, não editando estes valores diretamente. */
   :root {
-    --background: 270 20% 97%;
-    --foreground: 273 40% 12%;
+    --background: 220 20% 97%;
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 273 40% 12%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 273 40% 12%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 273 70% 32%;
+    --primary: 222 47% 28%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 270 20% 92%;
-    --secondary-foreground: 273 40% 22%;
+    --secondary: 220 15% 92%;
+    --secondary-foreground: 222 30% 20%;
 
-    --muted: 270 15% 94%;
-    --muted-foreground: 273 10% 42%;
+    --muted: 220 15% 94%;
+    --muted-foreground: 222 10% 42%;
 
-    --accent: 17 90% 95%;
-    --accent-foreground: 17 85% 38%;
+    --accent: 199 85% 94%;
+    --accent-foreground: 199 89% 30%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 270 15% 88%;
-    --input: 270 15% 88%;
-    --ring: 273 70% 32%;
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: 222 47% 28%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 273 70% 18%;
-    --sidebar-foreground: 270 25% 90%;
-    --sidebar-primary: 17 89% 54%;
+    --sidebar-background: 222 47% 16%;
+    --sidebar-foreground: 220 20% 90%;
+    --sidebar-primary: 199 89% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 273 60% 24%;
-    --sidebar-accent-foreground: 270 25% 95%;
-    --sidebar-border: 273 50% 28%;
-    --sidebar-ring: 17 89% 54%;
+    --sidebar-accent: 222 40% 22%;
+    --sidebar-accent-foreground: 220 20% 95%;
+    --sidebar-border: 222 35% 26%;
+    --sidebar-ring: 199 89% 48%;
 
     --success: 142 72% 42%;
     --warning: 38 92% 50%;
 
-    --glow-primary: 273 70% 32%;
-    --glow-secondary: 17 89% 54%;
+    --glow-primary: 222 47% 28%;
+    --glow-secondary: 199 89% 48%;
   }
 
   .dark {
-    --background: 273 45% 8%;
-    --foreground: 270 20% 95%;
+    --background: 222 47% 8%;
+    --foreground: 220 20% 95%;
 
-    --card: 273 40% 12%;
-    --card-foreground: 270 20% 95%;
+    --card: 222 40% 12%;
+    --card-foreground: 220 20% 95%;
 
-    --popover: 273 40% 12%;
-    --popover-foreground: 270 20% 95%;
+    --popover: 222 40% 12%;
+    --popover-foreground: 220 20% 95%;
 
-    --primary: 273 65% 55%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 199 89% 55%;
+    --primary-foreground: 222 47% 11%;
 
-    --secondary: 273 30% 18%;
-    --secondary-foreground: 270 20% 90%;
+    --secondary: 222 30% 18%;
+    --secondary-foreground: 220 20% 90%;
 
-    --muted: 273 30% 15%;
-    --muted-foreground: 270 10% 60%;
+    --muted: 222 30% 15%;
+    --muted-foreground: 220 10% 60%;
 
-    --accent: 17 60% 22%;
-    --accent-foreground: 17 90% 75%;
+    --accent: 199 60% 20%;
+    --accent-foreground: 199 90% 75%;
 
     --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 273 30% 20%;
-    --input: 273 30% 20%;
-    --ring: 273 65% 55%;
+    --border: 222 30% 20%;
+    --input: 222 30% 20%;
+    --ring: 199 89% 55%;
 
-    --sidebar-background: 273 55% 10%;
-    --sidebar-foreground: 270 20% 88%;
-    --sidebar-primary: 17 89% 58%;
+    --sidebar-background: 222 45% 9%;
+    --sidebar-foreground: 220 20% 88%;
+    --sidebar-primary: 199 89% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 273 45% 16%;
-    --sidebar-accent-foreground: 270 20% 92%;
-    --sidebar-border: 273 40% 18%;
-    --sidebar-ring: 17 89% 58%;
+    --sidebar-accent: 222 35% 15%;
+    --sidebar-accent-foreground: 220 20% 92%;
+    --sidebar-border: 222 30% 17%;
+    --sidebar-ring: 199 89% 58%;
   }
 }
 

@@ -1147,6 +1147,18 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      get_public_tenant_branding: {
+        Args: { _slug: string }
+        Returns: {
+          accent_color: string
+          logo_url: string
+          portal_name: string
+          primary_color: string
+          sidebar_color: string
+          slug: string
+          status: string
+        }[]
+      }
       get_user_scope: { Args: { _user_id: string }; Returns: string }
       has_permission: {
         Args: {

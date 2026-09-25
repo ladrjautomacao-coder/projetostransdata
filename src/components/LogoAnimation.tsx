@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import logoTransdata from "@/assets/logo-transdata.png";
+import { Building2 } from "lucide-react";
+import { useTenantBranding } from "@/contexts/TenantBrandingContext";
 
 const LETTERS_TRANS = "TRANS".split("");
 const LETTERS_MOBILE = "DATA".split("");
@@ -78,7 +79,12 @@ function MiniRobot({ onComplete }: { onComplete: () => void }) {
 }
 
 export default function LogoAnimation() {
-  const [phase, setPhase] = useState<"fallen" | "lifting" | "glow" | "done">("fallen");
+  const branding = useTenantBranding();
+  // A animação de letras "TRANS"/"DATA" é um trocadilho específico da
+  // Transdata — não generaliza pro nome de outro cliente, então só toca
+  // pra esse tenant; os demais vão direto pro logo/nome final.
+  const isTransdata = branding.slug === "transdata";
+  const [phase, setPhase] = useState<"fallen" | "lifting" | "glow" | "done">(isTransdata ? "fallen" : "done");
 
   const startLift = () => {
     setTimeout(() => setPhase("lifting"), 600);
@@ -179,15 +185,24 @@ export default function LogoAnimation() {
             )}
           </motion.div>
         ) : (
-          <motion.img
+          <motion.div
             key="logo"
-            src={logoTransdata}
-            alt="Transdata"
-            className="h-32 rounded-xl z-10 relative"
+            className="z-10 relative flex flex-col items-center gap-3"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, type: "spring" }}
-          />
+          >
+            {branding.logoUrl ? (
+              <img src={branding.logoUrl} alt={branding.portalName} className="h-32 rounded-xl" />
+            ) : (
+              <>
+                <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-primary-foreground/10 text-primary-foreground">
+                  <Building2 className="h-12 w-12" />
+                </div>
+                <span className="text-2xl font-bold text-primary-foreground">{branding.portalName}</span>
+              </>
+            )}
+          </motion.div>
         )}
       </AnimatePresence>
 

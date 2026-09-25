@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   FolderKanban, LayoutDashboard, HardHat, BookOpenCheck, Users, LogOut, ShieldCheck,
-  Settings, KeyRound, LifeBuoy, Wallet, ChevronsLeft, Search, MoreVertical, UserRound, Eye, FileUp,
+  Settings, KeyRound, LifeBuoy, Wallet, ChevronsLeft, Search, MoreVertical, UserRound, Eye, FileUp, Building2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -94,7 +94,13 @@ export function AppSidebar({ badges = {} }: { badges?: SidebarBadges }) {
       <div className="relative overflow-hidden border-b border-sidebar-border px-3 py-4">
         <div className="absolute inset-0 bg-gradient-to-r from-sidebar-primary/5 to-transparent" />
         <div className="relative z-10 flex items-center gap-2.5">
-          <img src={branding.logoUrl} alt={branding.portalName} className="h-9 w-auto shrink-0 rounded-lg" />
+          {branding.logoUrl ? (
+            <img src={branding.logoUrl} alt={branding.portalName} className="h-9 w-auto shrink-0 rounded-lg" />
+          ) : (
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary/20 text-sidebar-primary">
+              <Building2 className="h-5 w-5" />
+            </div>
+          )}
           {!collapsed && (
             <>
               <div className="flex min-w-0 flex-col">

@@ -4,12 +4,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { TenantBrandingProvider } from "@/contexts/TenantBrandingContext";
+import { TenantBrandingProvider, useTenantBranding } from "@/contexts/TenantBrandingContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import { AppLayout } from "@/components/AppLayout";
 import Login from "./pages/Login";
+import PublicSignup from "./pages/PublicSignup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
@@ -35,6 +36,62 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// Domínio raiz (ex: hopextnocode.com) ou um subdomínio que não bate com
+// nenhum cliente cadastrado -> não tem "produto" pra logar, só o cadastro
+// público de teste gratuito.
+function AppRoutes() {
+  const branding = useTenantBranding();
+
+  if (branding.loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!branding.isKnownTenant) {
+    return (
+      <Routes>
+        <Route path="*" element={<PublicSignup />} />
+      </Routes>
+    );
+  }
+
+  return (
+    <SettingsProvider>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/projetos" element={<Projects />} />
+          <Route path="/projetos/novo" element={<AdminRoute><NewProject /></AdminRoute>} />
+          <Route path="/projetos/lista" element={<ProjectList />} />
+
+          <Route path="/projetos/gestao" element={<ProjectManagement />} />
+          <Route path="/projetos/:id" element={<ProjectDetail />} />
+          <Route path="/comercial" element={<VisaoComercial />} />
+          <Route path="/implantacao" element={<Implantacao />} />
+          <Route path="/implantacao/report-imp" element={<ReportImp />} />
+
+          <Route path="/suporte" element={<Suporte />} />
+          <Route path="/financeiro" element={<Financeiro />} />
+          <Route path="/acervo" element={<AcervoTecnico />} />
+          <Route path="/admin/equipe" element={<AdminRoute><TeamMembers /></AdminRoute>} />
+          <Route path="/admin/produtos" element={<AdminRoute><Products /></AdminRoute>} />
+          <Route path="/admin/usuarios" element={<AdminRoute><UserManagement /></AdminRoute>} />
+          <Route path="/admin/permissoes" element={<AdminRoute><PermissionsAdmin /></AdminRoute>} />
+          <Route path="/admin/configuracoes" element={<AdminRoute><SystemSettings /></AdminRoute>} />
+          <Route path="/manual" element={<SystemManual />} />
+        </Route>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </SettingsProvider>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -43,36 +100,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <TenantBrandingProvider>
-          <SettingsProvider>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/projetos" element={<Projects />} />
-              <Route path="/projetos/novo" element={<AdminRoute><NewProject /></AdminRoute>} />
-              <Route path="/projetos/lista" element={<ProjectList />} />
-              
-              <Route path="/projetos/gestao" element={<ProjectManagement />} />
-              <Route path="/projetos/:id" element={<ProjectDetail />} />
-              <Route path="/comercial" element={<VisaoComercial />} />
-              <Route path="/implantacao" element={<Implantacao />} />
-              <Route path="/implantacao/report-imp" element={<ReportImp />} />
-
-              <Route path="/suporte" element={<Suporte />} />
-              <Route path="/financeiro" element={<Financeiro />} />
-              <Route path="/acervo" element={<AcervoTecnico />} />
-              <Route path="/admin/equipe" element={<AdminRoute><TeamMembers /></AdminRoute>} />
-              <Route path="/admin/produtos" element={<AdminRoute><Products /></AdminRoute>} />
-              <Route path="/admin/usuarios" element={<AdminRoute><UserManagement /></AdminRoute>} />
-              <Route path="/admin/permissoes" element={<AdminRoute><PermissionsAdmin /></AdminRoute>} />
-              <Route path="/admin/configuracoes" element={<AdminRoute><SystemSettings /></AdminRoute>} />
-              <Route path="/manual" element={<SystemManual />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          </SettingsProvider>
+            <AppRoutes />
           </TenantBrandingProvider>
         </AuthProvider>
       </BrowserRouter>

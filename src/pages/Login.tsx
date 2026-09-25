@@ -3,13 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Mail, Lock, User, Signal, Briefcase } from "lucide-react";
+import { useTenantBranding } from "@/contexts/TenantBrandingContext";
+import { Mail, Lock, Signal, Building2 } from "lucide-react";
 import { motion } from "framer-motion";
-import logoTransdata from "@/assets/logo-transdata.png";
 import LogoAnimation from "@/components/LogoAnimation";
 
 function AnimatedGrid() {
@@ -99,25 +98,11 @@ function AnimatedGrid() {
 
 export default function Login() {
   const { session, loading } = useAuth();
+  const branding = useTenantBranding();
   const { toast } = useToast();
-  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [cargo, setCargo] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  const cargoOptions = [
-    "Diretoria",
-    "Comercial",
-    "Projetos",
-    "Suporte técnico",
-    "Relacionamento",
-    "Implantação",
-    "Produtos",
-    "Desenvolvimento",
-  ];
-
 
   if (loading) return null;
   if (session) return <Navigate to="/" replace />;
@@ -126,22 +111,13 @@ export default function Login() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email, password,
-          options: { data: { full_name: fullName, cargo }, emailRedirectTo: window.location.origin }
-        });
-        if (error) throw error;
-        toast({ title: "Solicitação enviada!", description: "Seu cadastro foi recebido e será analisado por um administrador. Você receberá acesso assim que for aprovado." });
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-          if (error.message === "Email not confirmed") {
-            toast({ title: "Acesso pendente", description: "Seu cadastro ainda não foi aprovado por um administrador. Aguarde a liberação do acesso.", variant: "destructive" });
-            return;
-          }
-          throw error;
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        if (error.message === "Email not confirmed") {
+          toast({ title: "Acesso pendente", description: "Seu cadastro ainda não foi aprovado por um administrador. Aguarde a liberação do acesso.", variant: "destructive" });
+          return;
         }
+        throw error;
       }
     } catch (error: any) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
@@ -188,38 +164,19 @@ export default function Login() {
           <Card className="w-full max-w-md shadow-lg border-primary/20 glow-orange">
             <CardHeader className="text-center space-y-3">
               <div className="lg:hidden flex justify-center mb-2">
-                <img src={logoTransdata} alt="Transdata" className="h-20 rounded-lg" />
+                {branding.logoUrl ? (
+                  <img src={branding.logoUrl} alt={branding.portalName} className="h-20 rounded-lg" />
+                ) : (
+                  <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Building2 className="h-10 w-10" />
+                  </div>
+                )}
               </div>
-              <CardTitle className="text-2xl font-bold">
-                {isSignUp ? "Criar Conta" : "Acessar Sistema"}
-              </CardTitle>
-              <CardDescription>
-                {isSignUp ? "Preencha os dados para criar sua conta" : "Entre com suas credenciais"}
-              </CardDescription>
+              <CardTitle className="text-2xl font-bold">Acessar Sistema</CardTitle>
+              <CardDescription>Entre com suas credenciais</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                {isSignUp && (
-                  <div className="relative">
-                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Nome completo" value={fullName} onChange={e => setFullName(e.target.value)} className="pl-10" required />
-                  </div>
-                )}
-                {isSignUp && (
-                  <div className="relative">
-                    <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
-                    <Select value={cargo} onValueChange={setCargo} required>
-                      <SelectTrigger className="pl-10">
-                        <SelectValue placeholder="Selecione a área" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {cargoOptions.map(option => (
-                          <SelectItem key={option} value={option}>{option}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" required />
@@ -229,16 +186,11 @@ export default function Login() {
                   <Input type="password" placeholder="Senha" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" required minLength={6} />
                 </div>
                 <Button type="submit" className="w-full font-semibold" disabled={submitting}>
-                  {submitting ? "Aguarde..." : isSignUp ? "Criar Conta" : "Entrar"}
+                  {submitting ? "Aguarde..." : "Entrar"}
                 </Button>
               </form>
               <div className="mt-4 text-center text-sm space-y-2">
-                <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary hover:underline font-medium">
-                  {isSignUp ? "Já tem conta? Faça login" : "Não tem conta? Cadastre-se"}
-                </button>
-                {!isSignUp && (
-                  <div><Link to="/forgot-password" className="text-muted-foreground hover:text-primary transition-colors">Esqueci minha senha</Link></div>
-                )}
+                <Link to="/forgot-password" className="text-muted-foreground hover:text-primary transition-colors">Esqueci minha senha</Link>
               </div>
             </CardContent>
           </Card>

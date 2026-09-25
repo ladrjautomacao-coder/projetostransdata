@@ -619,6 +619,32 @@ export default function Dashboard() {
           <p className="text-sm text-muted-foreground mt-0.5">Painel de inteligência dos projetos</p>
         </div>
 
+        {/* Checklist de primeiros passos — só aparece pra quem ainda não tem nenhum projeto (cliente novo em trial) */}
+        {projects.length === 0 && (
+          <div className="rounded-lg border border-l-4 border-l-accent bg-card p-5">
+            <h2 className="font-semibold mb-1">Bem-vindo! Vamos configurar seu primeiro projeto</h2>
+            <p className="text-sm text-muted-foreground mb-4">Dois passos rápidos pra começar a usar o sistema de verdade.</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="flex items-start gap-3 rounded-md border p-3">
+                <Layers className="h-5 w-5 text-accent-foreground shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium">1. Cadastre seu primeiro projeto</p>
+                  <p className="text-xs text-muted-foreground mb-2">Nome da empresa cliente, cidade, datas e equipe.</p>
+                  <Button size="sm" onClick={() => navigate("/projetos/novo")}>Cadastrar projeto</Button>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 rounded-md border p-3">
+                <Users className="h-5 w-5 text-accent-foreground shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium">2. Adicione sua equipe</p>
+                  <p className="text-xs text-muted-foreground mb-2">Gerentes e executivos que vão trabalhar nos projetos.</p>
+                  <Button size="sm" variant="outline" onClick={() => navigate("/admin/equipe")}>Ver equipe</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Filter Bar */}
         <GlowCard delay={0.1}>
           <div className="p-4">

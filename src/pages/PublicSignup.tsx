@@ -96,7 +96,7 @@ export default function PublicSignup() {
               <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
             </div>
             <Button type="submit" disabled={submitting} className="w-full">
-              {submitting ? "Criando..." : "Começar teste gratuito"}
+              {submitting ? "Criando..." : "Começar meu teste grátis"}
             </Button>
           </form>
         </CardContent>

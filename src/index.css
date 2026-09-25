@@ -6,91 +6,93 @@
   /* Paleta padrão da HopeXT — usada por qualquer cliente sem marca própria
      configurada em tenant_branding. A Transdata (e qualquer cliente já
      personalizado) sobrescreve isso em tempo de execução via
-     TenantBrandingContext, não editando estes valores diretamente. */
+     TenantBrandingContext, não editando estes valores diretamente.
+     Índigo "brand" (confiança) + um único destaque quente "hope" — ver
+     plano de identidade visual (artefato "Identidade Visual HopeXT"). */
   :root {
-    --background: 220 20% 97%;
-    --foreground: 222 47% 11%;
+    --background: 225 30% 97%;
+    --foreground: 222 45% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 222 45% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 222 45% 12%;
 
-    --primary: 222 47% 28%;
+    --primary: 222 45% 30%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 15% 92%;
-    --secondary-foreground: 222 30% 20%;
+    --secondary: 222 20% 93%;
+    --secondary-foreground: 222 30% 22%;
 
-    --muted: 220 15% 94%;
+    --muted: 222 15% 95%;
     --muted-foreground: 222 10% 42%;
 
-    --accent: 199 85% 94%;
-    --accent-foreground: 199 89% 30%;
+    --accent: 28 85% 93%;
+    --accent-foreground: 28 75% 32%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 88%;
-    --input: 220 15% 88%;
-    --ring: 222 47% 28%;
+    --border: 222 15% 88%;
+    --input: 222 15% 88%;
+    --ring: 222 45% 30%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 222 47% 16%;
-    --sidebar-foreground: 220 20% 90%;
-    --sidebar-primary: 199 89% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 40% 22%;
-    --sidebar-accent-foreground: 220 20% 95%;
-    --sidebar-border: 222 35% 26%;
-    --sidebar-ring: 199 89% 48%;
+    --sidebar-background: 222 45% 12%;
+    --sidebar-foreground: 220 20% 88%;
+    --sidebar-primary: 28 78% 55%;
+    --sidebar-primary-foreground: 20 40% 12%;
+    --sidebar-accent: 222 35% 20%;
+    --sidebar-accent-foreground: 220 20% 92%;
+    --sidebar-border: 222 30% 24%;
+    --sidebar-ring: 28 78% 55%;
 
-    --success: 142 72% 42%;
-    --warning: 38 92% 50%;
+    --success: 142 55% 40%;
+    --warning: 38 75% 45%;
 
-    --glow-primary: 222 47% 28%;
-    --glow-secondary: 199 89% 48%;
+    --glow-primary: 222 45% 30%;
+    --glow-secondary: 28 78% 55%;
   }
 
   .dark {
-    --background: 222 47% 8%;
+    --background: 222 45% 8%;
     --foreground: 220 20% 95%;
 
-    --card: 222 40% 12%;
+    --card: 222 38% 12%;
     --card-foreground: 220 20% 95%;
 
-    --popover: 222 40% 12%;
+    --popover: 222 38% 12%;
     --popover-foreground: 220 20% 95%;
 
-    --primary: 199 89% 55%;
-    --primary-foreground: 222 47% 11%;
+    --primary: 218 70% 68%;
+    --primary-foreground: 222 45% 11%;
 
-    --secondary: 222 30% 18%;
+    --secondary: 222 28% 18%;
     --secondary-foreground: 220 20% 90%;
 
-    --muted: 222 30% 15%;
-    --muted-foreground: 220 10% 60%;
+    --muted: 222 28% 15%;
+    --muted-foreground: 220 12% 62%;
 
-    --accent: 199 60% 20%;
-    --accent-foreground: 199 90% 75%;
+    --accent: 28 45% 20%;
+    --accent-foreground: 28 80% 78%;
 
-    --destructive: 0 62% 45%;
+    --destructive: 0 62% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 222 30% 20%;
-    --input: 222 30% 20%;
-    --ring: 199 89% 55%;
+    --border: 222 28% 20%;
+    --input: 222 28% 20%;
+    --ring: 218 70% 68%;
 
-    --sidebar-background: 222 45% 9%;
+    --sidebar-background: 222 48% 7%;
     --sidebar-foreground: 220 20% 88%;
-    --sidebar-primary: 199 89% 58%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 35% 15%;
+    --sidebar-primary: 30 82% 60%;
+    --sidebar-primary-foreground: 20 40% 10%;
+    --sidebar-accent: 222 32% 15%;
     --sidebar-accent-foreground: 220 20% 92%;
-    --sidebar-border: 222 30% 17%;
-    --sidebar-ring: 199 89% 58%;
+    --sidebar-border: 222 28% 17%;
+    --sidebar-ring: 30 82% 60%;
   }
 }
 
@@ -99,10 +101,10 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-['Space_Grotesk',sans-serif];
+    @apply bg-background text-foreground font-['Inter',sans-serif];
   }
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Rajdhani', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-weight: 700;
     letter-spacing: -0.01em;
   }

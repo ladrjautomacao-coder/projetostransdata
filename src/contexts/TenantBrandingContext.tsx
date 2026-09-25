@@ -40,10 +40,18 @@ function extractSlug(hostname: string): string | null {
   if (hostname === "localhost" || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) return null;
   if (hostname.endsWith(".vercel.app")) return FALLBACK_TENANT_SLUG;
   const parts = hostname.split(".");
-  // "hopextnocode.com" (raiz, 2 partes) -> sem tenant, cadastro público.
-  // "empresax.hopextnocode.com" (3+ partes) -> primeira parte é o slug.
+  // "hopextnocode.com" (raiz, 2 partes) e "www.hopextnocode.com" (redireciona
+  // pra raiz) -> sem tenant, cadastro público. "empresax.hopextnocode.com"
+  // (3+ partes, não-www) -> primeira parte é o slug.
   if (parts.length <= 2) return null;
+  if (parts[0] === "www") return null;
   return parts[0];
+}
+
+/** Domínio raiz "de verdade", sem o "www." — usado pra montar subdomínios. */
+export function apexHostname(hostname: string): string {
+  const parts = hostname.split(".");
+  return parts[0] === "www" ? parts.slice(1).join(".") : hostname;
 }
 
 export function TenantBrandingProvider({ children }: { children: ReactNode }) {

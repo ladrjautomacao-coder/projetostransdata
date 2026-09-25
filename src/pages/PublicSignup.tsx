@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Building2 } from "lucide-react";
+import { apexHostname } from "@/contexts/TenantBrandingContext";
 
 function slugify(value: string) {
   return value
@@ -45,7 +46,7 @@ export default function PublicSignup() {
       if (signInErr) throw signInErr;
 
       const newSlug = (data as any).slug as string;
-      const host = window.location.hostname.split(".").slice(-2).join(".");
+      const host = apexHostname(window.location.hostname);
       const port = window.location.port ? `:${window.location.port}` : "";
       window.location.href = `${window.location.protocol}//${newSlug}.${host}${port}`;
     } catch (err: any) {
@@ -79,7 +80,7 @@ export default function PublicSignup() {
               <Label>Endereço da sua empresa</Label>
               <div className="flex items-center gap-1 text-sm">
                 <Input value={slug} onChange={(e) => setSlug(slugify(e.target.value))} maxLength={60} className="flex-1" />
-                <span className="whitespace-nowrap text-muted-foreground">.{window.location.hostname}</span>
+                <span className="whitespace-nowrap text-muted-foreground">.{apexHostname(window.location.hostname)}</span>
               </div>
             </div>
             <div className="space-y-2">

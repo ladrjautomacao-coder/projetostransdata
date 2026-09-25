@@ -60,6 +60,28 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Tenant do próprio chamador. Um admin comum só pode agir dentro do seu
+    // tenant; super_admin (operador da plataforma) atravessa todos.
+    const { data: callerProfile } = await adminClient
+      .from("profiles")
+      .select("tenant_id")
+      .eq("user_id", callerId)
+      .maybeSingle();
+    const callerTenantId = callerProfile?.tenant_id ?? null;
+
+    // Confirma que um usuário-alvo pertence ao mesmo tenant do chamador
+    // (super_admin sempre passa). Usado antes de qualquer ação destrutiva
+    // ou de leitura sobre outro usuário.
+    const assertSameTenant = async (targetUserId: string) => {
+      if (isSuperAdmin) return true;
+      const { data: targetProfile } = await adminClient
+        .from("profiles")
+        .select("tenant_id")
+        .eq("user_id", targetUserId)
+        .maybeSingle();
+      return !!targetProfile && targetProfile.tenant_id === callerTenantId;
+    };
+
     const url = new URL(req.url);
     const action = url.searchParams.get("action");
 
@@ -69,7 +91,7 @@ Deno.serve(async (req) => {
       if (error) throw error;
 
       // Get profiles and roles
-      const { data: profiles } = await adminClient.from("profiles").select("user_id, full_name, cargo, avatar_url");
+      const { data: profiles } = await adminClient.from("profiles").select("user_id, full_name, cargo, avatar_url, tenant_id");
       const { data: roles } = await adminClient.from("user_roles").select("user_id, role");
 
       const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
@@ -90,7 +112,12 @@ Deno.serve(async (req) => {
         return "user";
       };
 
-      const enriched = users.map((u: any) => ({
+      // admin comum só vê usuários do próprio tenant; super_admin vê todos.
+      const visibleUsers = isSuperAdmin
+        ? users
+        : users.filter((u: any) => profileMap.get(u.id)?.tenant_id === callerTenantId);
+
+      const enriched = visibleUsers.map((u: any) => ({
         id: u.id,
         email: u.email,
         full_name: profileMap.get(u.id)?.full_name || u.user_metadata?.full_name || "—",
@@ -124,12 +151,21 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      // Só super_admin pode indicar o tenant (ex: 1o admin de um cliente novo);
+      // admin comum sempre cria dentro do próprio tenant, nunca do que vier no body.
+      const targetTenantId = isSuperAdmin && body.tenant_id ? body.tenant_id : callerTenantId;
+      if (!targetTenantId) {
+        return new Response(JSON.stringify({ error: "Não foi possível determinar o tenant do novo usuário" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       const tempPassword = body.password ?? crypto.randomUUID() + "aA1!";
       const { data: created, error: createErr } = await adminClient.auth.admin.createUser({
         email,
         password: tempPassword,
         email_confirm: true,
-        user_metadata: { full_name: body.full_name ?? email, cargo: body.cargo ?? null },
+        user_metadata: { full_name: body.full_name ?? email, cargo: body.cargo ?? null, tenant_id: targetTenantId },
       });
       if (createErr) throw createErr;
       const newId = created.user!.id;
@@ -150,6 +186,13 @@ Deno.serve(async (req) => {
       if (!targetUserId) {
         return new Response(JSON.stringify({ error: "user_id required" }), {
           status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      if (!(await assertSameTenant(targetUserId))) {
+        return new Response(JSON.stringify({ error: "Usuário pertence a outro cliente" }), {
+          status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   FolderKanban, LayoutDashboard, HardHat, BookOpenCheck, Users, LogOut, ShieldCheck,
-  Settings, KeyRound, LifeBuoy, Wallet, ChevronsLeft, Search, MoreVertical, UserRound, Eye, FileUp,
+  Settings, KeyRound, LifeBuoy, Wallet, ChevronsLeft, Search, MoreVertical, UserRound, Eye, FileUp, Building2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -83,6 +83,12 @@ export function AppSidebar({ badges = {} }: { badges?: SidebarBadges }) {
     }))
     .filter(g => g.items.length > 0);
 
+  // Fora do sistema de permissões por módulo: super_admin é um papel de
+  // operador da plataforma, não faz parte do modelo de permissões por tenant.
+  const platformGroup: NavGroupDef | null = isSuperAdmin
+    ? { label: "Plataforma", items: [{ title: "Clientes", url: "/admin/clientes", icon: Building2, module: "admin_settings" }] }
+    : null;
+
   const branding = useTenantBranding();
   const name = profile?.full_name || "Usuário";
   const initials = name.split(" ").filter(Boolean).slice(0, 2).map(p => p[0]?.toUpperCase()).join("") || "U";
@@ -131,6 +137,7 @@ export function AppSidebar({ badges = {} }: { badges?: SidebarBadges }) {
         {visibleGroups.map(g => (
           <SidebarNavGroup key={g.label} label={g.label} items={g.items} />
         ))}
+        {platformGroup && <SidebarNavGroup label={platformGroup.label} items={platformGroup.items} />}
         {visibleGroups.length === 0 && !collapsed && (
           <p className="px-4 py-3 text-xs text-sidebar-foreground/40">Nenhum item encontrado.</p>
         )}

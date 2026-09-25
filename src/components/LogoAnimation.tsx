@@ -193,7 +193,7 @@ export default function LogoAnimation() {
             transition={{ duration: 0.6, type: "spring" }}
           >
             {branding.logoUrl ? (
-              <img src={branding.logoUrl} alt={branding.portalName} className="h-32 rounded-xl" />
+              <img src={branding.logoUrl} alt={branding.portalName} className="h-32 w-32 rounded-full object-cover" />
             ) : (
               <>
                 <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-primary-foreground/10 text-primary-foreground">

@@ -17,7 +17,7 @@ interface TenantBranding {
 const DEFAULT_BRANDING = {
   slug: null,
   portalName: "HopeXT",
-  logoUrl: null,
+  logoUrl: "https://emzqlctomlsjwmgthbkv.supabase.co/storage/v1/object/public/tenant-logos/hopext-default.png",
   primaryColor: null,
   sidebarColor: null,
   accentColor: null,
@@ -78,7 +78,7 @@ export function TenantBrandingProvider({ children }: { children: ReactNode }) {
       const branding: TenantBranding = {
         slug: row.slug,
         portalName: row.portal_name || DEFAULT_BRANDING.portalName,
-        logoUrl: row.logo_url || null,
+        logoUrl: row.logo_url || DEFAULT_BRANDING.logoUrl,
         primaryColor: row.primary_color || null,
         sidebarColor: row.sidebar_color || null,
         accentColor: row.accent_color || null,
@@ -99,6 +99,14 @@ export function TenantBrandingProvider({ children }: { children: ReactNode }) {
       if (branding.accentColor) {
         root.style.setProperty("--sidebar-primary", branding.accentColor);
         root.style.setProperty("--sidebar-ring", branding.accentColor);
+      }
+
+      // Ícone da aba/PWA também segue o tenant — a Transdata (e qualquer
+      // cliente com logo próprio) mantém o dela; só quem ainda não tem
+      // logo cai no padrão da HopeXT.
+      if (branding.logoUrl) {
+        document.querySelectorAll<HTMLLinkElement>('link[rel="icon"], link[rel="apple-touch-icon"]')
+          .forEach((link) => { link.href = branding.logoUrl!; });
       }
     });
   }, []);

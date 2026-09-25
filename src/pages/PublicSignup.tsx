@@ -5,8 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Building2 } from "lucide-react";
-import { apexHostname } from "@/contexts/TenantBrandingContext";
+import { apexHostname, useTenantBranding } from "@/contexts/TenantBrandingContext";
 
 function slugify(value: string) {
   return value
@@ -17,6 +16,7 @@ function slugify(value: string) {
 }
 
 export default function PublicSignup() {
+  const branding = useTenantBranding();
   const { toast } = useToast();
   const [companyName, setCompanyName] = useState("");
   const [slug, setSlug] = useState("");
@@ -59,9 +59,9 @@ export default function PublicSignup() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="items-center text-center">
-          <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <Building2 className="h-6 w-6" />
-          </div>
+          {branding.logoUrl && (
+            <img src={branding.logoUrl} alt={branding.portalName} className="mb-2 h-14 w-14 rounded-full object-cover" />
+          )}
           <CardTitle>Teste gratuito por 7 dias</CardTitle>
           <CardDescription>Crie a conta da sua empresa para começar a usar agora</CardDescription>
         </CardHeader>

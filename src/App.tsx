@@ -8,7 +8,6 @@ import { TenantBrandingProvider } from "@/contexts/TenantBrandingContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
-import { SuperAdminRoute } from "@/components/SuperAdminRoute";
 import { AppLayout } from "@/components/AppLayout";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -32,7 +31,6 @@ import UserManagement from "./pages/UserManagement";
 import PermissionsAdmin from "./pages/PermissionsAdmin";
 import SystemSettings from "./pages/SystemSettings";
 import SystemManual from "./pages/SystemManual";
-import TenantsAdmin from "./pages/TenantsAdmin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -70,7 +68,6 @@ const App = () => (
               <Route path="/admin/usuarios" element={<AdminRoute><UserManagement /></AdminRoute>} />
               <Route path="/admin/permissoes" element={<AdminRoute><PermissionsAdmin /></AdminRoute>} />
               <Route path="/admin/configuracoes" element={<AdminRoute><SystemSettings /></AdminRoute>} />
-              <Route path="/admin/clientes" element={<SuperAdminRoute><TenantsAdmin /></SuperAdminRoute>} />
               <Route path="/manual" element={<SystemManual />} />
             </Route>
             <Route path="*" element={<NotFound />} />

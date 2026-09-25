@@ -1027,27 +1027,39 @@ export type Database = {
       }
       tenants: {
         Row: {
+          activated_at: string | null
+          blocked_reason: string | null
           created_at: string
           features: Json
           id: string
           name: string
           slug: string
+          status: string
+          trial_ends_at: string | null
           updated_at: string
         }
         Insert: {
+          activated_at?: string | null
+          blocked_reason?: string | null
           created_at?: string
           features?: Json
           id?: string
           name: string
           slug: string
+          status?: string
+          trial_ends_at?: string | null
           updated_at?: string
         }
         Update: {
+          activated_at?: string | null
+          blocked_reason?: string | null
           created_at?: string
           features?: Json
           id?: string
           name?: string
           slug?: string
+          status?: string
+          trial_ends_at?: string | null
           updated_at?: string
         }
         Relationships: []

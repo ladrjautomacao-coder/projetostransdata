@@ -18,17 +18,11 @@ import { toast } from "sonner";
 import KanbanFilters from "@/components/kanban/KanbanFilters";
 import KanbanColumn from "@/components/kanban/KanbanColumn";
 import KanbanLegend from "@/components/kanban/KanbanLegend";
+import { statusLabels } from "@/lib/statusLabels";
 
+export { statusLabels };
 
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
-
-export const statusLabels: Record<ProjectStatus, string> = {
-  comercial: "Comercial",
-  planejamento: "Planejamento",
-  implantacao: "Implantação",
-  encerrado: "Implementado",
-  suspenso: "Outros",
-};
 
 export const statusColors: Record<ProjectStatus, { bg: string; border: string; text: string; accent: string }> = {
   comercial: { bg: "bg-blue-500/5", border: "border-blue-500/20", text: "text-blue-600", accent: "bg-blue-500" },

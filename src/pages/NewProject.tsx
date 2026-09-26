@@ -22,6 +22,7 @@ import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { useSettings } from "@/contexts/SettingsContext";
 import { LocationFields } from "@/components/LocationFields";
+import { useTenantBranding } from "@/contexts/TenantBrandingContext";
 
 type BrazilianState = Database["public"]["Enums"]["brazilian_state"];
 type ProjectStatus = Database["public"]["Enums"]["project_status"];
@@ -41,6 +42,8 @@ export default function NewProject() {
   const { user } = useAuth();
   const { settings } = useSettings();
   const { toast } = useToast();
+  const branding = useTenantBranding();
+  const isTransdata = branding.slug === "transdata";
   const [submitting, setSubmitting] = useState(false);
 
   // Dados gerais
@@ -255,12 +258,12 @@ export default function NewProject() {
       toast({ title: "Selecione o Tipo do Projeto", variant: "destructive" });
       return;
     }
-    if (selectedSolutions.length === 0) {
+    if (isTransdata && selectedSolutions.length === 0) {
       toast({ title: "Selecione pelo menos uma Solução", variant: "destructive" });
       return;
     }
-    const fleet = parseInt(fleetSize);
-    if (!fleetSize || isNaN(fleet) || fleet < 1) {
+    const fleet = fleetSize ? parseInt(fleetSize) : NaN;
+    if (isTransdata && (!fleetSize || isNaN(fleet) || fleet < 1)) {
       toast({ title: "Informe a Frota Contratada (mínimo 1)", variant: "destructive" });
       return;
     }
@@ -270,7 +273,7 @@ export default function NewProject() {
       toast({ title: "Sistema: valores não podem ser negativos", variant: "destructive" });
       return;
     }
-    if (urbano + seccionado !== fleet) {
+    if (isTransdata && urbano + seccionado !== fleet) {
       toast({ title: "A soma de Urbano e Seccionado deve ser igual à Frota Contratada", variant: "destructive" });
       return;
     }
@@ -306,7 +309,7 @@ export default function NewProject() {
         created_by: user?.id || null,
         project_type_id: projectTypeId,
         project_segment: projectSegment || null,
-        fleet_size: fleet,
+        fleet_size: isNaN(fleet) ? null : fleet,
         fleet_urbano: urbano,
         fleet_seccionado: seccionado,
         implementation_deadline_days: implDays,
@@ -499,7 +502,7 @@ export default function NewProject() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Frota Contratada <span className="text-destructive">*</span></Label>
+              <Label>Frota Contratada {isTransdata && <span className="text-destructive">*</span>}</Label>
               <Input
                 type="number"
                 min={1}
@@ -508,7 +511,7 @@ export default function NewProject() {
                 onChange={e => setFleetSize(e.target.value)}
                 placeholder="Ex.: 50"
               />
-              <HelperText>Quantidade de veículos do contrato</HelperText>
+              <HelperText>{isTransdata ? "Quantidade de veículos do contrato" : "Opcional — preencha se fizer sentido para o seu negócio"}</HelperText>
             </div>
             <DatePicker label="Data de Contratação" date={contractDate} onSelect={setContractDate} required />
             <DatePicker label="Data D-zero" date={dZeroDate} onSelect={setDZeroDate} />
@@ -521,7 +524,11 @@ export default function NewProject() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Sistema</CardTitle>
-            <CardDescription>Dimensione a frota por tipo de sistema. A soma deve ser igual à Frota Contratada.</CardDescription>
+            <CardDescription>
+              {isTransdata
+                ? "Dimensione a frota por tipo de sistema. A soma deve ser igual à Frota Contratada."
+                : "Opcional — só preencha se o seu negócio trabalhar com frota."}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {(() => {
@@ -542,10 +549,12 @@ export default function NewProject() {
                       <Input type="number" min={0} step={1} value={fleetSeccionado} onChange={e => setFleetSeccionado(e.target.value)} placeholder="0" />
                     </div>
                   </div>
-                  <div className={cn("text-sm font-medium", ok ? "text-emerald-600" : "text-destructive")}>
-                    Soma: {sum} / Frota Contratada: {f}
-                    {!ok && f > 0 && " — ajuste para que os valores coincidam"}
-                  </div>
+                  {isTransdata && (
+                    <div className={cn("text-sm font-medium", ok ? "text-emerald-600" : "text-destructive")}>
+                      Soma: {sum} / Frota Contratada: {f}
+                      {!ok && f > 0 && " — ajuste para que os valores coincidam"}
+                    </div>
+                  )}
                 </div>
               );
             })()}
@@ -561,7 +570,7 @@ export default function NewProject() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label className="mb-2 block">Soluções <span className="text-destructive">*</span></Label>
+              <Label className="mb-2 block">Soluções {isTransdata && <span className="text-destructive">*</span>}</Label>
               {solutions.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Nenhuma solução cadastrada.</p>
               ) : (

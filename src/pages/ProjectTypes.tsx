@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useTenantBranding } from "@/contexts/TenantBrandingContext";
+import { DEFAULT_STATUS_LABELS, applyStatusLabelOverrides } from "@/lib/statusLabels";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -18,14 +20,21 @@ interface ProjectType {
   active: boolean;
 }
 
+const STATUS_KEYS = Object.keys(DEFAULT_STATUS_LABELS) as (keyof typeof DEFAULT_STATUS_LABELS)[];
+
 export default function ProjectTypes() {
   const { toast } = useToast();
+  const branding = useTenantBranding();
+  const isTransdata = branding.slug === "transdata";
   const [types, setTypes] = useState<ProjectType[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [shortCode, setShortCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const [stageLabels, setStageLabels] = useState<Record<string, string>>({ ...DEFAULT_STATUS_LABELS });
+  const [savingStages, setSavingStages] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -34,7 +43,27 @@ export default function ProjectTypes() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  const loadStageLabels = async () => {
+    const { data } = await (supabase.from("tenant_branding") as any).select("status_labels").maybeSingle();
+    setStageLabels({ ...DEFAULT_STATUS_LABELS, ...((data as any)?.status_labels || {}) });
+  };
+
+  useEffect(() => {
+    load();
+    if (!isTransdata) loadStageLabels();
+  }, [isTransdata]);
+
+  const saveStageLabels = async () => {
+    setSavingStages(true);
+    const { error } = await (supabase.from("tenant_branding") as any).update({ status_labels: stageLabels });
+    if (error) {
+      toast({ title: "Erro ao salvar etapas", description: error.message, variant: "destructive" });
+    } else {
+      applyStatusLabelOverrides(stageLabels);
+      toast({ title: "Etapas do Kanban atualizadas!" });
+    }
+    setSavingStages(false);
+  };
 
   const resetForm = () => { setName(""); setShortCode(""); };
 
@@ -140,6 +169,32 @@ export default function ProjectTypes() {
           )}
         </CardContent>
       </Card>
+
+      {!isTransdata && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Etapas do Kanban</CardTitle>
+            <CardDescription>Renomeie as etapas pra linguagem do seu negócio. A ordem e a lógica continuam as mesmas.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              {STATUS_KEYS.map(key => (
+                <div key={key} className="space-y-2">
+                  <Label className="text-xs uppercase text-muted-foreground">{DEFAULT_STATUS_LABELS[key]}</Label>
+                  <Input
+                    value={stageLabels[key] ?? ""}
+                    onChange={e => setStageLabels(s => ({ ...s, [key]: e.target.value }))}
+                    maxLength={40}
+                  />
+                </div>
+              ))}
+            </div>
+            <Button onClick={saveStageLabels} disabled={savingStages}>
+              {savingStages ? "Salvando..." : "Salvar etapas"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

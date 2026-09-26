@@ -114,7 +114,7 @@ export function CronogramaTab() {
     setLoading(true);
     const [{ data: projData }, { data: actData }, { data: memberData }] = await Promise.all([
       supabase.from("projects").select("id, company_name, project_code").order("company_name"),
-      supabase
+      (supabase as any)
         .from("project_activities")
         .select("id, project_id, title, start_date, end_date, status, percent_complete, responsible_id, responsible:team_members(full_name)")
         .order("start_date"),
@@ -220,8 +220,8 @@ export function CronogramaTab() {
       percent_complete: form.percent_complete,
     };
     const { error } = editingId
-      ? await supabase.from("project_activities").update(payload).eq("id", editingId)
-      : await supabase.from("project_activities").insert({ ...payload, created_by: user?.id });
+      ? await (supabase as any).from("project_activities").update(payload).eq("id", editingId)
+      : await (supabase as any).from("project_activities").insert({ ...payload, created_by: user?.id });
     if (error) {
       toast.error("Erro ao salvar atividade", { description: error.message });
     } else {
@@ -234,7 +234,7 @@ export function CronogramaTab() {
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Excluir esta atividade?")) return;
-    const { error } = await supabase.from("project_activities").delete().eq("id", id);
+    const { error } = await (supabase as any).from("project_activities").delete().eq("id", id);
     if (error) toast.error("Erro ao excluir", { description: error.message });
     else { toast.success("Atividade excluída"); load(); }
   };

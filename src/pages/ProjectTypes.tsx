@@ -44,7 +44,7 @@ export default function ProjectTypes() {
   };
 
   const loadStageLabels = async () => {
-    const { data } = await (supabase.from("tenant_branding") as any).select("status_labels").maybeSingle();
+    const { data } = await (supabase as any).from("tenant_branding").select("status_labels").maybeSingle();
     setStageLabels({ ...DEFAULT_STATUS_LABELS, ...((data as any)?.status_labels || {}) });
   };
 
@@ -55,7 +55,7 @@ export default function ProjectTypes() {
 
   const saveStageLabels = async () => {
     setSavingStages(true);
-    const { error } = await (supabase.from("tenant_branding") as any).update({ status_labels: stageLabels });
+    const { error } = await (supabase as any).from("tenant_branding").update({ status_labels: stageLabels });
     if (error) {
       toast({ title: "Erro ao salvar etapas", description: error.message, variant: "destructive" });
     } else {

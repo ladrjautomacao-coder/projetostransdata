@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (requestId !== requestIdRef.current) return;
 
     const roles = (rolesData ?? []).map(r => r.role);
-    setProfile(profileData ?? null);
+    setProfile((profileData as { full_name: string; avatar_url: string | null; tenant_id: string } | null) ?? null);
     setIsAdmin(roles.includes("admin") || roles.includes("super_admin"));
     setIsSuperAdmin(roles.includes("super_admin"));
   };

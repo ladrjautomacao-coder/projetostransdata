@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { EmptyState } from "@/components/EmptyState";
 import { Plus } from "lucide-react";
 
@@ -20,7 +22,21 @@ interface ProjectType {
   active: boolean;
 }
 
+interface CustomFieldConfig {
+  key: string;
+  label: string;
+  type: "text" | "number" | "date";
+  active: boolean;
+}
+
 const STATUS_KEYS = Object.keys(DEFAULT_STATUS_LABELS) as (keyof typeof DEFAULT_STATUS_LABELS)[];
+
+const DEFAULT_CUSTOM_FIELDS: CustomFieldConfig[] = [1, 2, 3, 4, 5].map(n => ({
+  key: `custom_field_${n}`,
+  label: "",
+  type: "text",
+  active: false,
+}));
 
 export default function ProjectTypes() {
   const { toast } = useToast();
@@ -36,6 +52,9 @@ export default function ProjectTypes() {
   const [stageLabels, setStageLabels] = useState<Record<string, string>>({ ...DEFAULT_STATUS_LABELS });
   const [savingStages, setSavingStages] = useState(false);
 
+  const [customFields, setCustomFields] = useState<CustomFieldConfig[]>(DEFAULT_CUSTOM_FIELDS);
+  const [savingCustomFields, setSavingCustomFields] = useState(false);
+
   const load = async () => {
     setLoading(true);
     const { data } = await supabase.from("project_types").select("id, name, short_code, active").order("name");
@@ -44,14 +63,30 @@ export default function ProjectTypes() {
   };
 
   const loadStageLabels = async () => {
-    const { data } = await (supabase as any).from("tenant_branding").select("status_labels").maybeSingle();
+    const { data } = await (supabase as any).from("tenant_branding").select("status_labels, custom_fields").maybeSingle();
     setStageLabels({ ...DEFAULT_STATUS_LABELS, ...((data as any)?.status_labels || {}) });
+    const saved = (data as any)?.custom_fields as CustomFieldConfig[] | null;
+    if (saved && saved.length > 0) {
+      setCustomFields(DEFAULT_CUSTOM_FIELDS.map(d => saved.find(s => s.key === d.key) ?? d));
+    }
   };
 
   useEffect(() => {
     load();
     if (!isTransdata) loadStageLabels();
   }, [isTransdata]);
+
+  const saveCustomFields = async () => {
+    setSavingCustomFields(true);
+    const { error } = await (supabase as any).from("tenant_branding").update({ custom_fields: customFields });
+    if (error) toast({ title: "Erro ao salvar campos", description: error.message, variant: "destructive" });
+    else toast({ title: "Campos personalizados atualizados!" });
+    setSavingCustomFields(false);
+  };
+
+  const updateCustomField = (key: string, patch: Partial<CustomFieldConfig>) => {
+    setCustomFields(fields => fields.map(f => (f.key === key ? { ...f, ...patch } : f)));
+  };
 
   const saveStageLabels = async () => {
     setSavingStages(true);
@@ -99,8 +134,8 @@ export default function ProjectTypes() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Tipos de Projeto</h1>
-          <p className="text-sm text-muted-foreground">Usados no cadastro de projeto e no código gerado automaticamente.</p>
+          <h1 className="text-2xl font-bold">Personalização</h1>
+          <p className="text-sm text-muted-foreground">Tipos de projeto, etapas do Kanban e campos extras — do jeito do seu negócio.</p>
         </div>
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
           <DialogTrigger asChild><Button><Plus className="mr-2 h-4 w-4" /> Novo Tipo</Button></DialogTrigger>
@@ -130,6 +165,10 @@ export default function ProjectTypes() {
       </div>
 
       <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Tipos de Projeto</CardTitle>
+          <CardDescription>Usados no cadastro de projeto e no código gerado automaticamente.</CardDescription>
+        </CardHeader>
         <CardContent className="p-0">
           {loading ? (
             <div className="flex justify-center py-12"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>
@@ -191,6 +230,50 @@ export default function ProjectTypes() {
             </div>
             <Button onClick={saveStageLabels} disabled={savingStages}>
               {savingStages ? "Salvando..." : "Salvar etapas"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isTransdata && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Campos Personalizados</CardTitle>
+            <CardDescription>
+              Até 5 campos extras no cadastro de projeto. Só aparecem no formulário os que você nomear e ativar.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {customFields.map((f, i) => (
+              <div key={f.key} className="flex flex-wrap items-end gap-3 rounded-md border p-3">
+                <div className="min-w-[200px] flex-1 space-y-2">
+                  <Label className="text-xs text-muted-foreground">Campo {i + 1} — Nome</Label>
+                  <Input
+                    value={f.label}
+                    onChange={e => updateCustomField(f.key, { label: e.target.value })}
+                    maxLength={60}
+                    placeholder="Ex: Número do contrato"
+                  />
+                </div>
+                <div className="w-[140px] space-y-2">
+                  <Label className="text-xs text-muted-foreground">Tipo</Label>
+                  <Select value={f.type} onValueChange={v => updateCustomField(f.key, { type: v as CustomFieldConfig["type"] })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="text">Texto</SelectItem>
+                      <SelectItem value="number">Número</SelectItem>
+                      <SelectItem value="date">Data</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-2 pb-2">
+                  <Switch checked={f.active} onCheckedChange={v => updateCustomField(f.key, { active: v })} />
+                  <Label className="text-xs text-muted-foreground">Ativo</Label>
+                </div>
+              </div>
+            ))}
+            <Button onClick={saveCustomFields} disabled={savingCustomFields}>
+              {savingCustomFields ? "Salvando..." : "Salvar campos"}
             </Button>
           </CardContent>
         </Card>

@@ -68,7 +68,7 @@ export function AppSidebar({ badges = {} }: { badges?: SidebarBadges }) {
         { title: "Usuários", url: "/admin/usuarios", icon: ShieldCheck, module: "admin_users" },
         { title: "Permissões", url: "/admin/permissoes", icon: KeyRound, module: "admin_users" },
         { title: "Configurações", url: "/admin/configuracoes", icon: Settings, module: "admin_settings" },
-        { title: "Tipos de Projeto", url: "/admin/tipos-projeto", icon: Tag, module: "admin_settings" },
+        { title: "Personalização", url: "/admin/tipos-projeto", icon: Tag, module: "admin_settings" },
         { title: "Manual do Sistema", url: "/manual", icon: BookOpenCheck, module: "admin_manual" },
       ],
     },

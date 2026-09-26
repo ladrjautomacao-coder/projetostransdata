@@ -46,6 +46,17 @@ export default function NewProject() {
   const isTransdata = branding.slug === "transdata";
   const [submitting, setSubmitting] = useState(false);
 
+  // Campos personalizados (fora da Transdata) — configurados em Administração > Personalização
+  const [customFieldsConfig, setCustomFieldsConfig] = useState<{ key: string; label: string; type: "text" | "number" | "date"; active: boolean }[]>([]);
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
+  useEffect(() => {
+    if (isTransdata) return;
+    (supabase as any).from("tenant_branding").select("custom_fields").maybeSingle().then(({ data }: any) => {
+      const active = ((data?.custom_fields as typeof customFieldsConfig) || []).filter(f => f.active && f.label.trim());
+      setCustomFieldsConfig(active);
+    });
+  }, [isTransdata]);
+
   // Dados gerais
   const [companyName, setCompanyName] = useState("");
   const [city, setCity] = useState("");
@@ -322,6 +333,7 @@ export default function NewProject() {
         installation_client: parseInt(installationClient) || 0,
         complementary_sale: complementarySale,
         complementary_fleet: complementarySale ? (parseInt(complementaryFleet) || 0) : 0,
+        ...Object.fromEntries(customFieldsConfig.map(f => [f.key, customFieldValues[f.key] || null])),
       }).select("id").single();
       if (error) throw error;
 
@@ -819,6 +831,28 @@ export default function NewProject() {
             </Select>
           </CardContent>
         </Card>
+
+        {/* === SEÇÃO: CAMPOS PERSONALIZADOS === */}
+        {customFieldsConfig.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Campos Personalizados</CardTitle>
+              <CardDescription>Definidos em Administração &gt; Personalização</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2">
+              {customFieldsConfig.map(f => (
+                <div key={f.key} className="space-y-2">
+                  <Label>{f.label}</Label>
+                  <Input
+                    type={f.type === "number" ? "number" : f.type === "date" ? "date" : "text"}
+                    value={customFieldValues[f.key] || ""}
+                    onChange={e => setCustomFieldValues(v => ({ ...v, [f.key]: e.target.value }))}
+                  />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
 
         {/* === SEÇÃO: ANEXOS === */}
         <Card>

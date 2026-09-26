@@ -29,6 +29,14 @@ type ProjectStatus = Database["public"]["Enums"]["project_status"];
 
 const sanitizeCity = (v: string) => v.replace(/[^A-Za-zÀ-ÿ\s'-]/g, "");
 
+export interface CustomFieldDef {
+  id: string;
+  label: string;
+  type: "text" | "number" | "date" | "select" | "boolean";
+  options?: string[];
+  required: boolean;
+}
+
 const statusLabels: Record<ProjectStatus, string> = {
   comercial: "Comercial",
   planejamento: "Planejamento",
@@ -46,14 +54,15 @@ export default function NewProject() {
   const isTransdata = branding.slug === "transdata";
   const [submitting, setSubmitting] = useState(false);
 
-  // Campos personalizados (fora da Transdata) — configurados em Administração > Personalização
-  const [customFieldsConfig, setCustomFieldsConfig] = useState<{ key: string; label: string; type: "text" | "number" | "date"; active: boolean }[]>([]);
-  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
+  // Campos personalizados (fora da Transdata) — configurados em Administração > Personalização.
+  // Substituem Sistema/Frota, Soluções, Equipamentos, Piloto e Venda Complementar,
+  // que são específicos do negócio da Transdata.
+  const [customFieldsConfig, setCustomFieldsConfig] = useState<CustomFieldDef[]>([]);
+  const [customData, setCustomData] = useState<Record<string, string>>({});
   useEffect(() => {
     if (isTransdata) return;
     (supabase as any).from("tenant_branding").select("custom_fields").maybeSingle().then(({ data }: any) => {
-      const active = ((data?.custom_fields as typeof customFieldsConfig) || []).filter(f => f.active && f.label.trim());
-      setCustomFieldsConfig(active);
+      setCustomFieldsConfig((data?.custom_fields as CustomFieldDef[]) || []);
     });
   }, [isTransdata]);
 
@@ -298,9 +307,16 @@ export default function NewProject() {
       toast({ title: "Informe o Prazo Contratual", variant: "destructive" });
       return;
     }
-    if (isPilot && !pilotInfo.trim()) {
+    if (isTransdata && isPilot && !pilotInfo.trim()) {
       toast({ title: "Informe as informações adicionais do Piloto", variant: "destructive" });
       return;
+    }
+    if (!isTransdata) {
+      const missing = customFieldsConfig.find(f => f.required && !customData[f.id]?.trim());
+      if (missing) {
+        toast({ title: `Preencha o campo "${missing.label}"`, variant: "destructive" });
+        return;
+      }
     }
 
     setSubmitting(true);
@@ -320,21 +336,24 @@ export default function NewProject() {
         created_by: user?.id || null,
         project_type_id: projectTypeId,
         project_segment: projectSegment || null,
-        fleet_size: isNaN(fleet) ? null : fleet,
-        fleet_urbano: urbano,
-        fleet_seccionado: seccionado,
         implementation_deadline_days: implDays,
         contractual_deadline_days: contrDays,
-        is_pilot: isPilot,
-        pilot_info: isPilot ? pilotInfo : null,
-        embedded_install_training: embeddedTraining === "" ? null : embeddedTraining === "sim",
         filled_by: user?.id || null,
-        installation_transmobile: parseInt(installationTransmobile) || 0,
-        installation_client: parseInt(installationClient) || 0,
-        complementary_sale: complementarySale,
-        complementary_fleet: complementarySale ? (parseInt(complementaryFleet) || 0) : 0,
-        ...Object.fromEntries(customFieldsConfig.map(f => [f.key, customFieldValues[f.key] || null])),
-      }).select("id").single();
+        ...(isTransdata ? {
+          fleet_size: isNaN(fleet) ? null : fleet,
+          fleet_urbano: urbano,
+          fleet_seccionado: seccionado,
+          is_pilot: isPilot,
+          pilot_info: isPilot ? pilotInfo : null,
+          embedded_install_training: embeddedTraining === "" ? null : embeddedTraining === "sim",
+          installation_transmobile: parseInt(installationTransmobile) || 0,
+          installation_client: parseInt(installationClient) || 0,
+          complementary_sale: complementarySale,
+          complementary_fleet: complementarySale ? (parseInt(complementaryFleet) || 0) : 0,
+        } : {
+          custom_data: customData,
+        }),
+      } as any).select("id").single();
       if (error) throw error;
 
       // Produtos
@@ -532,15 +551,13 @@ export default function NewProject() {
           </CardContent>
         </Card>
 
+        {isTransdata && (
+        <>
         {/* === SEÇÃO: SISTEMA === */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Sistema</CardTitle>
-            <CardDescription>
-              {isTransdata
-                ? "Dimensione a frota por tipo de sistema. A soma deve ser igual à Frota Contratada."
-                : "Opcional — só preencha se o seu negócio trabalhar com frota."}
-            </CardDescription>
+            <CardDescription>Dimensione a frota por tipo de sistema. A soma deve ser igual à Frota Contratada.</CardDescription>
           </CardHeader>
           <CardContent>
             {(() => {
@@ -561,18 +578,15 @@ export default function NewProject() {
                       <Input type="number" min={0} step={1} value={fleetSeccionado} onChange={e => setFleetSeccionado(e.target.value)} placeholder="0" />
                     </div>
                   </div>
-                  {isTransdata && (
-                    <div className={cn("text-sm font-medium", ok ? "text-emerald-600" : "text-destructive")}>
-                      Soma: {sum} / Frota Contratada: {f}
-                      {!ok && f > 0 && " — ajuste para que os valores coincidam"}
-                    </div>
-                  )}
+                  <div className={cn("text-sm font-medium", ok ? "text-emerald-600" : "text-destructive")}>
+                    Soma: {sum} / Frota Contratada: {f}
+                    {!ok && f > 0 && " — ajuste para que os valores coincidam"}
+                  </div>
                 </div>
               );
             })()}
           </CardContent>
         </Card>
-
 
         {/* === SEÇÃO: SOLUÇÕES / ESCOPO === */}
         <Card>
@@ -582,7 +596,7 @@ export default function NewProject() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label className="mb-2 block">Soluções {isTransdata && <span className="text-destructive">*</span>}</Label>
+              <Label className="mb-2 block">Soluções <span className="text-destructive">*</span></Label>
               {solutions.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Nenhuma solução cadastrada.</p>
               ) : (
@@ -630,9 +644,11 @@ export default function NewProject() {
             </div>
           </CardContent>
         </Card>
+        </>
+        )}
 
 
-        {/* === SEÇÃO: EQUIPAMENTOS === */}
+        {isTransdata && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Equipamentos</CardTitle>
@@ -677,7 +693,7 @@ export default function NewProject() {
             )}
           </CardContent>
         </Card>
-
+        )}
 
 
         {/* === SEÇÃO: PRAZOS === */}
@@ -753,6 +769,8 @@ export default function NewProject() {
           </CardContent>
         </Card>
 
+        {isTransdata && (
+        <>
         {/* === SEÇÃO: PILOTO === */}
         <Card>
           <CardHeader>
@@ -816,6 +834,8 @@ export default function NewProject() {
             )}
           </CardContent>
         </Card>
+        </>
+        )}
 
         {/* === SEÇÃO: STATUS === */}
         <Card>
@@ -833,21 +853,37 @@ export default function NewProject() {
         </Card>
 
         {/* === SEÇÃO: CAMPOS PERSONALIZADOS === */}
-        {customFieldsConfig.length > 0 && (
+        {!isTransdata && customFieldsConfig.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Campos Personalizados</CardTitle>
+              <CardTitle className="text-lg">Campos do seu negócio</CardTitle>
               <CardDescription>Definidos em Administração &gt; Personalização</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
               {customFieldsConfig.map(f => (
-                <div key={f.key} className="space-y-2">
-                  <Label>{f.label}</Label>
-                  <Input
-                    type={f.type === "number" ? "number" : f.type === "date" ? "date" : "text"}
-                    value={customFieldValues[f.key] || ""}
-                    onChange={e => setCustomFieldValues(v => ({ ...v, [f.key]: e.target.value }))}
-                  />
+                <div key={f.id} className="space-y-2">
+                  <Label>{f.label} {f.required && <span className="text-destructive">*</span>}</Label>
+                  {f.type === "boolean" ? (
+                    <div className="flex items-center gap-3 pt-1">
+                      <Switch
+                        checked={customData[f.id] === "true"}
+                        onCheckedChange={v => setCustomData(d => ({ ...d, [f.id]: v ? "true" : "false" }))}
+                      />
+                    </div>
+                  ) : f.type === "select" ? (
+                    <Select value={customData[f.id] || ""} onValueChange={v => setCustomData(d => ({ ...d, [f.id]: v }))}>
+                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectContent>
+                        {(f.options || []).map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      type={f.type === "number" ? "number" : f.type === "date" ? "date" : "text"}
+                      value={customData[f.id] || ""}
+                      onChange={e => setCustomData(d => ({ ...d, [f.id]: e.target.value }))}
+                    />
+                  )}
                 </div>
               ))}
             </CardContent>

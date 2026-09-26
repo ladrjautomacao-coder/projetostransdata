@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useTenantBranding } from "@/contexts/TenantBrandingContext";
 import { DEFAULT_STATUS_LABELS, applyStatusLabelOverrides } from "@/lib/statusLabels";
+import type { CustomFieldDef } from "@/pages/NewProject";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { EmptyState } from "@/components/EmptyState";
-import { Plus } from "lucide-react";
+import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 
 interface ProjectType {
   id: string;
@@ -22,21 +23,22 @@ interface ProjectType {
   active: boolean;
 }
 
-interface CustomFieldConfig {
-  key: string;
-  label: string;
-  type: "text" | "number" | "date";
-  active: boolean;
-}
-
 const STATUS_KEYS = Object.keys(DEFAULT_STATUS_LABELS) as (keyof typeof DEFAULT_STATUS_LABELS)[];
 
-const DEFAULT_CUSTOM_FIELDS: CustomFieldConfig[] = [1, 2, 3, 4, 5].map(n => ({
-  key: `custom_field_${n}`,
+const FIELD_TYPE_LABEL: Record<CustomFieldDef["type"], string> = {
+  text: "Texto",
+  number: "Número",
+  date: "Data",
+  select: "Lista de opções",
+  boolean: "Sim / Não",
+};
+
+const newField = (): CustomFieldDef => ({
+  id: crypto.randomUUID(),
   label: "",
   type: "text",
-  active: false,
-}));
+  required: false,
+});
 
 export default function ProjectTypes() {
   const { toast } = useToast();
@@ -52,7 +54,7 @@ export default function ProjectTypes() {
   const [stageLabels, setStageLabels] = useState<Record<string, string>>({ ...DEFAULT_STATUS_LABELS });
   const [savingStages, setSavingStages] = useState(false);
 
-  const [customFields, setCustomFields] = useState<CustomFieldConfig[]>(DEFAULT_CUSTOM_FIELDS);
+  const [customFields, setCustomFields] = useState<CustomFieldDef[]>([]);
   const [savingCustomFields, setSavingCustomFields] = useState(false);
 
   const load = async () => {
@@ -65,10 +67,7 @@ export default function ProjectTypes() {
   const loadStageLabels = async () => {
     const { data } = await (supabase as any).from("tenant_branding").select("status_labels, custom_fields").maybeSingle();
     setStageLabels({ ...DEFAULT_STATUS_LABELS, ...((data as any)?.status_labels || {}) });
-    const saved = (data as any)?.custom_fields as CustomFieldConfig[] | null;
-    if (saved && saved.length > 0) {
-      setCustomFields(DEFAULT_CUSTOM_FIELDS.map(d => saved.find(s => s.key === d.key) ?? d));
-    }
+    setCustomFields(((data as any)?.custom_fields as CustomFieldDef[]) || []);
   };
 
   useEffect(() => {
@@ -77,6 +76,10 @@ export default function ProjectTypes() {
   }, [isTransdata]);
 
   const saveCustomFields = async () => {
+    if (customFields.some(f => !f.label.trim())) {
+      toast({ title: "Todo campo precisa de um nome", variant: "destructive" });
+      return;
+    }
     setSavingCustomFields(true);
     const { error } = await (supabase as any).from("tenant_branding").update({ custom_fields: customFields });
     if (error) toast({ title: "Erro ao salvar campos", description: error.message, variant: "destructive" });
@@ -84,8 +87,22 @@ export default function ProjectTypes() {
     setSavingCustomFields(false);
   };
 
-  const updateCustomField = (key: string, patch: Partial<CustomFieldConfig>) => {
-    setCustomFields(fields => fields.map(f => (f.key === key ? { ...f, ...patch } : f)));
+  const updateCustomField = (id: string, patch: Partial<CustomFieldDef>) => {
+    setCustomFields(fields => fields.map(f => (f.id === id ? { ...f, ...patch } : f)));
+  };
+
+  const removeCustomField = (id: string) => {
+    setCustomFields(fields => fields.filter(f => f.id !== id));
+  };
+
+  const moveCustomField = (index: number, dir: -1 | 1) => {
+    setCustomFields(fields => {
+      const next = [...fields];
+      const target = index + dir;
+      if (target < 0 || target >= next.length) return fields;
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
   };
 
   const saveStageLabels = async () => {
@@ -238,43 +255,77 @@ export default function ProjectTypes() {
       {!isTransdata && (
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle className="text-lg">Campos Personalizados</CardTitle>
+            <CardTitle className="text-lg">Campos do seu cadastro de projeto</CardTitle>
             <CardDescription>
-              Até 5 campos extras no cadastro de projeto. Só aparecem no formulário os que você nomear e ativar.
+              Substituem Sistema/Frota, Soluções, Equipamentos, Piloto e Venda Complementar — monte do jeito
+              do seu negócio. Empresa, Cidade, Estado, datas, prazos, responsável, status e anexos continuam fixos.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
+            {customFields.length === 0 && (
+              <p className="text-sm text-muted-foreground">Nenhum campo personalizado ainda.</p>
+            )}
             {customFields.map((f, i) => (
-              <div key={f.key} className="flex flex-wrap items-end gap-3 rounded-md border p-3">
-                <div className="min-w-[200px] flex-1 space-y-2">
-                  <Label className="text-xs text-muted-foreground">Campo {i + 1} — Nome</Label>
-                  <Input
-                    value={f.label}
-                    onChange={e => updateCustomField(f.key, { label: e.target.value })}
-                    maxLength={60}
-                    placeholder="Ex: Número do contrato"
-                  />
+              <div key={f.id} className="space-y-3 rounded-md border p-3">
+                <div className="flex flex-wrap items-end gap-3">
+                  <div className="min-w-[200px] flex-1 space-y-2">
+                    <Label className="text-xs text-muted-foreground">Nome do campo</Label>
+                    <Input
+                      value={f.label}
+                      onChange={e => updateCustomField(f.id, { label: e.target.value })}
+                      maxLength={60}
+                      placeholder="Ex: Número do contrato"
+                    />
+                  </div>
+                  <div className="w-[160px] space-y-2">
+                    <Label className="text-xs text-muted-foreground">Tipo</Label>
+                    <Select value={f.type} onValueChange={v => updateCustomField(f.id, { type: v as CustomFieldDef["type"] })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(FIELD_TYPE_LABEL).map(([value, label]) => (
+                          <SelectItem key={value} value={value}>{label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-center gap-2 pb-2">
+                    <Switch checked={f.required} onCheckedChange={v => updateCustomField(f.id, { required: v })} />
+                    <Label className="text-xs text-muted-foreground">Obrigatório</Label>
+                  </div>
+                  <div className="flex items-center gap-1 pb-1">
+                    <Button variant="ghost" size="icon" disabled={i === 0} onClick={() => moveCustomField(i, -1)}>
+                      <ArrowUp className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" disabled={i === customFields.length - 1} onClick={() => moveCustomField(i, 1)}>
+                      <ArrowDown className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => removeCustomField(f.id)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="w-[140px] space-y-2">
-                  <Label className="text-xs text-muted-foreground">Tipo</Label>
-                  <Select value={f.type} onValueChange={v => updateCustomField(f.key, { type: v as CustomFieldConfig["type"] })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="text">Texto</SelectItem>
-                      <SelectItem value="number">Número</SelectItem>
-                      <SelectItem value="date">Data</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center gap-2 pb-2">
-                  <Switch checked={f.active} onCheckedChange={v => updateCustomField(f.key, { active: v })} />
-                  <Label className="text-xs text-muted-foreground">Ativo</Label>
-                </div>
+                {f.type === "select" && (
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Opções (uma por linha)</Label>
+                    <textarea
+                      className="w-full rounded-md border bg-background p-2 text-sm"
+                      rows={3}
+                      value={(f.options || []).join("\n")}
+                      onChange={e => updateCustomField(f.id, { options: e.target.value.split("\n").map(o => o.trim()).filter(Boolean) })}
+                      placeholder={"Opção 1\nOpção 2"}
+                    />
+                  </div>
+                )}
               </div>
             ))}
-            <Button onClick={saveCustomFields} disabled={savingCustomFields}>
-              {savingCustomFields ? "Salvando..." : "Salvar campos"}
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" onClick={() => setCustomFields(f => [...f, newField()])}>
+                <Plus className="mr-1.5 h-4 w-4" /> Adicionar campo
+              </Button>
+              <Button onClick={saveCustomFields} disabled={savingCustomFields}>
+                {savingCustomFields ? "Salvando..." : "Salvar campos"}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}

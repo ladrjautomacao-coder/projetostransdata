@@ -32,6 +32,7 @@ import AcervoTecnico from "./pages/AcervoTecnico";
 import UserManagement from "./pages/UserManagement";
 import PermissionsAdmin from "./pages/PermissionsAdmin";
 import SystemSettings from "./pages/SystemSettings";
+import ProjectTypes from "./pages/ProjectTypes";
 import SystemManual from "./pages/SystemManual";
 import NotFound from "./pages/NotFound";
 
@@ -86,6 +87,7 @@ function AppRoutes() {
           <Route path="/admin/usuarios" element={<AdminRoute><UserManagement /></AdminRoute>} />
           <Route path="/admin/permissoes" element={<AdminRoute><PermissionsAdmin /></AdminRoute>} />
           <Route path="/admin/configuracoes" element={<AdminRoute><SystemSettings /></AdminRoute>} />
+          <Route path="/admin/tipos-projeto" element={<AdminRoute><ProjectTypes /></AdminRoute>} />
           <Route path="/manual" element={<SystemManual />} />
         </Route>
         <Route path="*" element={<NotFound />} />

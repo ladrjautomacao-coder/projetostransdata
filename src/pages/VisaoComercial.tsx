@@ -5,9 +5,11 @@ import { useProjectFilters } from "@/contexts/ProjectFiltersContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTenantBranding } from "@/contexts/TenantBrandingContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/EmptyState";
@@ -15,6 +17,7 @@ import KanbanFilters from "@/components/kanban/KanbanFilters";
 import { ProjectFollowUpCard } from "@/components/comercial/ProjectFollowUpCard";
 import { ProjectFollowUpDrawer } from "@/components/comercial/ProjectFollowUpDrawer";
 import { ProjectFollowUpSkeleton } from "@/components/comercial/ProjectFollowUpSkeleton";
+import { CronogramaTab } from "@/components/comercial/CronogramaTab";
 import {
   daysSince,
   effectiveLatestFollowUp,
@@ -41,6 +44,8 @@ export default function VisaoComercial() {
   const { settings } = useSettings();
   const { user } = useAuth();
   const { can, loading: permsLoading } = usePermissions();
+  const branding = useTenantBranding();
+  const showCronograma = branding.slug === "empresateste";
 
   const [projects, setProjects] = useState<FollowUpProject[]>([]);
   const [total, setTotal] = useState(0);
@@ -360,8 +365,7 @@ export default function VisaoComercial() {
 
   if (!allowed) return null;
 
-
-  return (
+  const acompanhamento = (
     <div className="flex flex-col gap-4">
       {/* Header */}
       <div className="flex flex-wrap items-center gap-3">
@@ -531,5 +535,20 @@ export default function VisaoComercial() {
 
       <ProjectFollowUpDrawer project={selected} open={drawerOpen} onOpenChange={setDrawerOpen} />
     </div>
+  );
+
+  if (!showCronograma) return acompanhamento;
+
+  return (
+    <Tabs defaultValue="acompanhamento" className="flex flex-col gap-4">
+      <TabsList className="w-fit">
+        <TabsTrigger value="acompanhamento">Acompanhamento</TabsTrigger>
+        <TabsTrigger value="cronograma">Cronograma</TabsTrigger>
+      </TabsList>
+      <TabsContent value="acompanhamento" className="mt-0">{acompanhamento}</TabsContent>
+      <TabsContent value="cronograma" className="mt-0">
+        <CronogramaTab />
+      </TabsContent>
+    </Tabs>
   );
 }

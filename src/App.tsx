@@ -19,6 +19,7 @@ import NewProject from "./pages/NewProject";
 import ProjectList from "./pages/ProjectList";
 import ProjectDetail from "./pages/ProjectDetail";
 import ProjectManagement from "./pages/ProjectManagement";
+import Cronograma from "./pages/Cronograma";
 import VisaoComercial from "./pages/VisaoComercial";
 import TeamMembers from "./pages/TeamMembers";
 import Products from "./pages/Products";
@@ -71,6 +72,7 @@ function AppRoutes() {
           <Route path="/projetos/lista" element={<ProjectList />} />
 
           <Route path="/projetos/gestao" element={<ProjectManagement />} />
+          <Route path="/projetos/cronograma" element={<Cronograma />} />
           <Route path="/projetos/:id" element={<ProjectDetail />} />
           <Route path="/comercial" element={<VisaoComercial />} />
           <Route path="/implantacao" element={<Implantacao />} />

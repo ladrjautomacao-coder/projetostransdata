@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTenantBranding } from "@/contexts/TenantBrandingContext";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, List, Signal, Kanban } from "lucide-react";
+import { Plus, List, Signal, Kanban, CalendarRange } from "lucide-react";
 
 export default function Projects() {
   const navigate = useNavigate();
@@ -36,6 +36,14 @@ export default function Projects() {
       icon: List,
       onClick: () => navigate("/projetos/lista"),
     },
+    // Teste isolado: Cronograma só aparece pra este tenant enquanto validamos
+    // se vale a pena expor pra todo mundo.
+    ...(branding.slug === "empresateste" ? [{
+      title: "Cronograma",
+      description: "Linha do tempo dos projetos por atividade",
+      icon: CalendarRange,
+      onClick: () => navigate("/projetos/cronograma"),
+    }] : []),
   ];
 
   return (

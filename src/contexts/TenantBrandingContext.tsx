@@ -69,7 +69,7 @@ export function TenantBrandingProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    supabase.rpc("get_public_tenant_branding", { _slug: slug }).then(({ data }) => {
+    (supabase.rpc as any)("get_public_tenant_branding", { _slug: slug }).then(({ data }: { data: unknown }) => {
       const row = Array.isArray(data) ? data[0] : (data as any);
       if (!row) {
         setState({ ...DEFAULT_BRANDING, loading: false, isKnownTenant: false });

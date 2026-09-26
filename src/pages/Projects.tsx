@@ -1,11 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTenantBranding } from "@/contexts/TenantBrandingContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, List, Signal, Kanban } from "lucide-react";
 
 export default function Projects() {
   const navigate = useNavigate();
   const { isAdmin, loading } = useAuth();
+  const branding = useTenantBranding();
 
   if (loading) {
     return (
@@ -57,7 +59,9 @@ export default function Projects() {
           Projetos
         </h1>
         <p className="text-muted-foreground mt-2 text-sm max-w-md mx-auto">
-          Gerencie, monitore e analise seus projetos de bilhetagem
+          {branding.slug === "transdata"
+            ? "Gerencie, monitore e analise seus projetos de bilhetagem"
+            : "Gerencie, monitore e analise seus projetos"}
         </p>
       </div>
 

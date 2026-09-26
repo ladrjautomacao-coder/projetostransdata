@@ -109,11 +109,11 @@ export default function PublicSignup() {
       });
       if (error) throw error;
 
-      const { data: profile } = await supabase
+      const { data: profile } = await (supabase as any)
         .from("profiles").select("tenant_id").eq("user_id", data.user.id).maybeSingle();
       if (!profile?.tenant_id) throw new Error("Não foi possível identificar sua empresa.");
 
-      const { data: tenant } = await supabase
+      const { data: tenant } = await (supabase as any)
         .from("tenants").select("slug").eq("id", profile.tenant_id).maybeSingle();
       if (!tenant?.slug) throw new Error("Não foi possível identificar o endereço da sua empresa.");
 

@@ -134,10 +134,10 @@ export default function NewProject() {
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
-      if (!city || !projectTypeId || (countryCode === "BR" && !state)) { setCodePreview(""); return; }
+      if (isTransdata && (!city || !projectTypeId || (countryCode === "BR" && !state))) { setCodePreview(""); return; }
       try {
         const { data, error } = await (supabase as any).rpc("preview_project_code", {
-          p_city: city, p_state: state || null, p_project_type_id: projectTypeId,
+          p_city: city, p_state: state || null, p_project_type_id: projectTypeId || null,
           p_segment: projectSegment || null, p_company_name: companyName || "", p_country: countryCode,
         });
         if (!cancelled && !error) setCodePreview(data || "");
@@ -145,7 +145,7 @@ export default function NewProject() {
     };
     const t = setTimeout(run, 250);
     return () => { cancelled = true; clearTimeout(t); };
-  }, [city, state, countryCode, projectTypeId, projectSegment, companyName]);
+  }, [city, state, countryCode, projectTypeId, projectSegment, companyName, isTransdata]);
 
   // ===== Rascunho automático (localStorage) =====
   const draftKey = `transdata:new-project-draft:${user?.id || "anon"}`;

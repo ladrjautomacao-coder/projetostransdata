@@ -82,7 +82,10 @@ export function TenantBrandingProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    if (slug === FALLBACK_TENANT_SLUG) setState(TRANSDATA_BRANDING);
+    if (slug === FALLBACK_TENANT_SLUG) {
+      setState(TRANSDATA_BRANDING);
+      document.title = "GP Transdata - Gestão de Projetos";
+    }
 
     (supabase.rpc as any)("get_public_tenant_branding", { _slug: slug }).then(({ data }: { data: unknown }) => {
       const row = Array.isArray(data) ? data[0] : (data as any);
@@ -105,6 +108,7 @@ export function TenantBrandingProvider({ children }: { children: ReactNode }) {
         isKnownTenant: true,
       };
       setState(branding);
+      document.title = `${branding.portalName} - Gestão de Projetos`;
 
       const root = document.documentElement;
       if (branding.primaryColor) {

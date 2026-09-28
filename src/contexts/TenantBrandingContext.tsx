@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { applyStatusLabelOverrides } from "@/lib/statusLabels";
+import logoTransdata from "@/assets/logo-transdata.png";
 
 interface TenantBranding {
   slug: string | null;
@@ -30,8 +31,8 @@ const DEFAULT_BRANDING = {
 const FALLBACK_TENANT_SLUG = "transdata";
 const TRANSDATA_BRANDING: TenantBranding = {
   slug: FALLBACK_TENANT_SLUG,
-  portalName: "GP Transdata",
-  logoUrl: null,
+  portalName: "PAINEL 360",
+  logoUrl: logoTransdata,
   primaryColor: "273 70% 32%",
   sidebarColor: "273 70% 18%",
   accentColor: "17 89% 54%",
@@ -84,7 +85,7 @@ export function TenantBrandingProvider({ children }: { children: ReactNode }) {
 
     if (slug === FALLBACK_TENANT_SLUG) {
       setState(TRANSDATA_BRANDING);
-      document.title = "GP Transdata - Gestão de Projetos";
+      document.title = "PAINEL 360 - Gestão de Projetos";
     }
 
     (supabase.rpc as any)("get_public_tenant_branding", { _slug: slug }).then(({ data }: { data: unknown }) => {
@@ -98,8 +99,8 @@ export function TenantBrandingProvider({ children }: { children: ReactNode }) {
 
       const branding: TenantBranding = {
         slug: row.slug,
-        portalName: row.portal_name || DEFAULT_BRANDING.portalName,
-        logoUrl: row.logo_url || (slug === FALLBACK_TENANT_SLUG ? null : DEFAULT_BRANDING.logoUrl),
+        portalName: slug === FALLBACK_TENANT_SLUG ? TRANSDATA_BRANDING.portalName : row.portal_name || DEFAULT_BRANDING.portalName,
+        logoUrl: slug === FALLBACK_TENANT_SLUG ? TRANSDATA_BRANDING.logoUrl : row.logo_url || DEFAULT_BRANDING.logoUrl,
         primaryColor: row.primary_color || null,
         sidebarColor: row.sidebar_color || null,
         accentColor: row.accent_color || null,

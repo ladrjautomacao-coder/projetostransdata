@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Building2 } from "lucide-react";
 import { useTenantBranding } from "@/contexts/TenantBrandingContext";
@@ -86,6 +86,12 @@ export default function LogoAnimation() {
   // pra esse tenant; os demais vão direto pro logo/nome final.
   const isTransdata = branding.slug === "transdata";
   const [phase, setPhase] = useState<"fallen" | "lifting" | "glow" | "done">(isTransdata ? "fallen" : "done");
+
+  useEffect(() => {
+    if (!isTransdata) return;
+    const timer = window.setTimeout(() => setPhase("done"), 5500);
+    return () => window.clearTimeout(timer);
+  }, [isTransdata]);
 
   const startLift = () => {
     setTimeout(() => setPhase("lifting"), 600);

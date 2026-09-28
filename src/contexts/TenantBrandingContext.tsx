@@ -31,7 +31,7 @@ const DEFAULT_BRANDING = {
 const FALLBACK_TENANT_SLUG = "transdata";
 const TRANSDATA_BRANDING: TenantBranding = {
   slug: FALLBACK_TENANT_SLUG,
-  portalName: "PAINEL 360",
+  portalName: "GP Transdata",
   logoUrl: logoTransdata,
   primaryColor: "273 70% 32%",
   sidebarColor: "273 70% 18%",
@@ -85,7 +85,7 @@ export function TenantBrandingProvider({ children }: { children: ReactNode }) {
 
     if (slug === FALLBACK_TENANT_SLUG) {
       setState(TRANSDATA_BRANDING);
-      document.title = "PAINEL 360 - Gestão de Projetos";
+      document.title = "GP Transdata - Gestão de Projetos";
     }
 
     (supabase.rpc as any)("get_public_tenant_branding", { _slug: slug }).then(({ data }: { data: unknown }) => {
